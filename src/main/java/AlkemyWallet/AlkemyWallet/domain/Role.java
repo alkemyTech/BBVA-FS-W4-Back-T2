@@ -17,11 +17,11 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     private RoleEnum name;
-    @Column
+    @Column(name="description")
     private String description;
-    @Column
+    @Column(name="creationDate")
     private LocalDateTime creationDate;
-    @Column
+    @Column(name="updateDate")
     private LocalDateTime updateDate;
 
 }
