@@ -13,8 +13,5 @@ public class AlkemyWalletApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(AlkemyWalletApplication.class, args);
-
-
-
 }
 }
