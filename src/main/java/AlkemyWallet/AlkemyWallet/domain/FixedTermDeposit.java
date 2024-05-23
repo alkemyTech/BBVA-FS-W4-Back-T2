@@ -24,6 +24,7 @@ public class FixedTermDeposit {
 
     @Column
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column
