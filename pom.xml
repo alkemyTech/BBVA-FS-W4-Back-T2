@@ -67,6 +67,13 @@
 			<artifactId>jakarta.persistence-api</artifactId>
 			<version>3.1.0</version> <!-- Versión actualizada, verifica la última versión en Maven Central -->
 		</dependency>
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.2.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
