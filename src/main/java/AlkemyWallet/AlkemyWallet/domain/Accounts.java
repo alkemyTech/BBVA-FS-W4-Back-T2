@@ -21,36 +21,35 @@ public class Accounts {
 
     @NotNull
     @NotBlank
-    @Column(name = "currency")
+    @Column(name = "currency", nullable = false)
     String currency;
 
     @NotNull
-    @Column(name = "transactionLimit")
+    @Column(name = "transactionLimit", nullable = false)
     Double transactionLimit;
 
     @NotNull
-    @Column(name = "balance")
+    @Column(name = "balance", nullable = false)
     Double balance;
 
     @NotNull
-    @Column(name = "creationDate")
+    @Column(name = "creationDate", nullable = false)
     LocalDateTime creationDate;
 
     @NotNull
-    @Column(name = "updateDate")
+    @Column(name = "updateDate" , nullable = false)
     LocalDateTime updateDate;
 
     @NotNull
-    @Column(name = "softDelete")
+    @Column(name = "softDelete", nullable = false)
     Boolean softDelete;
 
     @NotNull
     @NotBlank
-    @Column(name = "CBU")
+    @Column(name = "CBU", nullable = false)
     String CBU;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @ManyToOne()
     @JoinColumn(name="user_id", nullable = false)
     long userId;
