@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.domain;
 
 
+import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,8 @@ public class Transaction {
     private double amount;
     @Column (nullable = false)
     @NotNull
-    private String type;
+    @Enumerated (EnumType.STRING)
+    private TransactionEnum type;
     @Column
     @Nullable
     private String description;
