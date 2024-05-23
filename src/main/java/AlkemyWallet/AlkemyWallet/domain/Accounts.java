@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.domain;
 
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,37 +18,38 @@ public class Accounts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    private long id;
 
     @NotNull
     @NotBlank
+    @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false)
-    String currency;
+    private CurrencyEnum currency;
 
     @NotNull
     @Column(name = "transactionLimit", nullable = false)
-    Double transactionLimit;
+    private Double transactionLimit;
 
     @NotNull
     @Column(name = "balance", nullable = false)
-    Double balance;
+    private Double balance;
 
     @NotNull
     @Column(name = "creationDate", nullable = false)
-    LocalDateTime creationDate;
+    private LocalDateTime creationDate;
 
     @NotNull
     @Column(name = "updateDate" , nullable = false)
-    LocalDateTime updateDate;
+    private LocalDateTime updateDate;
 
     @NotNull
     @Column(name = "softDelete", nullable = false)
-    Boolean softDelete;
+    private Boolean softDelete;
 
     @NotNull
     @NotBlank
     @Column(name = "CBU", nullable = false)
-    String CBU;
+    private String CBU;
 
 
     @ManyToOne()
