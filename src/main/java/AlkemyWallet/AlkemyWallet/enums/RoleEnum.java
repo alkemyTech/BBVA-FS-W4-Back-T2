@@ -1,4 +1,7 @@
 package AlkemyWallet.AlkemyWallet.enums;
 
-public class RoleEnum {
+
+public enum RoleEnum {
+    USER,
+    ADMIN
 }
