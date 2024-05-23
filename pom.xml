@@ -56,6 +56,11 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>
+			<version>3.1.0</version> <!-- Versión actualizada, verifica la última versión en Maven Central -->
+		</dependency>
 	</dependencies>
 
 	<build>
