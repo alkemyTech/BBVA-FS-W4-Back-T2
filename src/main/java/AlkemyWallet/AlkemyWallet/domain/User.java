@@ -8,10 +8,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @Entity
@@ -55,7 +57,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName().name()));
     }
 
     @Override
@@ -83,8 +85,8 @@ public class User implements UserDetails {
         return false;
     }
 
-    // @ManyToOne
-   // @JoinColumn(name='role_id', nullable = false)
-    //private Role roleid;
+     @ManyToOne
+    @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
+    private Role role;
 
 }
