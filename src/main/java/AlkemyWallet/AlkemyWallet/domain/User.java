@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +37,7 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @NotNull
+    @NotBlank
     @Email
     private String email;
 
