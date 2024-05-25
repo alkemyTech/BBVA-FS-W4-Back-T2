@@ -1,4 +1,5 @@
 package AlkemyWallet.AlkemyWallet.services;
+
 import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -16,7 +17,7 @@ public class JwtService {
 
     private JwtConfig jwtConfig;
 
-    public String createToken(String userId, int minutesValid) {
+    public String createToken(Long userId, int minutesValid) {
         var algorithm = Algorithm.HMAC256(jwtConfig.getSecret());
         return JWT.create()
                 .withIssuer(jwtConfig.getIssuer())
@@ -34,9 +35,5 @@ public class JwtService {
         return verifier.verify(token);
     }
 
-    public String extractUserId(String token) {
-        var jwt = JWT.decode(token);
-        return jwt.getClaim("userId").asString();
-    }
 
 }

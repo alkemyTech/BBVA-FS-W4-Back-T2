@@ -1,15 +1,11 @@
-package com.alkemy.taskmanager.security.core;
+package AlkemyWallet.AlkemyWallet.services;
 
-import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.security.AuthenticationManagerService;
-import AlkemyWallet.AlkemyWallet.services.JwtService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +21,11 @@ public class AuthenticationService {
 
     public String login(String email, String password) throws AuthenticationException {
         var authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
+                 new UsernamePasswordAuthenticationToken(email, password)
         );
 
         var user = (User) authentication.getPrincipal();
-        return jwtService.createToken(user.getEmail(), 60);
+        return jwtService.createToken(user.getId(), 60);
     }
 
 

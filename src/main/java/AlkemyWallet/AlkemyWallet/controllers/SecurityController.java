@@ -1,16 +1,13 @@
-package com.alkemy.taskmanager.security.rest;
-
+package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
-import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
-import com.alkemy.taskmanager.security.core.AuthenticationService;
+import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,7 +53,7 @@ public class SecurityController {
     private void addJwtToCookie(HttpServletResponse response, String token) {
         var cookie = new Cookie(JWT_COOKIE_NAME, token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        //cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(JWT_EXPIRATION_MINUTES * 60);
         response.addCookie(cookie);

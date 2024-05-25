@@ -1,4 +1,5 @@
 package AlkemyWallet.AlkemyWallet.domain;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

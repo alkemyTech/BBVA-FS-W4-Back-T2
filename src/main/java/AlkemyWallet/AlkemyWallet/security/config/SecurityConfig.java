@@ -1,7 +1,6 @@
 package AlkemyWallet.AlkemyWallet.security.config;
 
 
-import AlkemyWallet.AlkemyWallet.enums.RoleEnum;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;

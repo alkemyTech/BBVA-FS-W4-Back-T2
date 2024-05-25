@@ -1,6 +1,5 @@
 package AlkemyWallet.AlkemyWallet.security;
 
-
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.UserService;
@@ -27,8 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserService userService;
     private static final String JWT_COOKIE_NAME = "jwt-token";
 
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -37,9 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null) {
             try {
                 var decodedJWT = jwtService.verifyToken(token);
-                String username = decodedJWT.getClaim("userId").asString();
+                String email = decodedJWT.getClaim("userId").asString(); // Usar el correo electrónico en lugar del nombre de usuario
 
-                var user = (User) userService.loadUserByUsername(username);
+                var user = (User) userService.loadUserByUsername(email);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         user, null, Collections.singleton(new SimpleGrantedAuthority("USER"))
                 );
