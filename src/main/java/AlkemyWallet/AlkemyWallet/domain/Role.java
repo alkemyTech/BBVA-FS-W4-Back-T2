@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name="Roles")
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Role {
 
     @Id
@@ -28,5 +28,6 @@ public class Role {
     private LocalDateTime creationDate;
     @Column(name="updateDate")
     private LocalDateTime updateDate;
+
 
 }

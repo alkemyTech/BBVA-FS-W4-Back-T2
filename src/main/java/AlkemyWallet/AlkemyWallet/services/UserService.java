@@ -15,8 +15,8 @@ import java.util.List;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
 
-    public UserDetails findByEmail(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email).orElseThrow();
+    public UserDetails findByUserName(String email) throws UsernameNotFoundException {
+        return userRepository.findByUserName(email).orElseThrow();
     }
 
     public List<User> getAllUsers( ) {
@@ -25,9 +25,8 @@ public class UserService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    public UserDetails loadUserByUsername(String username) {
+        return userRepository.findByUserName(username).orElseThrow();
     }
 
 }

@@ -1,54 +1,79 @@
 package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
+import AlkemyWallet.AlkemyWallet.dtos.AuthResponseLogin;
+import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
+import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
+import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
-import AlkemyWallet.AlkemyWallet.security.AuthenticationManagerService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 
-@Component
+@Service
 @AllArgsConstructor
 public class AuthenticationService {
 
-    private final AuthenticationManagerService authenticationManager;
+    private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserRepository taskUserRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public String login(String email, String password) throws AuthenticationException {
-        var authentication = authenticationManager.authenticate(
-                 new UsernamePasswordAuthenticationToken(email, password)
-        );
 
-        var user = (User) authentication.getPrincipal();
-        return jwtService.createToken(user.getId(), 60);
-    }
+    public AuthResponseRegister register(RegisterRequest registerRequest) {
 
-
-    //Registro de usuario
-    /*
-    public User registerUser(String email, String password){
-        return register(email, password, Role.USER);
-    }
-
-    /*
-    public UserDetails loadUserByEmail(String username) {
-        return UserRepository.findByEmail(username).orElseThrow();
-    }
-
-
-    /*
-    private User register(String email, String password, Role role) {
-        if (taskUserRepository.findByEmail(email).isPresent()) {
+        User user = User.builder()
+                .userName(registerRequest.getUserName())
+                .password(passwordEncoder.encode( registerRequest.getPassword()))
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
+                .role(RoleFactory.getUserRole())
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .softDelete(false)
+                .build();
+        if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
         }
 
-        User newUser = new User(email, passwordEncoder.encode(password), role);
-        return taskUserRepository.save(newUser);
+        userRepository.save(user);
+
+        return AuthResponseRegister.builder()
+                .token(jwtService.getToken(user))
+                .userName(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
     }
-    */
+
+
+    public AuthResponseLogin login(LoginRequest loginRequest) throws AuthenticationException {
+        authenticationManager.authenticate(
+                 new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
+
+        UserDetails user = userRepository.findByUserName(loginRequest.getUserName())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        System.out.println("Usuario : " + user.getUsername());
+
+        String token = jwtService.getToken(user);
+        //EN DUDA SI NO CAMBIARLO POR UNA AUTHRESPONSELOGIN - RESPONDER DIRECTO EL TOKEN O DEJARLO CON TOKEN Y USERDEATLLES
+        return AuthResponseLogin.builder()
+                .token(token)
+                .build();
+    }
+
+
+
+
+
+
 }
