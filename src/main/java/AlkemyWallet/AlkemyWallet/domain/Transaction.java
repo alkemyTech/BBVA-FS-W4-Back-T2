@@ -34,7 +34,7 @@ public class Transaction {
     @Column (nullable = false)
     @NotNull
     private LocalDateTime transactionDate;
-   // @ManyToOne
-   // @JoinColumn (name="Account_Id", nullable = false)
-   // private Account accountId;
+    @ManyToOne
+   @JoinColumn (name="Account_Id", nullable = false)
+    private Accounts accountId;
 }

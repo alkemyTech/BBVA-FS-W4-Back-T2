@@ -2,22 +2,23 @@ package AlkemyWallet.AlkemyWallet.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name="users")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class User implements UserDetails {
 
     @Id
@@ -34,8 +35,9 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @NotNull
+    @NotBlank
     @Email
-    private String email;
+    private String userName;
 
     @Column(nullable = false)
     @NotNull
@@ -55,36 +57,36 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return List.of(new SimpleGrantedAuthority(role.getName().name()));
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return this.userName;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 
-    // @ManyToOne
-   // @JoinColumn(name='role_id', nullable = false)
-    //private Role roleid;
+     @ManyToOne(cascade=CascadeType.PERSIST)
+    @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
+    private Role role;
 
 }
