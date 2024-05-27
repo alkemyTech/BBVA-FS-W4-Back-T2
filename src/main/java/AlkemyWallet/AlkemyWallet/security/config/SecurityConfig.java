@@ -1,6 +1,5 @@
 package AlkemyWallet.AlkemyWallet.security.config;
 
-
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +11,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+
 
 @Configuration
 @EnableWebSecurity
