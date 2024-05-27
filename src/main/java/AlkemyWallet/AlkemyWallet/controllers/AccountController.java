@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/accounts")
-public class AccountsController {
+public class AccountController {
 
     private final AccountService accountService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
-    public AccountsController(AccountService accountService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public AccountController(AccountService accountService, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.accountService = accountService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
