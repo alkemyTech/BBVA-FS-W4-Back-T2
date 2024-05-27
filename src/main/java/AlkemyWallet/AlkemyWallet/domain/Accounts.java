@@ -18,7 +18,7 @@ public class Accounts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @NotNull
     @NotBlank
@@ -54,5 +54,5 @@ public class Accounts {
 
     @ManyToOne()
     @JoinColumn(name="user_id", nullable = false)
-    long userId;
+    private User userId;
 }

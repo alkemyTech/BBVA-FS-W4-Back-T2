@@ -12,11 +12,12 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name="Roles")
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class Role {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -27,5 +28,6 @@ public class Role {
     private LocalDateTime creationDate;
     @Column(name="updateDate")
     private LocalDateTime updateDate;
+
 
 }
