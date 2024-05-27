@@ -55,7 +55,7 @@ public class Accounts {
 
     @ManyToOne()
     @JoinColumn(name="user_id", nullable = false)
-    long userId;
+    private User userId;
 
     //Probar si de esta forma cuando inicio una nueva cuenta
         //la fecha de creacion de esta se crea automaticamente
