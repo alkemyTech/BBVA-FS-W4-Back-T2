@@ -27,7 +27,7 @@ public class AccountService {
         account.setTransactionLimit(currency.getTransactionLimit());
         account.setBalance(0.00);
         account.setCBU(generarCBU());
-        account.setUserId(0); // --> JWT
+        //account.setUserId(0); // --> JWT
         account.setCurrency(currency);
 
         //Termino de rellenar con la Clase Account así se inicializan el resto
