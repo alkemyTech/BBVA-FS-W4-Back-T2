@@ -4,6 +4,9 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
+import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.modelmapper.ModelMapper;
 import java.util.Random;
@@ -13,12 +16,15 @@ public class AccountService {
     private AccountRepository accountRepository;
     public final ModelMapper modelMapper;
 
-    public AccountService(ModelMapper modelMapper, AccountRepository accountRepository) {
+    private final UserService userService;
+
+    public AccountService(ModelMapper modelMapper, UserService userService, AccountRepository accountRepository) {
         this.modelMapper = modelMapper;
+        this.userService = userService;
         this.accountRepository = accountRepository;
     }
 
-    public Accounts add(CurrencyEnum currency){
+    public Accounts add(CurrencyEnum currency, HttpServletRequest request){
 
         AccountsDto account = new AccountsDto();
 
@@ -27,7 +33,7 @@ public class AccountService {
         account.setTransactionLimit(currency.getTransactionLimit());
         account.setBalance(0.00);
         account.setCBU(generarCBU());
-        //account.setUserId(0); // --> JWT
+        account.setUserId(userService.getIdFromRequest(request)); // --> JWT
         account.setCurrency(currency);
 
         //Termino de rellenar con la Clase Account así se inicializan el resto
@@ -72,6 +78,7 @@ public class AccountService {
         }
         return CBU;
     }
+
 
 
 
