@@ -7,7 +7,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.validation.constraints.NotNull;
+
 
 import java.time.LocalDateTime;
 
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 public class Transaction {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     @Column (nullable = false)
     @NotNull
     private double amount;
@@ -36,5 +37,9 @@ public class Transaction {
     private LocalDateTime transactionDate;
     @ManyToOne
    @JoinColumn (name="Account_Id", nullable = false)
+    @NotNull
     private Accounts accountId;
+
+    public Transaction(Double amount, TransactionEnum transactionEnum, String s, LocalDateTime now, Long id) {
+    }
 }
