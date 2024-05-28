@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,5 +34,9 @@ public class UserService implements UserDetailsService {
     public void deleteById(Long id) {
         userRepository.deleteById(id);
     }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    };
 }
 
