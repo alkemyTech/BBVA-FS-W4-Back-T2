@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseLogin;
@@ -27,10 +28,12 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleFactory roleFactory;
 
 
     public AuthResponseRegister register(RegisterRequest registerRequest) {
 
+        roleFactory.initializeRoles();
         User user = User.builder()
                 .userName(registerRequest.getUserName())
                 .password(passwordEncoder.encode( registerRequest.getPassword()))

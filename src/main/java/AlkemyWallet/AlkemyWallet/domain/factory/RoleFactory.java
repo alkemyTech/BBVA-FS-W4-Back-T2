@@ -2,26 +2,44 @@ package AlkemyWallet.AlkemyWallet.domain.factory;
 
 import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.enums.RoleEnum;
+import AlkemyWallet.AlkemyWallet.repositories.RoleRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
-@Data
+@RequiredArgsConstructor
 public class RoleFactory {
-    @Getter
+
+    private final RoleRepository roleRepository;
+
     private static Role adminRole;
-    // Método para obtener la instancia de USER
-    @Getter
     private static Role userRole;
 
+    @PostConstruct
+    public void initializeRoles() {
+        if (roleRepository.findByName(RoleEnum.ADMIN) == null) {
+            adminRole = roleRepository.save(new Role(null, RoleEnum.ADMIN, "Administrator role", LocalDateTime.now(), LocalDateTime.now()));
+        } else {
+            adminRole = roleRepository.findByName(RoleEnum.ADMIN);
+        }
 
-    static {
-        adminRole = new Role(null,RoleEnum.ADMIN, "Administrator role", LocalDateTime.now(), LocalDateTime.now());
-        userRole = new Role(null,RoleEnum.USER, "User role", LocalDateTime.now(), LocalDateTime.now());
+        if (roleRepository.findByName(RoleEnum.USER) == null) {
+            userRole = roleRepository.save(new Role(null, RoleEnum.USER, "User role", LocalDateTime.now(), LocalDateTime.now()));
+        } else {
+            userRole = roleRepository.findByName(RoleEnum.USER);
+        }
     }
 
+    public static Role getAdminRole() {
+        return adminRole;
+    }
 
+    public static Role getUserRole() {
+        return userRole;
+    }
 }
