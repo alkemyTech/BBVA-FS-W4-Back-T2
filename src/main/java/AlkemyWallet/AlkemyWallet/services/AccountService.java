@@ -5,11 +5,9 @@ import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
-import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
-import org.modelmapper.ModelMapper;
 import java.util.Random;
 
 @Service
