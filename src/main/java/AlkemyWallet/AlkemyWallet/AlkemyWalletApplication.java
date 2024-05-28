@@ -17,7 +17,7 @@ public class AlkemyWalletApplication {
 		// Conexion base de datos
 		String url = "jdbc:mysql://localhost:3306/alkemywallet";
 		String user = "root";
-		String password = "root";
+		String password = "gatosmonteses";
 		try{
 			Connection conexion = DriverManager.getConnection(url,user,password);
 			System.out.printf("Conexion establecida con exito\n");
