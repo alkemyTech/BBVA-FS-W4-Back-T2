@@ -1,5 +1,9 @@
 package AlkemyWallet.AlkemyWallet;
 
+import AlkemyWallet.AlkemyWallet.config.CurrencyConfig;
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,6 +13,8 @@ import java.sql.SQLException;
 
 @SpringBootApplication
 public class AlkemyWalletApplication {
+	@Autowired
+	private CurrencyConfig currencyConfig;
 
 	public static void main(String[] args) {
 		SpringApplication.run(AlkemyWalletApplication.class, args);
@@ -26,6 +32,10 @@ public class AlkemyWalletApplication {
 				SQLException e) {
 			System.out.println("Error al conectar con la base de datos");
 		}
+	}
+	@PostConstruct
+	public void init() {
+		CurrencyEnum.initializeLimits(currencyConfig);
 	}
 
 }

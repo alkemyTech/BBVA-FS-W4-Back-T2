@@ -18,7 +18,7 @@ public class Accounts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @NotNull
     @NotBlank
@@ -38,6 +38,7 @@ public class Accounts {
     @Column(name = "creationDate", nullable = false)
     private LocalDateTime creationDate;
 
+
     @NotNull
     @Column(name = "updateDate" , nullable = false)
     private LocalDateTime updateDate;
@@ -55,4 +56,17 @@ public class Accounts {
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
     private User userId;
+
+    //Probar si de esta forma cuando inicio una nueva cuenta
+        //la fecha de creacion de esta se crea automaticamente
+    @PrePersist
+    protected void onCreate(){
+        //Estará bien "this.???"
+        this.balance = 0.00;
+        this.creationDate = LocalDateTime.now();
+        this.updateDate = LocalDateTime.now();
+        this.softDelete = false;
+    }
+
+
 }
