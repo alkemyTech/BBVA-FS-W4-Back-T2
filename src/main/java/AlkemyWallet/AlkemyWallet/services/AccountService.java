@@ -1,27 +1,32 @@
 package AlkemyWallet.AlkemyWallet.services;
-
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
-import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.Random;
 
+
 @Service
+@RequiredArgsConstructor
 @AllArgsConstructor
 public class AccountService {
+    private final AccountRepository accountRepository;
     private AccountRepository accountRepository;
     public final ModelMapper modelMapper;
     private final UserService userService;
+
+    public List<Accounts> findAccountsByUserId(long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return accountRepository.findByUserId(user);
+    }
 
 
     public Accounts add(CurrencyEnum currency, HttpServletRequest request){
@@ -89,3 +94,5 @@ public class AccountService {
         account.updateLimit(amount);
     }
 }
+
+        }

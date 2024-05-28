@@ -55,7 +55,7 @@ public class Accounts {
     private String CBU;
 
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
     private User userId;
 
