@@ -1,22 +1,24 @@
 package AlkemyWallet.AlkemyWallet.services;
-
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-
+import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Random;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AccountService {
     private AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
-
     private final UserService userService;
 
     public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository) {
@@ -45,6 +47,12 @@ public class AccountService {
         Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
         return accountRepository.save(accountBD);
+    }
+  
+  
+     public List<Accounts> findAccountsByUserId(long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return accountRepository.findByUserId(user);
     }
 
     public static String logicaCBU() {
@@ -94,7 +102,5 @@ public class AccountService {
     }
 
 
-
-
-
 }
+
