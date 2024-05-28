@@ -14,9 +14,9 @@ import java.util.Random;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+
 public class AccountService {
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
     private final UserService userService;
 
