@@ -19,7 +19,7 @@ public class AccountController {
 
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Accounts>> getAccountsByUserId(@PathVariable long userId) {
+    public ResponseEntity<List<Accounts>> getAccountsByUserId(@PathVariable Long userId) {
         List<Accounts> accounts = accountService.findAccountsByUserId(userId);
         return ResponseEntity.ok(accounts);
     }
