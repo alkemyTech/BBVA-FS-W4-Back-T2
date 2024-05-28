@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
@@ -14,11 +15,11 @@ import java.util.Random;
 @Service
 public class AccountService {
     private AccountRepository accountRepository;
-    public final ModelMapper modelMapper;
+    public final ModelMapperConfig modelMapper;
 
     private final UserService userService;
 
-    public AccountService(ModelMapper modelMapper, UserService userService, AccountRepository accountRepository) {
+    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository) {
         this.modelMapper = modelMapper;
         this.userService = userService;
         this.accountRepository = accountRepository;
@@ -38,7 +39,7 @@ public class AccountService {
 
         //Termino de rellenar con la Clase Account así se inicializan el resto
 
-        Accounts accountBD = modelMapper.map(account,Accounts.class);
+        Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
         return accountRepository.save(accountBD);
     }
