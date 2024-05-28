@@ -1,12 +1,12 @@
 package AlkemyWallet.AlkemyWallet.services;
 
-import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseLogin;
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +29,7 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleFactory roleFactory;
+    private final AccountService accountService;
 
 
     public AuthResponseRegister register(RegisterRequest registerRequest) {
@@ -49,6 +50,14 @@ public class AuthenticationService {
         }
 
         userRepository.save(user);
+
+        //Acá añadir cuentas
+
+        //Cuenta USD
+        accountService.addById(CurrencyEnum.USD,user.getId());
+        //Cuenta ARG
+        accountService.addById(CurrencyEnum.ARS,user.getId());
+
 
         return AuthResponseRegister.builder()
                 .token(jwtService.getToken(user))
