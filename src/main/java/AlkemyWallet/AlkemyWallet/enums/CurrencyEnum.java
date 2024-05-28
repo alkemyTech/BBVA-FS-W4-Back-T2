@@ -1,14 +1,23 @@
 package AlkemyWallet.AlkemyWallet.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import AlkemyWallet.AlkemyWallet.config.CurrencyConfig;
 
-@Getter
-@AllArgsConstructor
 public enum CurrencyEnum {
-    ARS(300000.00),
-    USD(1000.00);
+    ARS,
+    USD;
 
     private double transactionLimit;
 
+    public double getTransactionLimit() {
+        return transactionLimit;
+    }
+
+    public void setTransactionLimit(double transactionLimit) {
+        this.transactionLimit = transactionLimit;
+    }
+
+    public static void initializeLimits(CurrencyConfig config) {
+        ARS.setTransactionLimit(config.getArsLimit());
+        USD.setTransactionLimit(config.getUsdLimit());
+    }
 }
