@@ -5,7 +5,6 @@ import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -16,10 +15,8 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
-    private AccountRepository accountRepository;
     public final ModelMapper modelMapper;
     private final UserService userService;
 
@@ -95,4 +92,3 @@ public class AccountService {
     }
 }
 
-        }
