@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
@@ -25,9 +26,9 @@ public class AccountController {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    @PostMapping
-    public Accounts createAccount(@Valid @RequestBody CurrencyEnum currency,
-            HttpServletRequest request) {
+    @PostMapping("/create")
+    public Accounts createAccount(@Valid @RequestBody CurrencyDto currency,
+                                  HttpServletRequest request) {
         // Extraer el token utilizando el método existente
 
 //        if (token == null) {

@@ -17,9 +17,6 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
-    public UserDetails findByUserName(String email) throws UsernameNotFoundException {
-        return userRepository.findByUserName(email).orElseThrow();
-    }
 
     public List<User> getAllUsers( ) {
         return userRepository.findAll();
