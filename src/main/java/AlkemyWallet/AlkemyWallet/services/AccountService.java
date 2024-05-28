@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
@@ -34,7 +35,9 @@ public class AccountService {
         account.setTransactionLimit(currencyEnum.getTransactionLimit());
         account.setBalance(0.00);
         account.setCBU(generarCBU());
-        account.setUserId(userService.getIdFromRequest(request)); // --> JWT
+        Long userId = userService.getIdFromRequest(request);
+        User user = userService.findById(userId).orElseThrow();
+        account.setUserId(user); // --> JWT
         account.setCurrency(currencyEnum);
 
         //Termino de rellenar con la Clase Account así se inicializan el resto

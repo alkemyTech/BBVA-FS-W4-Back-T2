@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.dtos;
 
 
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,5 +18,5 @@ public class AccountsDto {
     private Double transactionLimit;
     private Double balance;
     private String CBU;
-    private long userId;
+    private User userId;
 }
