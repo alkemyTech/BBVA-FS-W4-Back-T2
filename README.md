@@ -1,6 +1,6 @@
 # BBVA-FS-W4-Back-T2
 **Proyecto Wallet: Alkywall**
-##_Descripción del Proyecto_
+## _Descripción del Proyecto_
 Alkywall es una billetera virtual desarrollada para ofrecer a los clientes de nuestro banco una forma segura y conveniente de gestionar su dinero en un entorno digital. La aplicación permite realizar diversas funciones bancarias, como transacciones, asociación de tarjetas físicas y virtuales, almacenamiento de dinero y pagos online, todo desde una plataforma web accesible.
 
 ***Funcionalidades Principales***
