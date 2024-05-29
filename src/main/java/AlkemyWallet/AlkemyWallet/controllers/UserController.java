@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -17,17 +19,26 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    private  UserService userService;
+    private UserService userService;
 
     //Get All Users
     @GetMapping("/users")
-    public List<User> getUsers(){
-        return userService.getAllUsers();
+    public ResponseEntity<?> getUsers(){
+        try {
+            List<User> users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
+        }
     }
+
     @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
-    public void deleteUserById(@PathVariable Long id) {
-        userService.deleteById(id);
+    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
+        try {
+            userService.deleteById(id);
+            return ResponseEntity.ok("Usuario eliminado correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el usuario: " + e.getMessage());
+        }
     }
-
-    }
-
+}

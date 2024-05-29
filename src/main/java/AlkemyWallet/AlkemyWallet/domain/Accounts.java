@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name="accounts")
 @AllArgsConstructor
 @NoArgsConstructor
 public class Accounts {
@@ -76,7 +77,7 @@ public class Accounts {
     }
 
     //Probar si de esta forma cuando inicio una nueva cuenta
-        //la fecha de creacion de esta se crea automaticamente
+    //la fecha de creacion de esta se crea automaticamente
     @PrePersist
     protected void onCreate(){
         //Estará bien "this.???"
