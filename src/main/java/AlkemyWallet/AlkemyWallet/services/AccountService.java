@@ -23,14 +23,6 @@ public class AccountService {
     private final JwtService jwtService;
 
 
-    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository, JwtService jwtService) {
-        this.modelMapper = modelMapper;
-        this.userService = userService;
-        this.accountRepository = accountRepository;
-        this.jwtService = jwtService;
-    }
-
-
     public Accounts add(CurrencyDto currency, HttpServletRequest request){
         try {
             AccountsDto account = new AccountsDto();
