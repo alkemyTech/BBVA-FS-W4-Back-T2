@@ -45,6 +45,7 @@ public class TransactionService {
         Long idTransaction = this.sendMoney(transaction, originAccount, destinationAccount);
         this.receiveMoney(transaction, originAccount, destinationAccount);
         accountService.updateAfterTransaction(originAccount, amount);
+        accountService.updateAfterTransaction(destinationAccount,-amount);
 
         return idTransaction;
     }
