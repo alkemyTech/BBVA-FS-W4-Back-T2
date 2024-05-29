@@ -1,8 +1,8 @@
 package AlkemyWallet.AlkemyWallet.domain;
 
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -28,6 +28,12 @@ public class Accounts {
     @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false)
     private CurrencyEnum currency;
+
+    @NotNull
+    @NotBlank
+    @Enumerated(EnumType.STRING)
+    @Column(name = "accountType", nullable = false)
+    private AccountTypeEnum accountType;
 
     @NotNull
     @Column(name = "transactionLimit", nullable = false)

@@ -1,8 +1,10 @@
 package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountTypeDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
@@ -31,11 +33,12 @@ public class AccountService {
     }
 
 
-    public Accounts add(CurrencyDto currency, HttpServletRequest request){
+    public Accounts add(CurrencyDto currency, AccountTypeDto accountType, HttpServletRequest request){
         try {
+
             AccountsDto account = new AccountsDto();
             CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
-
+            AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType.getName());
             //Configuro datos que no se pueden inicializar normalmente
 
             account.setTransactionLimit(currencyEnum.getTransactionLimit());
@@ -45,12 +48,16 @@ public class AccountService {
             User user = userService.findById(userId).orElseThrow();
             account.setUserId(user); // --> JWT
             account.setCurrency(currencyEnum);
+            account.setAccountType(accountTypeEnum);
+
 
             //Termino de rellenar con la Clase Account así se inicializan el resto
 
             Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
+            //Programar validación...
             return accountRepository.save(accountBD);
+
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
