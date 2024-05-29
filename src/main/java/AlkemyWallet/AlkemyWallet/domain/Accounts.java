@@ -74,4 +74,17 @@ public class Accounts {
     public void updateLimit(Double amount) {
         this.setTransactionLimit(transactionLimit - amount);
     }
+
+    //Probar si de esta forma cuando inicio una nueva cuenta
+        //la fecha de creacion de esta se crea automaticamente
+    @PrePersist
+    protected void onCreate(){
+        //Estará bien "this.???"
+        this.balance = 0.00;
+        this.creationDate = LocalDateTime.now();
+        this.updateDate = LocalDateTime.now();
+        this.softDelete = false;
+    }
+
+
 }

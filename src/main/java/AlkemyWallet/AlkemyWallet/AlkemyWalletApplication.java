@@ -33,6 +33,10 @@ public class AlkemyWalletApplication {
 			System.out.println("Error al conectar con la base de datos");
 		}
 	}
+	@PostConstruct
+	public void init() {
+		CurrencyEnum.initializeLimits(currencyConfig);
+	}
 
 	@PostConstruct
 	public void init() {

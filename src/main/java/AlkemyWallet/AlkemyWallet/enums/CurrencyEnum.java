@@ -21,4 +21,3 @@ public enum CurrencyEnum {
         USD.setTransactionLimit(config.getUsdLimit());
     }
 }
-

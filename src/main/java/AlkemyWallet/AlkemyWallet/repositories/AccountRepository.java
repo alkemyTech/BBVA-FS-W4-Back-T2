@@ -1,4 +1,5 @@
 package AlkemyWallet.AlkemyWallet.repositories;
+
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
