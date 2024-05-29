@@ -38,8 +38,5 @@ public class AlkemyWalletApplication {
 		CurrencyEnum.initializeLimits(currencyConfig);
 	}
 
-	@PostConstruct
-	public void init() {
-		CurrencyEnum.initializeLimits(currencyConfig);
-	}
+
 }

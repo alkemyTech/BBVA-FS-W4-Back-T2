@@ -67,6 +67,41 @@ public class AuthenticationService {
                 .build();
     }
 
+    public AuthResponseRegister registerAdmin(RegisterRequest registerRequest) {
+
+        roleFactory.initializeRoles();
+        User user = User.builder()
+                .userName(registerRequest.getUserName())
+                .password(passwordEncoder.encode( registerRequest.getPassword()))
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
+                .role(RoleFactory.getAdminRole())
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .softDelete(false)
+                .build();
+        if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
+            throw new IllegalArgumentException("User already exists");
+        }
+
+        userRepository.save(user);
+
+        //Acá añadir cuentas
+
+        //Cuenta USD
+        accountService.addById(CurrencyEnum.USD,user.getId());
+        //Cuenta ARG
+        accountService.addById(CurrencyEnum.ARS,user.getId());
+
+
+        return AuthResponseRegister.builder()
+                .token(jwtService.getToken(user))
+                .userName(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
+    }
+
 
     public AuthResponseLogin login(LoginRequest loginRequest) throws AuthenticationException {
         authenticationManager.authenticate(

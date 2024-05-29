@@ -40,6 +40,12 @@ public class Transaction {
     @NotNull
     private Accounts accountId;
 
-    public Transaction(Double amount, TransactionEnum transactionEnum, String s, LocalDateTime now, Long id) {
+
+    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts accountId) {
+        this.amount = amount;
+        this.type = type;
+        this.description = description;
+        this.transactionDate = transactionDate;
+        this.accountId = accountId;
     }
 }

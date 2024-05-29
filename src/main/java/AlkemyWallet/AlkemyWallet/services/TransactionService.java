@@ -23,9 +23,9 @@ public class TransactionService {
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
 
-    public Object registrarTransaccion(TransactionDTO transaction) {
-        Accounts account = accountService.findByCBU(transaction.getCBUDestino());
+    public Object registrarTransaccion(TransactionDTO transaction, Accounts account) {
         Double amount = transaction.getAmount();
+        Accounts accountDestino = accountService.findByCBU(transaction.getDestino());
 
         CurrencyEnum transactionCurrency;
         try {
@@ -42,13 +42,12 @@ public class TransactionService {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
 
-        Long idTransaction = this.sendMoney(transaction, account);
+        Long idTransaction = this.sendMoney(transaction, accountDestino);
         this.receiveMoney(transaction, account);
         accountService.updateAfterTransaction(account, amount);
 
         return idTransaction;
     }
-
 
 
     public Long sendMoney(TransactionDTO transaction, Accounts account){

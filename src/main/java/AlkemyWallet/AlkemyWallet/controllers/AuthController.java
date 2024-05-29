@@ -46,6 +46,14 @@ public class AuthController {
             return handleIllegalArgumentException(e);
         }
     }
+    @PostMapping("/register/admin")
+    public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
+        try {
+            return ResponseEntity.ok(authenticationService.registerAdmin(registerRequest));
+        } catch (IllegalArgumentException e) {
+            return handleIllegalArgumentException(e);
+        }
+    }
 }
 
 

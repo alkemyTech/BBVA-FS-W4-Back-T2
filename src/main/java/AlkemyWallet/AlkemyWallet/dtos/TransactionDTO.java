@@ -12,12 +12,8 @@ public class TransactionDTO {
     @NotNull
     @NotBlank
     @Size(min=22, max=22)
-    String CBUDestino;
+    String destino;
 
-    @NotNull
-    @NotBlank
-    @Size(min=22, max=22)
-    String CBUOrigen;
 
     @NotNull
     @NotBlank
