@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.dtos.AccountTypeDto;
 import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
@@ -35,9 +36,9 @@ public class AccountController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createAccount(@Valid @RequestBody CurrencyDto currency, HttpServletRequest request) {
+    public ResponseEntity<?> createAccount(@Valid @RequestBody CurrencyDto currency, AccountTypeDto accountType, HttpServletRequest request) {
         try {
-            Accounts account = accountService.add(currency, request);
+            Accounts account = accountService.add(currency, accountType, request);
             return ResponseEntity.ok(account);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al crear la cuenta: " + e.getMessage());
