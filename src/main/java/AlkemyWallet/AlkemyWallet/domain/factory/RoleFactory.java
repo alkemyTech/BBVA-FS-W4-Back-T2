@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
+@Data
 public class RoleFactory {
 
     private final RoleRepository roleRepository;
