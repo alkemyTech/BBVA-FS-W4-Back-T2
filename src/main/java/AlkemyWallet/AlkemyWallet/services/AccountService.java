@@ -6,6 +6,7 @@ import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -14,64 +15,70 @@ import java.util.Random;
 import java.util.List;
 
 @Service
-
+@AllArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
     private final UserService userService;
 
-    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository) {
-        this.modelMapper = modelMapper;
-        this.userService = userService;
-        this.accountRepository = accountRepository;
-    }
-
     public Accounts add(CurrencyDto currency, HttpServletRequest request){
+        try {
+            AccountsDto account = new AccountsDto();
+            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
 
-        AccountsDto account = new AccountsDto();
-        CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
+            //Configuro datos que no se pueden inicializar normalmente
 
-        //Configuro datos que no se pueden inicializar normalmente
+            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+            account.setBalance(0.00);
+            account.setCBU(generarCBU());
+            Long userId = userService.getIdFromRequest(request);
+            User user = userService.findById(userId).orElseThrow();
+            account.setUserId(user); // --> JWT
+            account.setCurrency(currencyEnum);
 
-        account.setTransactionLimit(currencyEnum.getTransactionLimit());
-        account.setBalance(0.00);
-        account.setCBU(generarCBU());
-        Long userId = userService.getIdFromRequest(request);
-        User user = userService.findById(userId).orElseThrow();
-        account.setUserId(user); // --> JWT
-        account.setCurrency(currencyEnum);
+            //Termino de rellenar con la Clase Account así se inicializan el resto
 
-        //Termino de rellenar con la Clase Account así se inicializan el resto
+            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
-        Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
-
-        return accountRepository.save(accountBD);
+            return accountRepository.save(accountBD);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al agregar la cuenta", e);
+        }
     }
-  
-  
-     public List<Accounts> findAccountsByUserId(long userId) {
-        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        return accountRepository.findByUserId(user);
+
+
+    public List<Accounts> findAccountsByUserId(long userId) {
+        try{
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            return accountRepository.findByUserId(user);
+        }catch (Exception e){
+            throw new RuntimeException("No se encontró al usuario",e);
+        }
     }
 
     public Accounts addById(CurrencyEnum currencyEnum, Long id){
 
-        AccountsDto account = new AccountsDto();
+        try{
+            AccountsDto account = new AccountsDto();
 
-        //Configuro datos que no se pueden inicializar normalmente
+            //Configuro datos que no se pueden inicializar normalmente
 
-        account.setTransactionLimit(currencyEnum.getTransactionLimit());
-        account.setBalance(0.00);
-        account.setCBU(generarCBU());
-        User user = userService.findById(id).orElseThrow();
-        account.setUserId(user); // --> JWT
-        account.setCurrency(currencyEnum);
+            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+            account.setBalance(0.00);
+            account.setCBU(generarCBU());
+            User user = userService.findById(id).orElseThrow();
+            account.setUserId(user); // --> JWT
+            account.setCurrency(currencyEnum);
 
-        //Termino de rellenar con la Clase Account así se inicializan el resto
+            //Termino de rellenar con la Clase Account así se inicializan el resto
 
-        Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
+            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
-        return accountRepository.save(accountBD);
+            return accountRepository.save(accountBD);
+        }catch (Exception e){
+            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
+        }
+
     }
 
     public static String logicaCBU() {
@@ -122,4 +129,3 @@ public class AccountService {
 
 
 }
-
