@@ -47,6 +47,24 @@ public class JwtService {
                 .compact();
     }
 
+    public String addAccountIdToToken(String token, String accountId) {
+        // Decodificar el token
+        Claims claims = Jwts.parserBuilder()
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        // Añadir el nuevo campo
+        claims.put("accountId", accountId);
+
+        // Volver a firmar el token con el nuevo payload
+        return Jwts.builder()
+                .setClaims(claims)
+                .setExpiration(new Date(System.currentTimeMillis() +1000*60*24)) // 1 hora de expiración desde ahora
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     private Key getKey() {
         byte[] keyBytes= Decoders.BASE64.decode(jwtConfig.getSecret());
         return Keys.hmacShaKeyFor(keyBytes);
@@ -65,6 +83,21 @@ public class JwtService {
 
     public String getUsernameFromToken(String token) {
         return getClaim(token, Claims::getSubject);
+    }
+
+    // Método para extraer un claim específico del token
+    public String getClaimFromToken(String token, String claimKey) {
+        Claims claims = validateToken(token);
+        return claims.get(claimKey, String.class);
+    }
+
+    // Método para validar y obtener claims de un token
+    public Claims validateToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     private Date getExpiration(String token) {
@@ -100,3 +133,5 @@ public class JwtService {
 
 
 }
+
+

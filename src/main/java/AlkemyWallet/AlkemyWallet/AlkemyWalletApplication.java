@@ -28,4 +28,5 @@ public class AlkemyWalletApplication {
 		CurrencyEnum.initializeLimits(currencyConfig);
 	}
 
+
 }

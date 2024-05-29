@@ -9,8 +9,8 @@ import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.List;
 
@@ -20,6 +20,16 @@ public class AccountService {
     private final AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
     private final UserService userService;
+    private final JwtService jwtService;
+
+
+    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository, JwtService jwtService) {
+        this.modelMapper = modelMapper;
+        this.userService = userService;
+        this.accountRepository = accountRepository;
+        this.jwtService = jwtService;
+    }
+
 
     public Accounts add(CurrencyDto currency, HttpServletRequest request){
         try {
@@ -128,4 +138,25 @@ public class AccountService {
     }
 
 
+
+    public void updateAfterTransaction(Accounts account, Double amount) {
+        account.updateBalance(amount);
+        account.updateLimit(amount);
+    }
+    public Accounts findByCBU(String CBU){
+        return accountRepository.findByCBU(CBU)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
+
+    public Accounts getAccountFrom(String token) {
+        String accountIdToken = jwtService.getClaimFromToken(token,"accountId");
+        Long accountId = Long.parseLong(accountIdToken);
+        return accountRepository.findById(accountId).orElseThrow();
+    }
+
+    public Accounts findById(Long id) {
+        return accountRepository.findById(id).orElseThrow();
+    };
 }
+
+
