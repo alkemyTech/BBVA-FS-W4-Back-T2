@@ -5,21 +5,16 @@ import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
 @AllArgsConstructor
-public class TransactionFactory{
-
+public class TransactionFactory {
     private final AccountService accountService;
 
-
-    public Transaction createTransaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Long accountId) {
-        Accounts account = accountService.findById(accountId);
-        return new Transaction(amount, type, description, transactionDate, account);
+    public Transaction createTransaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts destinationAccount, Accounts originAccount) {
+        return new Transaction(amount, type, description, transactionDate, destinationAccount, originAccount);
     }
 }

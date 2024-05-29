@@ -23,9 +23,9 @@ public class TransactionService {
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
 
-    public Object registrarTransaccion(TransactionDTO transaction, Accounts account) {
+    public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
-        Accounts accountDestino = accountService.findByCBU(transaction.getDestino());
+        Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
 
         CurrencyEnum transactionCurrency;
         try {
@@ -34,43 +34,43 @@ public class TransactionService {
             throw new IllegalArgumentException("Moneda no válida: " + transaction.getCurrency());
         }
 
-        if (!transactionCurrency.equals(account.getCurrency())) {
+        if (!transactionCurrency.equals(originAccount.getCurrency())) {
             throw new IncorrectCurrencyException("La moneda seleccionada no es la correcta para este tipo de cuenta");
         }
 
-        if (!account.dineroDisponible(amount) || !account.limiteDisponible(amount)) {
+        if (!originAccount.dineroDisponible(amount) || !originAccount.limiteDisponible(amount)) {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
 
-        Long idTransaction = this.sendMoney(transaction, accountDestino);
-        this.receiveMoney(transaction, account);
-        accountService.updateAfterTransaction(account, amount);
+        Long idTransaction = this.sendMoney(transaction, originAccount, destinationAccount);
+        this.receiveMoney(transaction, originAccount, destinationAccount);
+        accountService.updateAfterTransaction(originAccount, amount);
 
         return idTransaction;
     }
 
-
-    public Long sendMoney(TransactionDTO transaction, Accounts account){
+    public Long sendMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction paymentTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.PAYMENT,
                 "",
                 LocalDateTime.now(),
-                account.getId()
+                destinationAccount,
+                originAccount
         );
-
 
         transactionRepository.save(paymentTransaction);
         return paymentTransaction.getId();
     }
 
-    public void receiveMoney(TransactionDTO transaction, Accounts account){
+    public void receiveMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction incomeTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.INCOME,
                 "",
                 LocalDateTime.now(),
-                account.getId()
+                destinationAccount,
+                originAccount
         );
         transactionRepository.save(incomeTransaction);
     }

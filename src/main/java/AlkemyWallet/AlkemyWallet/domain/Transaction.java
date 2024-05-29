@@ -38,14 +38,19 @@ public class Transaction {
     @ManyToOne
    @JoinColumn (name="Account_Id", nullable = false)
     @NotNull
-    private Accounts accountId;
+    private Accounts accountId; // account destino
 
+    @ManyToOne
+    @JoinColumn(name="origin_account_id", nullable = true)
+    private Accounts originAccount;  // Origin account
 
-    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts accountId) {
+    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts accountId,  Accounts originAccount) {
         this.amount = amount;
         this.type = type;
         this.description = description;
         this.transactionDate = transactionDate;
         this.accountId = accountId;
+        this.originAccount = originAccount;
+
     }
 }
