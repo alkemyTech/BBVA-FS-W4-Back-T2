@@ -82,8 +82,6 @@ public class AccountService {
             Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
             return accountRepository.save(accountBD);
-
-
         }catch (Exception e){
             throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
         }
@@ -148,20 +146,10 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
-
-
     public Accounts getAccountFrom(String token) {
-        String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
-        if (accountIdToken != null) {
-            try {
-                Long accountId = Long.parseLong(accountIdToken);
-                return accountRepository.findById(accountId).orElseThrow();
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid format for accountId: " + accountIdToken, e);
-            }
-        } else {
-            throw new IllegalArgumentException("Claim 'accountId' not found in token");
-        }
+        String accountIdToken = jwtService.getClaimFromToken(token,"accountId");
+        Long accountId = Long.parseLong(accountIdToken);
+        return accountRepository.findById(accountId).orElseThrow();
     }
 
     public Accounts findById(Long id) {
