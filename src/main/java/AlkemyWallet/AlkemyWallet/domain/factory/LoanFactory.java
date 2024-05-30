@@ -1,7 +1,6 @@
 package AlkemyWallet.AlkemyWallet.domain.factory;
 
-import AlkemyWallet.AlkemyWallet.config.LoanConfig;
-import AlkemyWallet.AlkemyWallet.domain.Loan;
+import AlkemyWallet.AlkemyWallet.dtos.LoanResponseDTO;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,8 +11,8 @@ import org.springframework.stereotype.Component;
 public class LoanFactory {
 
 
-    public Loan createLoan(Double amount, Integer months, Double monthlyAmount, Double totalAmount, Double interestPercentage) {
-        return new Loan(null, amount, totalAmount, months, monthlyAmount,interestPercentage);
+    public LoanResponseDTO createLoanSimulation(Double amount, Integer months, Double monthlyAmount, Double totalAmount, Double interestPercentage) {
+        return new LoanResponseDTO(amount, totalAmount, months, monthlyAmount,interestPercentage);
 
     };
 }
