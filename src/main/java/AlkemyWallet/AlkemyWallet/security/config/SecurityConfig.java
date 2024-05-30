@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 .requestMatchers("/accounts/**").permitAll()
                                 .requestMatchers("/transactions/**").permitAll()
                                 .requestMatchers("/register/admin").hasRole("ADMIN")
+                                .requestMatchers("/loan/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->

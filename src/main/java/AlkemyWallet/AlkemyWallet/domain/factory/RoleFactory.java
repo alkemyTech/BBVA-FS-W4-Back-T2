@@ -18,7 +18,9 @@ public class RoleFactory {
 
     private final RoleRepository roleRepository;
 
+    @Getter
     private static Role adminRole;
+    @Getter
     private static Role userRole;
 
     @PostConstruct
@@ -36,11 +38,4 @@ public class RoleFactory {
         }
     }
 
-    public static Role getAdminRole() {
-        return adminRole;
-    }
-
-    public static Role getUserRole() {
-        return userRole;
-    }
 }
