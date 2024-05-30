@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Random;
 import java.util.List;
 
@@ -36,27 +37,37 @@ public class AccountService {
     public Accounts add(CurrencyDto currency, AccountTypeDto accountType, HttpServletRequest request){
         try {
 
-            AccountsDto account = new AccountsDto();
-            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
-            AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType.getName());
-            //Configuro datos que no se pueden inicializar normalmente
-
-            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-            account.setBalance(0.00);
-            account.setCBU(generarCBU());
             Long userId = userService.getIdFromRequest(request);
             User user = userService.findById(userId).orElseThrow();
-            account.setUserId(user); // --> JWT
-            account.setCurrency(currencyEnum);
-            account.setAccountType(accountTypeEnum);
+            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
+            AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType.getName());
+
+            if(!verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+                AccountsDto account = new AccountsDto();
+                account.setUserId(user); // --> JWT
+
+                //Configuro datos que no se pueden inicializar normalmente
+
+                account.setTransactionLimit(currencyEnum.getTransactionLimit());
+                account.setBalance(0.00);
+                account.setCBU(generarCBU());
 
 
-            //Termino de rellenar con la Clase Account así se inicializan el resto
+                account.setCurrency(currencyEnum);
+                account.setAccountType(accountTypeEnum);
 
-            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
-            //Programar validación...
-            return accountRepository.save(accountBD);
+                //Termino de rellenar con la Clase Account así se inicializan el resto
+
+                Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
+
+                //Programar validación...
+                return accountRepository.save(accountBD);
+            }else{
+                throw new RuntimeException("La cuenta con la moneda " + currencyEnum + " y el tipo de cuenta " + accountTypeEnum + " ya existe.");
+            }
+
+
 
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
@@ -164,6 +175,12 @@ public class AccountService {
     public Accounts findById(Long id) {
         return accountRepository.findById(id).orElseThrow();
     };
+
+    public boolean verificarExistenciaAccount(User user,CurrencyEnum currency, AccountTypeEnum accountType){
+        List<Accounts> cuentas = findAccountsByUserId(user.getId());
+        return cuentas.stream()
+                .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
+    }
 }
 
 
