@@ -22,22 +22,12 @@ public class AccountService {
     private final UserService userService;
     private final JwtService jwtService;
 
-
-    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository, JwtService jwtService) {
-        this.modelMapper = modelMapper;
-        this.userService = userService;
-        this.accountRepository = accountRepository;
-        this.jwtService = jwtService;
-    }
-
-
-    public Accounts add(CurrencyDto currency, HttpServletRequest request){
+    public Accounts add(CurrencyDto currency, HttpServletRequest request) {
         try {
             AccountsDto account = new AccountsDto();
             CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
 
-            //Configuro datos que no se pueden inicializar normalmente
-
+            // Configuro datos que no se pueden inicializar normalmente
             account.setTransactionLimit(currencyEnum.getTransactionLimit());
             account.setBalance(0.00);
             account.setCBU(generarCBU());
@@ -46,11 +36,18 @@ public class AccountService {
             account.setUserId(user); // --> JWT
             account.setCurrency(currencyEnum);
 
-            //Termino de rellenar con la Clase Account así se inicializan el resto
+            // Termino de rellenar con la Clase Account así se inicializan el resto
+            Accounts accountBD = modelMapper.modelMapper().map(account, Accounts.class);
+            Accounts savedAccount = accountRepository.save(accountBD);
 
-            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
+            // Add account ID to existing JWT token
+            String token = jwtService.getTokenFromRequest(request);
+            if (token != null) {
+                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+            }
 
-            return accountRepository.save(accountBD);
+            // Devolver la cuenta guardada
+            return savedAccount;
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
@@ -85,6 +82,8 @@ public class AccountService {
             Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
 
             return accountRepository.save(accountBD);
+
+
         }catch (Exception e){
             throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
         }
@@ -142,16 +141,27 @@ public class AccountService {
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
         account.updateLimit(amount);
+        accountRepository.save(account);
     }
     public Accounts findByCBU(String CBU){
         return accountRepository.findByCBU(CBU)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
+
+
     public Accounts getAccountFrom(String token) {
-        String accountIdToken = jwtService.getClaimFromToken(token,"accountId");
-        Long accountId = Long.parseLong(accountIdToken);
-        return accountRepository.findById(accountId).orElseThrow();
+        String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
+        if (accountIdToken != null) {
+            try {
+                Long accountId = Long.parseLong(accountIdToken);
+                return accountRepository.findById(accountId).orElseThrow();
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid format for accountId: " + accountIdToken, e);
+            }
+        } else {
+            throw new IllegalArgumentException("Claim 'accountId' not found in token");
+        }
     }
 
     public Accounts findById(Long id) {

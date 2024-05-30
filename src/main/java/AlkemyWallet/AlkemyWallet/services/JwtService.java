@@ -1,5 +1,7 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -30,10 +32,10 @@ public class JwtService {
 
     private JwtConfig jwtConfig;
 
+
     public String getToken(UserDetails user) {
         return getToken(new HashMap<>(), user);
     }
-
 
     private String getToken(Map<String,Object> extraClaims, UserDetails user) {
         return Jwts
