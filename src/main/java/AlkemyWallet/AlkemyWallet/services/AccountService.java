@@ -1,4 +1,5 @@
 package AlkemyWallet.AlkemyWallet.services;
+import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
@@ -7,6 +8,9 @@ import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -21,6 +25,7 @@ public class AccountService {
     public final ModelMapperConfig modelMapper;
     private final UserService userService;
     private final JwtService jwtService;
+    private final PaginationConfig paginationConfig;
 
 
     public Accounts add(CurrencyDto currency, HttpServletRequest request){
@@ -149,6 +154,12 @@ public class AccountService {
     public Accounts findById(Long id) {
         return accountRepository.findById(id).orElseThrow();
     };
+
+    public Page<Accounts> getAllAccounts(int page) {
+        int accountsPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 cuentas por página
+        Pageable pageable = PageRequest.of(page, accountsPerPage);
+        return accountRepository.findAll(pageable);
+    }
 }
 
 
