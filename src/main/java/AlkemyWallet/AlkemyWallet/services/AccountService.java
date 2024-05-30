@@ -22,14 +22,12 @@ public class AccountService {
     private final UserService userService;
     private final JwtService jwtService;
 
-
-    public Accounts add(CurrencyDto currency, HttpServletRequest request){
+    public Accounts add(CurrencyDto currency, HttpServletRequest request) {
         try {
             AccountsDto account = new AccountsDto();
             CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
 
-            //Configuro datos que no se pueden inicializar normalmente
-
+            // Configuro datos que no se pueden inicializar normalmente
             account.setTransactionLimit(currencyEnum.getTransactionLimit());
             account.setBalance(0.00);
             account.setCBU(generarCBU());
@@ -38,11 +36,18 @@ public class AccountService {
             account.setUserId(user); // --> JWT
             account.setCurrency(currencyEnum);
 
-            //Termino de rellenar con la Clase Account así se inicializan el resto
+            // Termino de rellenar con la Clase Account así se inicializan el resto
+            Accounts accountBD = modelMapper.modelMapper().map(account, Accounts.class);
+            Accounts savedAccount = accountRepository.save(accountBD);
 
-            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
+            // Add account ID to existing JWT token
+            String token = jwtService.getTokenFromRequest(request);
+            if (token != null) {
+                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+            }
 
-            return accountRepository.save(accountBD);
+            // Devolver la cuenta guardada
+            return savedAccount;
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
@@ -134,6 +139,7 @@ public class AccountService {
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
         account.updateLimit(amount);
+        accountRepository.save(account);
     }
     public Accounts findByCBU(String CBU){
         return accountRepository.findByCBU(CBU)
