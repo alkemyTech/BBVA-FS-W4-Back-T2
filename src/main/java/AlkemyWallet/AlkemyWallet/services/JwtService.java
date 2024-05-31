@@ -1,7 +1,12 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,7 +67,7 @@ public class JwtService {
         // Volver a firmar el token con el nuevo payload
         return Jwts.builder()
                 .setClaims(claims)
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 1 hora de expiración desde ahora
+                .setExpiration(new Date(System.currentTimeMillis() +1000*60*24)) // 1 hora de expiración desde ahora
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
