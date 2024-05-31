@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
@@ -10,10 +11,12 @@ import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 
+
 import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Service
@@ -22,6 +25,8 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
     public Object registrarTransaccion(TransactionDTO transaction, Accounts account) {
         Double amount = transaction.getAmount();
@@ -74,10 +79,23 @@ public class TransactionService {
         );
         transactionRepository.save(incomeTransaction);
     }
+    public List<Transaction> getTransactionsByAccount(Accounts account) {
+        try {
+            return transactionRepository.findByAccountId(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
 
+    public List<Transaction> getTransactionsByAccountId(Long accountId) {
+        try {
+            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
+            return getTransactionsByAccount(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
 }
-
-
 
 
 
