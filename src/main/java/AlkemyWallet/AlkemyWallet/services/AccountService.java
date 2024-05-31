@@ -9,6 +9,8 @@ import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,23 +28,24 @@ public class AccountService {
     private final JwtService jwtService;
 
 
-    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository, JwtService jwtService) {
-        this.modelMapper = modelMapper;
-        this.userService = userService;
-        this.accountRepository = accountRepository;
+    @Autowired
+    public AccountService(JwtService jwtService, UserService userService, ModelMapperConfig modelMapper, AccountRepository accountRepository) {
         this.jwtService = jwtService;
+        this.userService = userService;
+        this.modelMapper = modelMapper;
+        this.accountRepository = accountRepository;
     }
-
 
     public Accounts add(CurrencyDto currency, AccountTypeDto accountType, HttpServletRequest request){
         try {
 
             Long userId = userService.getIdFromRequest(request);
+
             User user = userService.findById(userId).orElseThrow();
             CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
             AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType.getName());
 
-            if(!verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+//            if(!verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
                 AccountsDto account = new AccountsDto();
                 account.setUserId(user); // --> JWT
 
@@ -63,9 +66,9 @@ public class AccountService {
 
                 //Programar validación...
                 return accountRepository.save(accountBD);
-            }else{
-                throw new RuntimeException("La cuenta con la moneda " + currencyEnum + " y el tipo de cuenta " + accountTypeEnum + " ya existe.");
-            }
+//            }else{
+//                throw new RuntimeException("La cuenta con la moneda " + currencyEnum + " y el tipo de cuenta " + accountTypeEnum + " ya existe.");
+//            }
 
 
 
