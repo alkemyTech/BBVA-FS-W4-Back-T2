@@ -49,4 +49,16 @@ public class UserService implements UserDetailsService {
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     };
+
+    public void addContact(String idCbu, Long idUser) {
+            User user = userRepository.findById(idUser).orElseThrow();
+            user.getCbuTerceros().add(idCbu);
+            userRepository.save(user); //como el usuario ya esta en la base hace un update
+    }
+
+    public void deleteContact(String idCbu, Long idUser) {
+        User user = userRepository.findById(idUser).orElseThrow();
+        user.getCbuTerceros().remove(idCbu);
+        userRepository.save(user);
+    }
 }

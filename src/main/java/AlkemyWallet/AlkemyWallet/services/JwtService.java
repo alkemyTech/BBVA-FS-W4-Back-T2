@@ -111,6 +111,20 @@ public class JwtService {
         return getClaim(token, Claims::getExpiration);
     }
 
+    public String removeAccountIdFromToken(String token) {
+        Claims claims = getAllClaims(token);
+        claims.remove("accountId");
+        return generateNewTokenWithClaims(claims);
+    }
+
+    private String generateNewTokenWithClaims(Claims claims) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 24 minutes
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username=getUsernameFromToken(token);
