@@ -1,6 +1,5 @@
 package AlkemyWallet.AlkemyWallet.dtos;
 
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,15 +11,14 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 @AllArgsConstructor
-public class UserDto {
+@NoArgsConstructor
+public class AuthResponseRegister {
     @NotNull
-    @NotBlank
-    private String firstName;
-    @NotNull
-    @NotBlank
-    private String lastName;
-    @NotNull
+    String token;
     @NotBlank
     @Email
-    private String userName;
+    String userName;
+    @NotBlank
+    String firstName;
+    String lastName;
 }
