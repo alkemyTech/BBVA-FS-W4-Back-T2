@@ -6,7 +6,6 @@ import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
-import AlkemyWallet.AlkemyWallet.mappers.TransactionDtoMapper;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
@@ -14,18 +13,13 @@ import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
-    public final TransactionDtoMapper transactionDtoMapper;
     private final UserService userService;
     private final TransactionRepository transactionRepository;
     private final JwtService jwtService;
@@ -148,8 +142,8 @@ public class AccountService {
         // Obtener todas las cuentas del usuario
         List<Accounts> accounts = findAccountsByUserId(userId);
 
-        // Crear un mapa para almacenar las transacciones por cuenta
-        Map<Long, List<TransactionBalanceDTO>> accountTransactionsMap = new HashMap<>();
+        List<TransactionBalanceDTO> transactionsDtos = new ArrayList<>();
+
 
         // Calcular el balance total en ARS y USD
         Double totalArsBalance = 0.0;
@@ -158,23 +152,6 @@ public class AccountService {
         for (Accounts account : accounts) {
             Long accountId = account.getId();
 
-            // Obtener las transacciones para esta cuenta
-            List<Transaction> transactionsForAccount = transactionRepository.findByAccountId(accountId);
-
-            // Convertir las transacciones a DTO y agregarlas al mapa
-            if (transactionsForAccount != null) {
-                try {
-
-                    List<TransactionBalanceDTO> TransactionBalanceDTOs = transactionsForAccount.stream()
-                            .map(transaction -> transactionDtoMapper.mapToTransactionBalanceDto(transaction))
-                            .collect(Collectors.toList());
-                    if (accountId != null) {
-                        accountTransactionsMap.put(accountId, TransactionBalanceDTOs);
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException("Error al convertir Transaction a TransactionDTO", e);
-                }
-            }
 
             // Calcular el balance total
             if (account.getCurrency().equals(CurrencyEnum.ARS)) {
@@ -182,18 +159,33 @@ public class AccountService {
             } else if (account.getCurrency().equals(CurrencyEnum.USD)) {
                 totalUsdBalance += getBalanceInUSD(account);
             }
+
+            List<Transaction> accountTransactions = transactionRepository.findByAccountId(accountId);
+
+            for (Transaction transaction : accountTransactions) {
+                TransactionBalanceDTO dto = new TransactionBalanceDTO();
+                dto.setId(transaction.getId());
+                dto.setAmount(transaction.getAmount());
+                dto.setTransactionDate(transaction.getTransactionDate());
+                dto.setDescription(transaction.getDescription());
+                dto.setType(transaction.getType());
+                dto.setCurrency(transaction.getOriginAccount().getCurrency().toString());
+                dto.setOriginAccountCBU(transaction.getOriginAccount().getCBU());
+                transactionsDtos.add(dto);
+            }
+
         }
 
         // Obtener los plazos fijos del usuario
         List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(userId);
+
 
         // Crear DTO de respuesta
         BalanceDTO balanceDTO = new BalanceDTO();
         balanceDTO.setAccountArs(totalArsBalance);
         balanceDTO.setAccountUsd(totalUsdBalance);
         balanceDTO.setFixedTerms(fixedTermDeposits);
-        balanceDTO.setAccountTransactions(accountTransactionsMap);
-
+        balanceDTO.setAccountTransactions(transactionsDtos);
         return balanceDTO;
     }
 

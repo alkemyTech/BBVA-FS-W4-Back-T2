@@ -6,34 +6,30 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class TransactionBalanceDTO {
 
     @NotNull
-    @NotBlank
-    @Size(min=22, max=22)
-    String destino;
-
-
+    private Long id;
     @NotNull
-    @NotBlank
-    Double amount;
-
+    private Double amount;
     @NotNull
-    @NotBlank
-    String currency;
-
+    private LocalDateTime transactionDate;
+    private String description;
     @NotNull
-    @NotBlank
-    LocalDateTime transactionDate;
-
+    private TransactionEnum type;
     @NotNull
-    @NotBlank
-    TransactionEnum type;
+    private String currency;
+    @NotNull
+    private String originAccountCBU;
+
 
 }
