@@ -7,6 +7,8 @@ import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
+import AlkemyWallet.AlkemyWallet.exceptions.NonPositiveAmountException;
+import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 
@@ -14,7 +16,7 @@ import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -23,6 +25,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
+    private final JwtService jwtService;
 
     public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
@@ -46,7 +49,7 @@ public class TransactionService {
         Long idTransaction = this.sendMoney(transaction, originAccount, destinationAccount);
         this.receiveMoney(transaction, originAccount, destinationAccount);
         accountService.updateAfterTransaction(originAccount, amount);
-        accountService.updateAfterTransaction(destinationAccount,-amount);
+        accountService.updateAfterTransaction(destinationAccount, -amount);
 
         return idTransaction;
     }
@@ -77,6 +80,43 @@ public class TransactionService {
         transactionRepository.save(incomeTransaction);
     }
 
+    public Long depositMoney(TransactionDTO transaction, Accounts account) {
+        try {
+            Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
+            validateDepositTransaction(transaction,account,destinationAccount);
+
+            // Crear una transacción de depósito para la cuenta de origen
+            Transaction depositTransaction = transactionFactory.createTransaction(
+                    transaction.getAmount(),
+                    TransactionEnum.DEPOSIT,
+                    "",
+                    LocalDateTime.now(),
+                    account,
+                    account // La cuenta de origen es la misma que la cuenta de destino en un depósito
+            );
+            transactionRepository.save(depositTransaction);
+
+            // Actualizar el saldo de la cuenta de origen
+            accountService.updateAfterTransaction(account, -transaction.getAmount());
+
+            return depositTransaction.getId();
+        } catch (NonPositiveAmountException e) {
+            System.err.println(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            System.err.println("Se produjo un error inesperado al procesar el depósito: " + e.getMessage());
+            throw new RuntimeException("Error al procesar el depósito");
+        }
+    }
+
+    private void validateDepositTransaction(TransactionDTO transaction, Accounts account, Accounts destinationAccount) {
+        if (transaction.getAmount() <= 0) {
+            throw new NonPositiveAmountException("El monto del depósito debe ser mayor que cero");
+        }
+        if(!Objects.equals(account.getCBU(), destinationAccount.getCBU())) {
+            throw new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino");
+        }
+    }
 }
 
 

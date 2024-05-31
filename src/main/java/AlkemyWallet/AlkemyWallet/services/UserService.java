@@ -1,15 +1,19 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+
 import java.util.Optional;
 
 @Service
@@ -17,10 +21,12 @@ import java.util.Optional;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final PaginationConfig paginationConfig;
 
-
-    public List<User> getAllUsers( ) {
-        return userRepository.findAll();
+    public Page<User> getAllUsers(int page) {
+        int usersPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 usuarios por página
+        Pageable pageable = PageRequest.of(page, usersPerPage);
+        return userRepository.findAll(pageable);
     }
 
 
