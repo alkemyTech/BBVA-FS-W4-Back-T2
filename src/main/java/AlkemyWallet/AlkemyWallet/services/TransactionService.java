@@ -4,16 +4,19 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
+import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.exceptions.NonPositiveAmountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
+import AlkemyWallet.AlkemyWallet.mappers.TransactionResponseMapper;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 
 import lombok.AllArgsConstructor;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -26,6 +29,7 @@ public class TransactionService {
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
     private final JwtService jwtService;
+    private final TransactionResponseMapper transactionResponseMapper;
 
     public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
@@ -46,15 +50,15 @@ public class TransactionService {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
 
-        Long idTransaction = this.sendMoney(transaction, originAccount, destinationAccount);
+        Transaction transactionRegistro = this.sendMoney(transaction, originAccount, destinationAccount);
         this.receiveMoney(transaction, originAccount, destinationAccount);
         accountService.updateAfterTransaction(originAccount, amount);
         accountService.updateAfterTransaction(destinationAccount, -amount);
 
-        return idTransaction;
+        return transactionResponseMapper.mapToTransactionResponse(transactionRegistro, originAccount, destinationAccount);
     }
 
-    public Long sendMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
+    public Transaction sendMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction paymentTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.PAYMENT,
@@ -65,7 +69,7 @@ public class TransactionService {
         );
 
         transactionRepository.save(paymentTransaction);
-        return paymentTransaction.getId();
+        return paymentTransaction;
     }
 
     public void receiveMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
