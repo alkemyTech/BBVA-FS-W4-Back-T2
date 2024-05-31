@@ -34,14 +34,6 @@ public class UserController {
         }
     }
 
-    @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
-        try {
-            userService.deleteById(id);
-            return ResponseEntity.ok("Usuario eliminado correctamente");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el usuario: " + e.getMessage());
-        }
 
     @DeleteMapping("/users/{id}")
     public void softDeleteUserById(@PathVariable Long id) {
@@ -49,4 +41,4 @@ public class UserController {
     }
 
     }
-}
+

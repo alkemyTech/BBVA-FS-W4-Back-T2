@@ -41,16 +41,16 @@ public class UserService implements UserDetailsService {
         String username = jwtService.getUsernameFromToken(token);
         Long id = userRepository.findByUserName(username).get().getId();
         return id;
+    }
     public List<User> getAllUsers( ) {
         return userRepository.findAll();
     }
 
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+
     public void softDeleteById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
         user.setSoftDelete(true);
-        userRepository.save(user);
+        userRepository.softDeleteById(user.getId());
     }
 
     public Optional<User> findById(Long id) {

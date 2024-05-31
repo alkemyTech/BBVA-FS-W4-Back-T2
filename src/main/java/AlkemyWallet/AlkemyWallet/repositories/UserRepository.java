@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
    Optional<User> findByUserName(String userName);
 
    @Modifying
-   @Query("UPDATE User u SET u.softDelete = true WHERE u.id = :id")
+   @Query("UPDATE User u SET u.softDelete = 1 WHERE u.id = :id")
    void softDeleteById(Long id);
 }
 
