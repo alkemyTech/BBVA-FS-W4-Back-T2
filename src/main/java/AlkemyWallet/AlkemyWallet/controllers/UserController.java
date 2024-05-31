@@ -1,11 +1,19 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
+import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
+import AlkemyWallet.AlkemyWallet.dtos.UserUpdateRequest;
+import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
+import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
@@ -19,7 +27,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
 
     //Get All Users /users?page=0 ejemplo
     @GetMapping("/users")
@@ -40,5 +47,16 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el usuario: " + e.getMessage());
         }
+    }
+
+    @PatchMapping("/users/{id}")
+    public ResponseEntity<?> updateUserById(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        Long userIdFromToken = userService.getIdFromRequest(request);
+        if (!userIdFromToken.equals(id)) {
+            throw new UnauthorizedUserException("No tienes permiso para editar este usuario");
+        }
+
+        return ResponseEntity.ok(userService.updateUser(id,userUpdateRequest,request));
+
     }
 }
