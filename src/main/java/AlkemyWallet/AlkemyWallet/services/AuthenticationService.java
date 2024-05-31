@@ -2,7 +2,6 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseLogin;
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
@@ -40,10 +39,12 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
+                .birthDate(registerRequest.getBirthDate())
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .softDelete(false)
+                .imagePath("")
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -60,7 +61,6 @@ public class AuthenticationService {
 
 
         return AuthResponseRegister.builder()
-                .token(jwtService.getToken(user))
                 .userName(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -75,6 +75,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
+                .birthDate(registerRequest.getBirthDate())
                 .role(RoleFactory.getAdminRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
@@ -95,7 +96,6 @@ public class AuthenticationService {
 
 
         return AuthResponseRegister.builder()
-                .token(jwtService.getToken(user))
                 .userName(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -103,7 +103,7 @@ public class AuthenticationService {
     }
 
 
-    public AuthResponseLogin login(LoginRequest loginRequest) throws AuthenticationException {
+    public String login(LoginRequest loginRequest) throws AuthenticationException {
         authenticationManager.authenticate(
                  new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
 
@@ -111,11 +111,8 @@ public class AuthenticationService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         System.out.println("Usuario : " + user.getUsername());
 
-        String token = jwtService.getToken(user);
         //EN DUDA SI NO CAMBIARLO POR UNA AUTHRESPONSELOGIN - RESPONDER DIRECTO EL TOKEN O DEJARLO CON TOKEN Y USERDEATLLES
-        return AuthResponseLogin.builder()
-                .token(token)
-                .build();
+        return jwtService.getToken(user.getUsername());
     }
 
 

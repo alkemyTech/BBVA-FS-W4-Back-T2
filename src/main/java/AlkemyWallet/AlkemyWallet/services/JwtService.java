@@ -1,13 +1,7 @@
 package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,16 +24,16 @@ public class JwtService {
 
     private JwtConfig jwtConfig;
 
-    public String getToken(UserDetails user) {
-        return getToken(new HashMap<>(), user);
+    public String getToken(String userName) {
+        return getToken(new HashMap<>(), userName);
     }
 
 
-    private String getToken(Map<String,Object> extraClaims, UserDetails user) {
+    private String getToken(Map<String,Object> extraClaims, String userName) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .setSubject(user.getUsername())
+                .setSubject(userName)
                 .setIssuer(jwtConfig.getIssuer())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
@@ -49,10 +43,18 @@ public class JwtService {
 
     public String addAccountIdToToken(String token, String accountId) {
         // Decodificar el token
-        Claims claims = Jwts.parserBuilder()
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Key key = this.getKey();
+        Claims claims;
+        try {
+            claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            System.out.println("Error decodificando el token: " + e.getMessage());
+            return null;
+        }
 
         // Añadir el nuevo campo
         claims.put("accountId", accountId);
@@ -60,7 +62,7 @@ public class JwtService {
         // Volver a firmar el token con el nuevo payload
         return Jwts.builder()
                 .setClaims(claims)
-                .setExpiration(new Date(System.currentTimeMillis() +1000*60*24)) // 1 hora de expiración desde ahora
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 1 hora de expiración desde ahora
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

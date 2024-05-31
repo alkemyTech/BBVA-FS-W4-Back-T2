@@ -8,7 +8,9 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.time.Period;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +57,12 @@ public class User implements UserDetails {
     @NotNull
     private boolean softDelete;
 
+    @Column(nullable = false)
+    private LocalDate birthDate;
+
+    @Column(nullable = true)
+    private String imagePath;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.getName().name()));
@@ -63,6 +71,12 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return this.userName;
+    }
+
+    public int getAge() {
+        LocalDate currentDate = LocalDate.now();
+        Period period = Period.between(birthDate, currentDate);
+        return period.getYears();
     }
 
     @Override
