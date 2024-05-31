@@ -1,34 +1,36 @@
 package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
+import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
-import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
+import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
+import AlkemyWallet.AlkemyWallet.mappers.TransactionDtoMapper;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
+    public final TransactionDtoMapper transactionDtoMapper;
     private final UserService userService;
+    private final TransactionRepository transactionRepository;
     private final JwtService jwtService;
-
-
-    public AccountService(ModelMapperConfig modelMapper, UserService userService, AccountRepository accountRepository, JwtService jwtService) {
-        this.modelMapper = modelMapper;
-        this.userService = userService;
-        this.accountRepository = accountRepository;
-        this.jwtService = jwtService;
-    }
+    private final FixedTermDepositService fixedTermDepositService;
 
 
     public Accounts add(CurrencyDto currency, HttpServletRequest request){
@@ -58,11 +60,11 @@ public class AccountService {
 
 
     public List<Accounts> findAccountsByUserId(long userId) {
-        try{
+        try {
             User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
             return accountRepository.findByUserId(user);
-        }catch (Exception e){
-            throw new RuntimeException("No se encontró al usuario",e);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
     }
 
@@ -137,6 +139,58 @@ public class AccountService {
         return CBU;
     }
 
+    public BalanceDTO getUserBalanceAndTransactions(Long userId) {
+        // Obtener todas las cuentas del usuario
+        List<Accounts> accounts = findAccountsByUserId(userId);
+
+        // Crear un mapa para almacenar las transacciones por cuenta
+        Map<Long, List<TransactionBalanceDTO>> accountTransactionsMap = new HashMap<>();
+
+        // Calcular el balance total en ARS y USD
+        Double totalArsBalance = 0.0;
+        Double totalUsdBalance = 0.0;
+
+        for (Accounts account : accounts) {
+            Long accountId = account.getId();
+
+            // Obtener las transacciones para esta cuenta
+            List<Transaction> transactionsForAccount = transactionRepository.findByAccountId(accountId);
+
+            // Convertir las transacciones a DTO y agregarlas al mapa
+            if (transactionsForAccount != null) {
+                try {
+
+                    List<TransactionBalanceDTO> TransactionBalanceDTOs = transactionsForAccount.stream()
+                            .map(transaction -> transactionDtoMapper.mapToTransactionBalanceDto(transaction))
+                            .collect(Collectors.toList());
+                    if (accountId != null) {
+                        accountTransactionsMap.put(accountId, TransactionBalanceDTOs);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al convertir Transaction a TransactionDTO", e);
+                }
+            }
+
+            // Calcular el balance total
+            if (account.getCurrency().equals(CurrencyEnum.ARS)) {
+                totalArsBalance += getBalanceInARS(account);
+            } else if (account.getCurrency().equals(CurrencyEnum.USD)) {
+                totalUsdBalance += getBalanceInUSD(account);
+            }
+        }
+
+        // Obtener los plazos fijos del usuario
+        List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(userId);
+
+        // Crear DTO de respuesta
+        BalanceDTO balanceDTO = new BalanceDTO();
+        balanceDTO.setAccountArs(totalArsBalance);
+        balanceDTO.setAccountUsd(totalUsdBalance);
+        balanceDTO.setFixedTerms(fixedTermDeposits);
+        balanceDTO.setAccountTransactions(accountTransactionsMap);
+
+        return balanceDTO;
+    }
 
 
     public void updateAfterTransaction(Accounts account, Double amount) {
@@ -146,6 +200,14 @@ public class AccountService {
     public Accounts findByCBU(String CBU){
         return accountRepository.findByCBU(CBU)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
+
+    public Double getBalanceInARS(Accounts account) {
+        return account.getCurrency() == CurrencyEnum.ARS ? account.getBalance() : 0.0;
+    }
+
+    public Double getBalanceInUSD(Accounts account) {
+        return account.getCurrency() == CurrencyEnum.USD ? account.getBalance() : 0.0;
     }
 
     public Accounts getAccountFrom(String token) {
