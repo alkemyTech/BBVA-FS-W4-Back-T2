@@ -86,14 +86,6 @@ public class AuthenticationService {
 
         userRepository.save(user);
 
-        //Acá añadir cuentas
-
-        //Cuenta USD
-        accountService.addById(CurrencyEnum.USD,user.getId());
-        //Cuenta ARG
-        accountService.addById(CurrencyEnum.ARS,user.getId());
-
-
         return AuthResponseRegister.builder()
                 .token(jwtService.getToken(user))
                 .userName(user.getUsername())

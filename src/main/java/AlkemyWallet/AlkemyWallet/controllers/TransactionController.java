@@ -34,4 +34,11 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.registrarTransaccion(transaction,account));
     }
 
+    @PostMapping({"/deposit"})
+    public ResponseEntity<?> depositMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
+        String token = jwtService.getTokenFromRequest(request);
+        Accounts account = accountService.getAccountFrom(token);
+        return ResponseEntity.ok(transactionService.depositMoney(transaction,account));
+    }
+
 }
