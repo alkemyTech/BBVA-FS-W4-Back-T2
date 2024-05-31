@@ -67,22 +67,22 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return !softDelete;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return !softDelete;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return !softDelete;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return !softDelete;
     }
 
      @ManyToOne

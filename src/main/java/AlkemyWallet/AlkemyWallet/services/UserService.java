@@ -19,11 +19,12 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email).orElseThrow();
     }
-
     public List<User> getAllUsers( ) {
         return userRepository.findAll();
     }
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+    public void softDeleteById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+        user.setSoftDelete(true);
+        userRepository.save(user);
     }
 }
