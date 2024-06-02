@@ -23,9 +23,8 @@ public class FixedTermDepositService {
     FixedTermDepositConfig config;
 
     public FixedTermDepositDto simulateFixedTermDeposit(FixedTermDepositDto fixedTermDepositDto){
-        //Lógica del plazo Fijo
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
         LocalDate fechaInicial = LocalDate.parse(fixedTermDepositDto.getCreationDate(),formatter);
         LocalDate fechaFinal = LocalDate.parse(fixedTermDepositDto.getClosingDate(),formatter);
@@ -33,18 +32,31 @@ public class FixedTermDepositService {
         LocalDateTime fechaYHoraInicial = LocalDateTime.of(fechaInicial, LocalDateTime.now().toLocalTime());
         LocalDateTime fechaYHoraFinal = LocalDateTime.of(fechaFinal, LocalDateTime.now().toLocalTime());
 
+        if (fechaYHoraInicial.isAfter(fechaYHoraFinal)) {
+            // Lanzar una RuntimeException con un mensaje adecuado
+            throw new IllegalArgumentException("La fecha final no puede ser mayor que la fecha inicial");
+        }
 
-        long horasDiferencia = ChronoUnit.HOURS.between(fechaYHoraInicial,fechaYHoraFinal);
-        int diasDelPlazo = (int) (horasDiferencia / 24);
+        try{
 
-        Double interest = config.getFixedTermInterest();
-        Double invertedAmount = fixedTermDepositDto.getInvertedAmount();
-        Double interesGanado = ((invertedAmount*interest)/100)*diasDelPlazo;
-        Double totalAmountToCollect = interesGanado+invertedAmount;
 
-        fixedTermDepositDto.setGainedInterest(interesGanado);
-        fixedTermDepositDto.setTotalAmountToCollect(totalAmountToCollect);
+            long horasDiferencia = ChronoUnit.HOURS.between(fechaYHoraInicial,fechaYHoraFinal);
+            int diasDelPlazo = (int) (horasDiferencia / 24);
 
-        return fixedTermDepositDto;
+            //Lógica del plazo Fijo
+            Double interest = config.getFixedTermInterest();
+            Double invertedAmount = fixedTermDepositDto.getInvertedAmount();
+            Double interesGanado = ((invertedAmount*interest)/100)*diasDelPlazo;
+            Double totalAmountToCollect = interesGanado+invertedAmount;
+
+            fixedTermDepositDto.setGainedInterest(interesGanado);
+            fixedTermDepositDto.setTotalAmountToCollect(totalAmountToCollect);
+
+            return fixedTermDepositDto;
+        }catch (Exception e){
+            throw new RuntimeException("Error al devolver plazo fijo", e);
+        }
+
+
     }
 }
