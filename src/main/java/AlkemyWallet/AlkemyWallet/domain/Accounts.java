@@ -29,6 +29,7 @@ public class Accounts {
     @Column(name = "currency", nullable = false)
     private CurrencyEnum currency;
 
+
     @NotNull
     @NotBlank
     @Enumerated(EnumType.STRING)

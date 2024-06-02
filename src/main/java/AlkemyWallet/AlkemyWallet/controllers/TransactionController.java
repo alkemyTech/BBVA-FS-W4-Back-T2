@@ -27,11 +27,18 @@ public class TransactionController {
     private JwtService jwtService;
 
 
-    @PostMapping({"/sendArs", "/sendUsd"})
+    @PostMapping({"/sendArs", "/sendUsd", "/payment"})
     public ResponseEntity<?>  sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
         return ResponseEntity.ok(transactionService.registrarTransaccion(transaction,account));
+    }
+
+    @PostMapping({"/deposit"})
+    public ResponseEntity<?> depositMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
+        String token = jwtService.getTokenFromRequest(request);
+        Accounts account = accountService.getAccountFrom(token);
+        return ResponseEntity.ok(transactionService.depositMoney(transaction,account));
     }
 
 }

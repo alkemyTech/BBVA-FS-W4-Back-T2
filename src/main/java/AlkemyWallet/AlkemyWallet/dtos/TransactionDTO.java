@@ -14,7 +14,6 @@ public class TransactionDTO {
     @Size(min=22, max=22)
     String destino;
 
-
     @NotNull
     @NotBlank
     Double amount;

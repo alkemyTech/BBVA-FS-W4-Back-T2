@@ -1,8 +1,10 @@
 package AlkemyWallet.AlkemyWallet.config;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+@Getter
 @Configuration
 public class CurrencyConfig {
 
@@ -12,11 +14,4 @@ public class CurrencyConfig {
     @Value("${transaction.limit.USD}")
     private double usdLimit;
 
-    public double getArsLimit() {
-        return arsLimit;
-    }
-
-    public double getUsdLimit() {
-        return usdLimit;
-    }
 }
