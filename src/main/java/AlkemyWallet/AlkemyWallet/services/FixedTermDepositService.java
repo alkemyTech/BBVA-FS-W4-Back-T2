@@ -1,14 +1,17 @@
 package AlkemyWallet.AlkemyWallet.services;
 
-import AlkemyWallet.AlkemyWallet.config.CurrencyConfig;
-import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
+
 import AlkemyWallet.AlkemyWallet.config.FixedTermDepositConfig;
+import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
+
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 
@@ -22,15 +25,18 @@ public class FixedTermDepositService {
     public FixedTermDepositDto simulateFixedTermDeposit(FixedTermDepositDto fixedTermDepositDto){
         //Lógica del plazo Fijo
 
-        LocalDateTime inicio = fixedTermDepositDto.getCreationDate();
-        LocalDateTime fin = fixedTermDepositDto.getClosingDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        long horasDiferencia = ChronoUnit.HOURS.between(inicio,fin);
+        LocalDate fechaInicial = LocalDate.parse(fixedTermDepositDto.getCreationDate(),formatter);
+        LocalDate fechaFinal = LocalDate.parse(fixedTermDepositDto.getClosingDate(),formatter);
+
+        LocalDateTime fechaYHoraInicial = LocalDateTime.of(fechaInicial, LocalDateTime.now().toLocalTime());
+        LocalDateTime fechaYHoraFinal = LocalDateTime.of(fechaFinal, LocalDateTime.now().toLocalTime());
+
+
+        long horasDiferencia = ChronoUnit.HOURS.between(fechaYHoraInicial,fechaYHoraFinal);
         int diasDelPlazo = (int) (horasDiferencia / 24);
-        //Capaz lo llegue a necesitar
-//        if (horasDiferencia % 24 != 0) {
-//            diasDelPlazo++;
-//        }
+
         Double interest = config.getFixedTermInterest();
         Double invertedAmount = fixedTermDepositDto.getInvertedAmount();
         Double interesGanado = ((invertedAmount*interest)/100)*diasDelPlazo;

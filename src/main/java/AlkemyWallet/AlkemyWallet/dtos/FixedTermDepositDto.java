@@ -13,11 +13,11 @@ public class FixedTermDepositDto {
 
     @NotBlank
     @NotNull
-    private LocalDateTime creationDate;
+    private String creationDate;
 
     @NotBlank
     @NotNull
-    private LocalDateTime closingDate;
+    private String closingDate;
 
     @NotBlank
     @NotNull

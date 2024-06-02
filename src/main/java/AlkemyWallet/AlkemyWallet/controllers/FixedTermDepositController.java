@@ -19,7 +19,7 @@ public class FixedTermDepositController {
     private final FixedTermDepositService fixedTermDepositService;
 
     @PostMapping("/simulate")
-    public ResponseEntity<?> simulateLoan(@Valid @RequestBody FixedTermDepositDto fixedTermDepositDto){
+    public ResponseEntity<?> simulateFixedTermDeposit(@Valid @RequestBody FixedTermDepositDto fixedTermDepositDto){
         try {
             return ResponseEntity.ok(fixedTermDepositService.simulateFixedTermDeposit(fixedTermDepositDto));
         } catch (Exception e) {
