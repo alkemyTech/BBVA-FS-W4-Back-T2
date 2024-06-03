@@ -2,10 +2,7 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseLogin;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
-import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
-import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
+import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
@@ -52,11 +49,13 @@ public class AuthenticationService {
         userRepository.save(user);
 
         //Acá añadir cuentas
+        AccountRequestDto accountArs = new AccountRequestDto("ARS","CAJA_AHORRO");
+        AccountRequestDto accountUsd = new AccountRequestDto("USD","CAJA_AHORRO");
 
+//        //Cuenta ARS
+        accountService.addById(accountArs,user.getId());
 //        //Cuenta USD
-//        accountService.addById(CurrencyEnum.USD,user.getId());
-//        //Cuenta ARG
-//        accountService.addById(CurrencyEnum.ARS,user.getId());
+        accountService.addById(accountUsd,user.getId());
 
 
         return AuthResponseRegister.builder()

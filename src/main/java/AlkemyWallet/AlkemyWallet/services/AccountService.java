@@ -98,6 +98,49 @@ public class AccountService {
 //
 //    }
 
+
+    public AccountsDto addById(AccountRequestDto accountCreation, Long userId) {
+
+        String currency = accountCreation.getCurrency();
+        String accountType = accountCreation.getAccountType();
+        CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
+        AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
+        User user = userService.findById(userId).orElseThrow();
+
+        //Validacion...
+
+        if(verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+        }
+
+        try {
+            Accounts account = new Accounts();
+            account.setCurrency(currencyEnum);
+            account.setAccountType(accountTypeEnum);
+            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+            account.setBalance(0.00);
+            account.setCBU(generarCBU());
+            account.setUserId(user);  // --> JWT
+            account.setCurrency(currencyEnum);
+
+            Accounts savedAccount = accountRepository.save(account);
+
+            //No se si es necesario cuando se inician las 2 cuentas
+                //Por las dudas lo dejo
+            // Add account ID to existing JWT token
+//            String token = jwtService.getTokenFromRequest(request);
+//            if (token != null) {
+//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+//            }
+
+            // Devolver la cuenta guardada en DTO
+
+            return accountMapper(savedAccount);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al agregar la cuenta", e);
+        }
+    }
+
     public static String logicaCBU() {
         StringBuilder cbu = new StringBuilder();
         Random random = new Random();
