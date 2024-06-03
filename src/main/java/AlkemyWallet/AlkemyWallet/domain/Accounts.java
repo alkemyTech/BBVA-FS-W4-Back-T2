@@ -31,6 +31,12 @@ public class Accounts {
 
 
     @NotNull
+    @NotBlank
+    @Enumerated(EnumType.STRING)
+    @Column(name = "accountType", nullable = false)
+    private AccountTypeEnum accountType;
+
+    @NotNull
     @Column(name = "transactionLimit", nullable = false)
     private Double transactionLimit;
 
