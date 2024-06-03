@@ -6,6 +6,7 @@ import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ public class AccountService {
 
         //Validacion...
 
-        if(verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
             throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
         }
 
@@ -65,11 +66,11 @@ public class AccountService {
 
 
     public List<Accounts> findAccountsByUserId(long userId) {
-        try{
+        try {
             User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
             return accountRepository.findByUserId(user);
-        }catch (Exception e){
-            throw new RuntimeException("No se encontró al usuario",e);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
     }
 
@@ -124,6 +125,7 @@ public class AccountService {
 
         return cbu.toString();
     }
+
     public String generarCBU() {
         String CBU = null;
         boolean cbuExistente = true;
@@ -145,19 +147,24 @@ public class AccountService {
     }
 
 
-
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
         account.updateLimit(amount);
         accountRepository.save(account);
     }
-    public Accounts findByCBU(String CBU){
+
+    public void updateAfterFixedTermDeposit(Accounts account, Double amount) {
+        account.updateBalance(amount);
+        accountRepository.save(account);
+    }
+
+    public Accounts findByCBU(String CBU) {
         return accountRepository.findByCBU(CBU)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
     public Accounts getAccountFrom(String token) {
-        String accountIdToken = jwtService.getClaimFromToken(token,"accountId");
+        String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
         Long accountId = Long.parseLong(accountIdToken);
         return accountRepository.findById(accountId).orElseThrow();
     }
@@ -166,14 +173,14 @@ public class AccountService {
         return accountRepository.findById(id).orElseThrow();
     }
 
-    public boolean verificarExistenciaAccount(User user,CurrencyEnum currency, AccountTypeEnum accountType){
+    public boolean verificarExistenciaAccount(User user, CurrencyEnum currency, AccountTypeEnum accountType) {
         List<Accounts> cuentas = findAccountsByUserId(user.getId());
         return cuentas.stream()
                 .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
     }
 
 
-    public AccountsDto accountMapper(Accounts account){
+    public AccountsDto accountMapper(Accounts account) {
         AccountsDto accountDto = new AccountsDto();
         accountDto.setId(account.getId());
         accountDto.setCurrency(account.getCurrency());
@@ -187,6 +194,13 @@ public class AccountService {
         return accountDto;
     }
 
+    public Boolean hasBalance(Accounts account, Double amount) {
+        if(account.getBalance().compareTo(amount) > 0) {
+            return true;
+        }else{
+            throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
+        }
+    }
 
 
 
