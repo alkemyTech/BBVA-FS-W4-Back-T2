@@ -35,5 +35,5 @@ public class AccountsDto {
     private String CBU;
     @NotNull
     @NotBlank
-    private User userId;
+    private Long userId;
 }

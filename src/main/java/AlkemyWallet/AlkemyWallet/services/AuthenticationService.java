@@ -53,10 +53,10 @@ public class AuthenticationService {
 
         //Acá añadir cuentas
 
-        //Cuenta USD
-        accountService.addById(CurrencyEnum.USD,user.getId());
-        //Cuenta ARG
-        accountService.addById(CurrencyEnum.ARS,user.getId());
+//        //Cuenta USD
+//        accountService.addById(CurrencyEnum.USD,user.getId());
+//        //Cuenta ARG
+//        accountService.addById(CurrencyEnum.ARS,user.getId());
 
 
         return AuthResponseRegister.builder()

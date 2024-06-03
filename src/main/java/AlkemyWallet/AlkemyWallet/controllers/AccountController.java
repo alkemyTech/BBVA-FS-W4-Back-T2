@@ -29,8 +29,7 @@ public class AccountController {
     @PostMapping("/create")
     public ResponseEntity<?> createAccount(@Valid @RequestBody AccountRequestDto accountCreation, HttpServletRequest request) {
         try {
-            Accounts account = accountService.addDos(accountCreation, request);
-            return ResponseEntity.ok(account);
+            return ResponseEntity.ok(accountService.add(accountCreation, request));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al crear la cuenta: " + e.getMessage());
         }
