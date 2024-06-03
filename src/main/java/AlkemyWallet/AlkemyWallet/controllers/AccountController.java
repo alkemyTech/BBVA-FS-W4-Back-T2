@@ -1,18 +1,22 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import org.springframework.http.HttpHeaders;
 import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
-import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
-import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
+import AlkemyWallet.AlkemyWallet.services.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 import java.util.List;
 
@@ -21,12 +25,12 @@ import java.util.List;
 public class AccountController {
 
     private final AccountService accountService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtService jwtService;
 
     @Autowired
-    public AccountController(AccountService accountService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public AccountController(AccountService accountService, JwtService jwtService) {
         this.accountService = accountService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/create")
@@ -50,4 +54,27 @@ public class AccountController {
         }
     }
 
+    // Endpoint para seleccionar una cuenta y actualizar el token JWT
+    @PostMapping("/select/{accountId}")
+    public ResponseEntity<String> selectAccount(HttpServletRequest request, @PathVariable Long accountId) {
+        try {
+            // Obtener el token actual del usuario autenticado
+            String currentToken = jwtService.getTokenFromRequest(request);
+
+            // Agregar el ID de cuenta al token
+            String accountIdAdd = String.valueOf(accountId);
+            String updatedToken = jwtService.addAccountIdToToken(currentToken, accountIdAdd);
+
+            // Para usar header
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
+
+
+            // Devolver el nuevo token en la respuesta
+            return ResponseEntity.ok().headers(headers).body("Token actualizado con éxito");
+        } catch (Exception e) {
+            // Manejar cualquier error que pueda ocurrir
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
+        }
+    }
 }

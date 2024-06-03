@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,14 @@ public class TransactionController {
     public ResponseEntity<?> sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
-        return ResponseEntity.ok(transactionService.registrarTransaccion(transaction, account));
+
+
+        //Tengo que devolver el token sin la nueva info de cuenta
+        token = jwtService.removeAccountIdFromToken(token);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+        return ResponseEntity.ok().headers(headers).body(transactionService.registrarTransaccion(transaction,account));
     }
 
     @PostMapping({"/deposit"})
