@@ -46,7 +46,7 @@ public class UserController {
     }
 
 //Detalle de usuario
-@GetMapping("/users-detail/{id}")
+@GetMapping("users-detail/{id}")
 public ResponseEntity<?> getUserDetail(@PathVariable Long id) {
     try {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -65,7 +65,7 @@ public ResponseEntity<?> getUserDetail(@PathVariable Long id) {
     }
 }
 
-    @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "users/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
         try {
             userService.deleteById(id);
