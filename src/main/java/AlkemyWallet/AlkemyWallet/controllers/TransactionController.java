@@ -1,16 +1,17 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
-import AlkemyWallet.AlkemyWallet.dtos.TransactionBalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
+
+import AlkemyWallet.AlkemyWallet.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +31,8 @@ public class TransactionController {
     private JwtService jwtService;
 
 
-
     @PostMapping({"/sendArs", "/sendUsd", "/payment"})
-    public ResponseEntity<?>  sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
+    public ResponseEntity<?> sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
 
@@ -49,34 +49,34 @@ public class TransactionController {
     public ResponseEntity<?> depositMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
-        return ResponseEntity.ok(transactionService.depositMoney(transaction,account));
+        return ResponseEntity.ok(transactionService.depositMoney(transaction, account));
     }
-    @GetMapping("/{userId}")
+
+    @GetMapping("user/{userId}")
     /* @PreAuthorize("hasRole('ADMIN')") */
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
             List<Accounts> accounts = accountService.findAccountsByUserId(userId);
-            List<TransactionBalanceDTO> transactionsDtos = new ArrayList<>();
+            List<Transaction> transactions = new ArrayList<>();
 
             for (Accounts account : accounts) {
-                List<Transaction> accountTransactions = transactionService.getTransactionsByAccountId(account.getId());
-                for (Transaction transaction : accountTransactions) {
-                    TransactionBalanceDTO dto = new TransactionBalanceDTO();
-                    dto.setId(transaction.getId());
-                    dto.setAmount(transaction.getAmount());
-                    dto.setTransactionDate(transaction.getTransactionDate());
-                    dto.setDescription(transaction.getDescription());
-                    dto.setType(transaction.getType());
-                    dto.setCurrency(transaction.getOriginAccount().getCurrency().toString());
-                    dto.setOriginAccountCBU(transaction.getOriginAccount().getCBU());
-                    transactionsDtos.add(dto);
-                }
+                transactions.addAll(transactionService.getTransactionsByAccountId(account.getId()));
             }
-            return ResponseEntity.ok(transactionsDtos);
+            return ResponseEntity.ok(transactions);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las transacciones del usuario: " + e.getMessage());
+
+
+        }
+
+    }
+    @GetMapping("transaction/{transactionId}")
+    public ResponseEntity<?> getTransactionById(@PathVariable Long transactionId) {
+        try {
+            Transaction transaction = transactionService.getTransactionById(transactionId);
+            return ResponseEntity.ok(transaction);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener la transacción: " + e.getMessage());
         }
     }
 }
-
-

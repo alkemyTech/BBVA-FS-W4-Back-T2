@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/home/users/**").permitAll()
                                 .requestMatchers("/home/**").permitAll()
                                 .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
                                 .requestMatchers("/accounts/**").permitAll()
