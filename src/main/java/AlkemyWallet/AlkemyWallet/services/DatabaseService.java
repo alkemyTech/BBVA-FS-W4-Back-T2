@@ -9,8 +9,8 @@ import java.sql.SQLException;
 @Service
 public class DatabaseService {
 
-    private final String url = "jdbc:mysql://db4free.net:3306/gatosmonteses";
-    private final String user = "gatosmonteses";
+    private final String url = "jdbc:mysql://localhost:3306/alkemywallet";
+    private final String user = "root";
     private final String password = "gatosmonteses";
 
     public void checkDatabaseConnection() {
