@@ -1,6 +1,9 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.exceptions.ForbiddenException;
+import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
+import AlkemyWallet.AlkemyWallet.mappers.UserDetailMapper;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.dtos.UserUpdateRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
@@ -12,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
@@ -26,6 +30,8 @@ public class UserController {
 
     private final UserService userService;
     private JwtService jwtService;
+    private final UserDetailMapper userDetailMapper;
+
 
 
     //Get All Users /users?page=0 ejemplo
@@ -40,35 +46,20 @@ public class UserController {
     }
 
 //Detalle de usuario
-@GetMapping("users-detail/{id}")
-public ResponseEntity<?> getUserDetail(@PathVariable Long id){
+@GetMapping("/users-detail/{id}")
+public ResponseEntity<?> getUserDetail(@PathVariable Long id) {
     try {
-        // Obtener el nombre de usuario del usuario autenticado
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String authenticatedUsername = userDetails.getUsername();
 
-        // Buscar al usuario autenticado
-        Optional<User> authenticatedUser = userService.findAuthenticatedUser(authenticatedUsername);
-        if (!authenticatedUser.isPresent()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
-        }
-
-        // Verificar si el usuario autenticado coincide con el usuario solicitado
-        User user = authenticatedUser.get();
-        if (!user.getId().equals(id)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso para acceder a este usuario");
-        }
-        // Mapear User a UserDetailDTO
-        UserDetailDTO userDetailDTO = new UserDetailDTO(
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUsername(),
-                user.getRole().getName(),
-                user.getBirthDate(),
-                user.getImagePath()
-        );
-
+        UserDetailDTO userDetailDTO = userService.getUserDetail(id, authenticatedUsername);
         return ResponseEntity.ok(userDetailDTO);
+    } catch (UnauthorizedTransactionException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+    } catch (ForbiddenException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    } catch (UsernameNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener el usuario: " + e.getMessage());
     }
