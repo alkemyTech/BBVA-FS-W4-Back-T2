@@ -1,8 +1,10 @@
 package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
@@ -10,7 +12,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.List;
 
@@ -22,10 +23,19 @@ public class AccountService {
     private final UserService userService;
     private final JwtService jwtService;
 
-    public Accounts add(CurrencyDto currency, HttpServletRequest request) {
+    public Accounts add(CurrencyDto currency, String accountType, HttpServletRequest request) {
         try {
+            //Rehacer pero con Account, sin AccountDto,
+                //Dejar AccountDTO solo para mostrar la account
             AccountsDto account = new AccountsDto();
             CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
+            System.out.println("Hola");
+            //Chequear si está bien...
+//          AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
+            //ESTO ESTA HARDCODEADO, CUIDADOOO
+                //ARREGLAR PARA QUE LLEGUE DESDE EL PARAMETRO
+            AccountTypeEnum accountTypeEnum = AccountTypeEnum.CAJA_AHORRO;
+            System.out.println(accountTypeEnum);
 
             // Configuro datos que no se pueden inicializar normalmente
             account.setTransactionLimit(currencyEnum.getTransactionLimit());
@@ -42,12 +52,49 @@ public class AccountService {
 
             // Add account ID to existing JWT token
             String token = jwtService.getTokenFromRequest(request);
-            if (token != null) {
-                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-            }
+//            if (token != null) {
+//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+//            }
 
             // Devolver la cuenta guardada
             return savedAccount;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al agregar la cuenta", e);
+        }
+    }
+
+    public Accounts addDos(AccountRequestDto accountCreation, HttpServletRequest request) {
+        try {
+            String currency = accountCreation.getCurrency();
+            String accountType = accountCreation.getAccountType();
+
+            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
+            AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
+            // accountTypeEnum = AccountTypeEnum.CUENTA_CORRIENTE;
+            System.out.println(accountTypeEnum);
+            Long userId = userService.getIdFromRequest(request);
+            User user = userService.findById(userId).orElseThrow();
+
+            Accounts account = new Accounts();
+            account.setCurrency(currencyEnum);
+            account.setAccountType(accountTypeEnum);
+            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+            account.setBalance(0.00);
+            account.setCBU(generarCBU());
+            account.setUserId(user);  // --> JWT
+            account.setCurrency(currencyEnum);
+
+            Accounts savedAccount = accountRepository.save(account);
+            // Add account ID to existing JWT token
+//            String token = jwtService.getTokenFromRequest(request);
+//            if (token != null) {
+//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+//            }
+
+            // Devolver la cuenta guardada en DTO
+
+
+            return accountRepository.save(savedAccount);
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }

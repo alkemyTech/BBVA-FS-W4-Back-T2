@@ -1,3 +1,4 @@
+//Lo dejo por si a alguien le sirve
 package AlkemyWallet.AlkemyWallet.dtos;
 
 import jakarta.validation.constraints.NotBlank;
@@ -8,11 +9,10 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Data
-@Component
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountTypeDto {
     @NotBlank
     @NotNull
-    private String name;
+    private String accountType;
 }
