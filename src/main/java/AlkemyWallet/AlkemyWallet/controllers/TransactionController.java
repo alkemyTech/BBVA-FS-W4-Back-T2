@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.dtos.TransactionBalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
@@ -38,12 +39,23 @@ public class TransactionController {
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
             List<Accounts> accounts = accountService.findAccountsByUserId(userId);
-            List<Transaction> transactions = new ArrayList<>();
+            List<TransactionBalanceDTO> transactionsDtos = new ArrayList<>();
 
             for (Accounts account : accounts) {
-                transactions.addAll(transactionService.getTransactionsByAccountId(account.getId()));
+                List<Transaction> accountTransactions = transactionService.getTransactionsByAccountId(account.getId());
+                for (Transaction transaction : accountTransactions) {
+                    TransactionBalanceDTO dto = new TransactionBalanceDTO();
+                    dto.setId(transaction.getId());
+                    dto.setAmount(transaction.getAmount());
+                    dto.setTransactionDate(transaction.getTransactionDate());
+                    dto.setDescription(transaction.getDescription());
+                    dto.setType(transaction.getType());
+                    dto.setCurrency(transaction.getOriginAccount().getCurrency().toString());
+                    dto.setOriginAccountCBU(transaction.getOriginAccount().getCBU());
+                    transactionsDtos.add(dto);
+                }
             }
-            return ResponseEntity.ok(transactions);
+            return ResponseEntity.ok(transactionsDtos);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las transacciones del usuario: " + e.getMessage());
         }

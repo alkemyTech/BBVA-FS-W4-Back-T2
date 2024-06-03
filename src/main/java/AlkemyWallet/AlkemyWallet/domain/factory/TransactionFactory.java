@@ -20,6 +20,6 @@ public class TransactionFactory{
 
     public Transaction createTransaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Long accountId) {
         Accounts account = accountService.findById(accountId);
-        return new Transaction(amount, type, description, transactionDate, account);
+        return new Transaction (amount, type, description, transactionDate, account);
     }
 }

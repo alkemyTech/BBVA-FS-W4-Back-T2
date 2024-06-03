@@ -20,37 +20,41 @@ import java.time.LocalDateTime;
 
 public class Transaction {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column (nullable = false)
+    @Column(nullable = false)
     @NotNull
     private double amount;
-    @Column (nullable = false)
+    @Column(nullable = false)
     @NotNull
-    @Enumerated (EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     private TransactionEnum type;
     @Column
     @Nullable
     private String description;
-    @Column (nullable = false)
+    @Column(nullable = false)
     @NotNull
     private LocalDateTime transactionDate;
     @ManyToOne
-    @JoinColumn (name="Account_Id", nullable = false)
+    @JoinColumn(name = "Account_Id", nullable = false)
     @NotNull
-    private Accounts accountId;
+    private Accounts accountId; // account destino
+
+    @ManyToOne
+    @JoinColumn(name = "origin_account_id", nullable = true)
+    private Accounts originAccount;  // Origin account
 
 
 
 
-
-    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts accountId) {
+    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts account) {
         this.amount = amount;
         this.type = type;
         this.description = description;
         this.transactionDate = transactionDate;
         this.accountId = accountId;
-
-
+        this.originAccount = originAccount;
     }
 }
+
+
