@@ -17,7 +17,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 @Service
@@ -34,18 +36,22 @@ public class AuthenticationService {
 
     public AuthResponseRegister register(RegisterRequest registerRequest) {
 
+        //Lógica para pasar String de fecha de nacimiento a LocalDate
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birthDate = LocalDate.parse(registerRequest.getBirthDate(), formatter);
+
         roleFactory.initializeRoles();
         User user = User.builder()
                 .userName(registerRequest.getUserName())
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
-                .birthDate(registerRequest.getBirthDate())
+                .birthDate(birthDate)
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .softDelete(false)
-                .imagePath("")
+                .imagePath("https://img.freepik.com/vector-gratis/circulo-azul-usuario-blanco_78370-4707.jpg?t=st=1717424947~exp=1717428547~hmac=7f02f1fd5e295b74d42c7d33895e11504f37422a942401a1999e864b79ab8ac9&w=740")
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -74,13 +80,17 @@ public class AuthenticationService {
 
     public AuthResponseRegister registerAdmin(RegisterRequest registerRequest) {
 
+        //Lógica para pasar String de fecha de nacimiento a LocalDate
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birthDate = LocalDate.parse(registerRequest.getBirthDate(), formatter);
+
         roleFactory.initializeRoles();
         User user = User.builder()
                 .userName(registerRequest.getUserName())
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
-                .birthDate(registerRequest.getBirthDate())
+                .birthDate(birthDate)
                 .role(RoleFactory.getAdminRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
