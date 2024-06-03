@@ -29,58 +29,55 @@ public class AccountService {
     private final JwtService jwtService;
 
 
+    public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
 
+        String currency = accountCreation.getCurrency();
+        String accountType = accountCreation.getAccountType();
+        CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
+        AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
+        Long userId = userService.getIdFromRequest(request);
+        User user = userService.findById(userId).orElseThrow();
 
-        public AccountsDto add (AccountRequestDto accountCreation, HttpServletRequest request){
+        //Validacion...
 
-            String currency = accountCreation.getCurrency();
-            String accountType = accountCreation.getAccountType();
-            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
-            AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
-            Long userId = userService.getIdFromRequest(request);
-            User user = userService.findById(userId).orElseThrow();
+        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
+            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+        }
 
-            //Validacion...
+        try {
+            Accounts account = new Accounts();
+            account.setCurrency(currencyEnum);
+            account.setAccountType(accountTypeEnum);
+            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+            account.setBalance(0.00);
+            account.setCBU(generarCBU());
+            account.setUserId(user);  // --> JWT
+            account.setCurrency(currencyEnum);
 
-            if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-                throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
-            }
-
-            try {
-                Accounts account = new Accounts();
-                account.setCurrency(currencyEnum);
-                account.setAccountType(accountTypeEnum);
-                account.setTransactionLimit(currencyEnum.getTransactionLimit());
-                account.setBalance(0.00);
-                account.setCBU(generarCBU());
-                account.setUserId(user);  // --> JWT
-                account.setCurrency(currencyEnum);
-
-                Accounts savedAccount = accountRepository.save(account);
-                // Add account ID to existing JWT token
+            Accounts savedAccount = accountRepository.save(account);
+            // Add account ID to existing JWT token
 //            String token = jwtService.getTokenFromRequest(request);
 //            if (token != null) {
 //                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
 //            }
 
-                // Devolver la cuenta guardada en DTO
+            // Devolver la cuenta guardada en DTO
 
-                return accountMapper(savedAccount);
-            } catch (Exception e) {
-                throw new RuntimeException("Error al agregar la cuenta", e);
-            }
+            return accountMapper(savedAccount);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al agregar la cuenta", e);
         }
+    }
 
 
-
-        public List<Accounts> findAccountsByUserId ( long userId){
-            try {
-                User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-                return accountRepository.findByUserId(user);
-            } catch (Exception e) {
-                throw new RuntimeException("No se encontró al usuario", e);
-            }
+    public List<Accounts> findAccountsByUserId(long userId) {
+        try {
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            return accountRepository.findByUserId(user);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
+    }
 
 //    public Accounts addById(CurrencyEnum currencyEnum, Long id){
 //
@@ -117,7 +114,7 @@ public class AccountService {
 
         //Validacion...
 
-        if(verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
             throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
         }
 
@@ -134,7 +131,7 @@ public class AccountService {
             Accounts savedAccount = accountRepository.save(account);
 
             //No se si es necesario cuando se inician las 2 cuentas
-                //Por las dudas lo dejo
+            //Por las dudas lo dejo
             // Add account ID to existing JWT token
 //            String token = jwtService.getTokenFromRequest(request);
 //            if (token != null) {
@@ -148,16 +145,6 @@ public class AccountService {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
     }
-
-    public static String logicaCBU() {
-        StringBuilder cbu = new StringBuilder();
-        Random random = new Random();
-
-        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-        for (int i = 0; i < 7; i++) {
-            cbu.append(random.nextInt(10));
-        }
-        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
         public static String logicaCBU () {
             StringBuilder cbu = new StringBuilder();
@@ -247,29 +234,31 @@ public class AccountService {
 
             return accountDto;
         }
-    }
 
-    public AccountsDto updateAccount(Long accountId, Double transactionLimit){
+    public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
 
         //Logica para verificar si cuenta existe terminada
-        if(accountRepository.findById(accountId).isPresent()){
+        if (accountRepository.findById(accountId).isPresent()) {
             Accounts account = accountRepository.getReferenceById(accountId);
             //Logica para ver si es mayor el limite al que se puede tener por tipo de cuenta
-            if(transactionLimit<account.getCurrency().getTransactionLimit()+1){
+            if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
                 account.setTransactionLimit(transactionLimit);
                 AccountsDto accountDTO = accountMapper(accountRepository.save(account));
                 return accountDTO;
-            }else{
+            } else {
                 throw new RuntimeException("Limite de transaccion mayor al que el tipo de cuenta puede tener");
             }
 
-        }else{
+        } else {
             throw new RuntimeException("Cuenta no encontrada");
         }
 
 
+    }
 
     }
+
+
 
 
 
