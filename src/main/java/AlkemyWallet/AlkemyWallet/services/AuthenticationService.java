@@ -3,6 +3,9 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.*;
+import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
+import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
+import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
@@ -37,10 +40,12 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
+                .birthDate(registerRequest.getBirthDate())
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .softDelete(false)
+                .imagePath("")
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -49,17 +54,14 @@ public class AuthenticationService {
         userRepository.save(user);
 
         //Acá añadir cuentas
-        AccountRequestDto accountArs = new AccountRequestDto("ARS","CAJA_AHORRO");
-        AccountRequestDto accountUsd = new AccountRequestDto("USD","CAJA_AHORRO");
 
-//        //Cuenta ARS
-        accountService.addById(accountArs,user.getId());
 //        //Cuenta USD
-        accountService.addById(accountUsd,user.getId());
+//        accountService.addById(CurrencyEnum.USD,user.getId());
+//        //Cuenta ARG
+//        accountService.addById(CurrencyEnum.ARS,user.getId());
 
 
         return AuthResponseRegister.builder()
-                .token(jwtService.getToken(user))
                 .userName(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -74,6 +76,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
+                .birthDate(registerRequest.getBirthDate())
                 .role(RoleFactory.getAdminRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
@@ -94,7 +97,7 @@ public class AuthenticationService {
     }
 
 
-    public AuthResponseLogin login(LoginRequest loginRequest) throws AuthenticationException {
+    public String login(LoginRequest loginRequest) throws AuthenticationException {
         authenticationManager.authenticate(
                  new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
 
@@ -102,11 +105,8 @@ public class AuthenticationService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         System.out.println("Usuario : " + user.getUsername());
 
-        String token = jwtService.getToken(user);
         //EN DUDA SI NO CAMBIARLO POR UNA AUTHRESPONSELOGIN - RESPONDER DIRECTO EL TOKEN O DEJARLO CON TOKEN Y USERDEATLLES
-        return AuthResponseLogin.builder()
-                .token(token)
-                .build();
+        return jwtService.getToken(user.getUsername());
     }
 
 

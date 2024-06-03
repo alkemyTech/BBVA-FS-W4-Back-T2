@@ -32,6 +32,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll(pageable);
     }
 
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         return userRepository.findByUserName(username).orElseThrow();
@@ -74,5 +75,17 @@ public class UserService implements UserDetailsService {
         userRepository.save(existingUser);
 
         return existingUser;
+    }
+
+    public void addContact(String idCbu, Long idUser) {
+            User user = userRepository.findById(idUser).orElseThrow();
+            user.getCbuTerceros().add(idCbu);
+            userRepository.save(user); //como el usuario ya esta en la base hace un update
+    }
+
+    public void deleteContact(String idCbu, Long idUser) {
+        User user = userRepository.findById(idUser).orElseThrow();
+        user.getCbuTerceros().remove(idCbu);
+        userRepository.save(user);
     }
 }
