@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
@@ -14,11 +15,13 @@ import AlkemyWallet.AlkemyWallet.mappers.TransactionResponseMapper;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 
+
 import lombok.AllArgsConstructor;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -28,6 +31,8 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
+    private final UserRepository userRepository;
+    private final UserService userService;
     private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
 
@@ -85,6 +90,7 @@ public class TransactionService {
         transactionRepository.save(incomeTransaction);
     }
 
+
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
             Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
@@ -122,8 +128,27 @@ public class TransactionService {
             throw new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino");
         }
     }
-}
+    public List<Transaction> getTransactionsByAccount(Accounts account) {
+        try {
+            return transactionRepository.findByAccountId(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
 
+    public List<Transaction> getTransactionsByAccountId(Long accountId) {
+        try {
+            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
+            return getTransactionsByAccount(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
+    public Transaction getTransactionById(Long id) {
+        return transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
+    }
+}
 
 
 

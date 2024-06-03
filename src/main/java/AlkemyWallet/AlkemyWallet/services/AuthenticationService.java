@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
+import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
@@ -16,7 +17,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 @Service
@@ -33,18 +36,20 @@ public class AuthenticationService {
 
     public AuthResponseRegister register(RegisterRequest registerRequest) {
 
+        //Lógica para pasar String de fecha de nacimiento a LocalDate
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birthDate = LocalDate.parse(registerRequest.getBirthDate(), formatter);
+
         roleFactory.initializeRoles();
         User user = User.builder()
                 .userName(registerRequest.getUserName())
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
-                .birthDate(registerRequest.getBirthDate())
+                .birthDate(birthDate)
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
-                .softDelete(false)
-                .imagePath("")
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -54,10 +59,14 @@ public class AuthenticationService {
 
         //Acá añadir cuentas
 
+        //Acá añadir cuentas
+        AccountRequestDto accountArs = new AccountRequestDto("ARS","CAJA_AHORRO");
+        AccountRequestDto accountUsd = new AccountRequestDto("USD","CAJA_AHORRO");
+
+//        //Cuenta ARS
+        accountService.addById(accountArs,user.getId());
 //        //Cuenta USD
-//        accountService.addById(CurrencyEnum.USD,user.getId());
-//        //Cuenta ARG
-//        accountService.addById(CurrencyEnum.ARS,user.getId());
+        accountService.addById(accountUsd,user.getId());
 
 
         return AuthResponseRegister.builder()
@@ -69,17 +78,21 @@ public class AuthenticationService {
 
     public AuthResponseRegister registerAdmin(RegisterRequest registerRequest) {
 
+        //Lógica para pasar String de fecha de nacimiento a LocalDate
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birthDate = LocalDate.parse(registerRequest.getBirthDate(), formatter);
+
         roleFactory.initializeRoles();
         User user = User.builder()
                 .userName(registerRequest.getUserName())
                 .password(passwordEncoder.encode( registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
-                .birthDate(registerRequest.getBirthDate())
+                .birthDate(birthDate)
                 .role(RoleFactory.getAdminRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
-                .softDelete(false)
+                .softDelete(0)
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -97,7 +110,7 @@ public class AuthenticationService {
 
     public String login(LoginRequest loginRequest) throws AuthenticationException {
         authenticationManager.authenticate(
-                 new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
 
         UserDetails user = userRepository.findByUserName(loginRequest.getUserName())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
