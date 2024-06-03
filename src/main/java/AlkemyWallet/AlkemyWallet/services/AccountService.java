@@ -29,47 +29,46 @@ public class AccountService {
     private final JwtService jwtService;
 
 
+    public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
+
+        String currency = accountCreation.getCurrency();
+        String accountType = accountCreation.getAccountType();
+        CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
+        AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
+        Long userId = userService.getIdFromRequest(request);
+        User user = userService.findById(userId).orElseThrow();
+
+        //Validacion...
+
+        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
+            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+        }
+
+        try {
+            Accounts account = new Accounts();
+            account.setCurrency(currencyEnum);
+            account.setAccountType(accountTypeEnum);
+            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+            account.setBalance(0.00);
+            account.setCBU(generarCBU());
+            account.setUserId(user);  // --> JWT
+            account.setCurrency(currencyEnum);
 
 
-        public AccountsDto add (AccountRequestDto accountCreation, HttpServletRequest request){
-
-            String currency = accountCreation.getCurrency();
-            String accountType = accountCreation.getAccountType();
-            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
-            AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
-            Long userId = userService.getIdFromRequest(request);
-            User user = userService.findById(userId).orElseThrow();
-
-            //Validacion...
-
-            if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-                throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
-            }
-
-            try {
-                Accounts account = new Accounts();
-                account.setCurrency(currencyEnum);
-                account.setAccountType(accountTypeEnum);
-                account.setTransactionLimit(currencyEnum.getTransactionLimit());
-                account.setBalance(0.00);
-                account.setCBU(generarCBU());
-                account.setUserId(user);  // --> JWT
-                account.setCurrency(currencyEnum);
-
-                Accounts savedAccount = accountRepository.save(account);
-                // Add account ID to existing JWT token
+            Accounts savedAccount = accountRepository.save(account);
+            // Add account ID to existing JWT token
 //            String token = jwtService.getTokenFromRequest(request);
 //            if (token != null) {
 //                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
 //            }
 
-                // Devolver la cuenta guardada en DTO
+            // Devolver la cuenta guardada en DTO
 
-                return accountMapper(savedAccount);
-            } catch (Exception e) {
-                throw new RuntimeException("Error al agregar la cuenta", e);
-            }
+            return accountMapper(savedAccount);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al agregar la cuenta", e);
         }
+    }
 
 
 
@@ -159,16 +158,12 @@ public class AccountService {
         }
         cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
-        public static String logicaCBU () {
-            StringBuilder cbu = new StringBuilder();
-            Random random = new Random();
 
-
-            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-            for (int i = 0; i < 7; i++) {
-                cbu.append(random.nextInt(10));
-            }
-            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
+        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
+        for (int i = 0; i < 7; i++) {
+            cbu.append(random.nextInt(10));
+        }
+        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
             // Los siguientes 12 dígitos son generados aleatoriamente.
             for (int i = 0; i < 12; i++) {

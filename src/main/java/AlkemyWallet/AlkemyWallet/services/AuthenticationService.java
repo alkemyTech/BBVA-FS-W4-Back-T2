@@ -50,8 +50,6 @@ public class AuthenticationService {
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
-                .softDelete(false)
-                .imagePath("https://img.freepik.com/vector-gratis/circulo-azul-usuario-blanco_78370-4707.jpg?t=st=1717424947~exp=1717428547~hmac=7f02f1fd5e295b74d42c7d33895e11504f37422a942401a1999e864b79ab8ac9&w=740")
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -94,7 +92,7 @@ public class AuthenticationService {
                 .role(RoleFactory.getAdminRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
-                .softDelete(false)
+                .softDelete(0)
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
