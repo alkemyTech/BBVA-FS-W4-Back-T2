@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.repositories;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
    Optional<User> findByUserName(String userName);
 
    @Modifying
+   @Transactional
    @Query("UPDATE User u SET u.softDelete = 1 WHERE u.id = :id")
    void softDeleteById(Long id);
 }

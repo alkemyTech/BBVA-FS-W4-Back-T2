@@ -43,7 +43,7 @@ public class AuthenticationService {
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
-                .softDelete(false)
+                .softDelete(0)
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");
@@ -78,7 +78,7 @@ public class AuthenticationService {
                 .role(RoleFactory.getAdminRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
-                .softDelete(false)
+                .softDelete(0)
                 .build();
         if (userRepository.findByUserName(registerRequest.getUserName()).isPresent()) {
             throw new IllegalArgumentException("User already exists");

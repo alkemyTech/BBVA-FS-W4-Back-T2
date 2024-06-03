@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/home/id").permitAll()
                                 .requestMatchers("/accounts/**").permitAll()
                                 .requestMatchers("/transactions/**").permitAll()
                                 .requestMatchers("/register/admin").hasRole("ADMIN")
