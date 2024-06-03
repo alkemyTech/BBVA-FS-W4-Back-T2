@@ -44,7 +44,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.depositMoney(transaction, account));
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("user/{userId}")
     /* @PreAuthorize("hasRole('ADMIN')") */
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
@@ -62,7 +62,7 @@ public class TransactionController {
         }
 
     }
-    @GetMapping("/{transactionId}")
+    @GetMapping("transaction/{transactionId}")
     public ResponseEntity<?> getTransactionById(@PathVariable Long transactionId) {
         try {
             Transaction transaction = transactionService.getTransactionById(transactionId);
