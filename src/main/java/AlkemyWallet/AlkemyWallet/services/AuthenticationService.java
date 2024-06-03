@@ -112,7 +112,7 @@ public class AuthenticationService {
 
     public String login(LoginRequest loginRequest) throws AuthenticationException {
         authenticationManager.authenticate(
-                 new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
 
         UserDetails user = userRepository.findByUserName(loginRequest.getUserName())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
