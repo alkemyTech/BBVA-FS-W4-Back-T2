@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -49,9 +50,15 @@ public class UserService implements UserDetailsService {
         Long id = userRepository.findByUserName(username).get().getId();
         return id;
     }
+    public List<User> getAllUsers( ) {
+        return userRepository.findAll();
+    }
 
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+
+    public void softDeleteById(Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+        user.setSoftDelete(true);
+        userRepository.save(user);
     }
 
     public Optional<User> findById(Long id) {

@@ -131,7 +131,7 @@ public class AccountService {
             Accounts savedAccount = accountRepository.save(account);
 
             //No se si es necesario cuando se inician las 2 cuentas
-            //Por las dudas lo dejo
+                //Por las dudas lo dejo
             // Add account ID to existing JWT token
 //            String token = jwtService.getTokenFromRequest(request);
 //            if (token != null) {

@@ -89,13 +89,7 @@ public class TransactionService {
         );
         transactionRepository.save(incomeTransaction);
     }
-    public List<Transaction> getTransactionsByAccount(Accounts account) {
-        try {
-            return transactionRepository.findByAccountId(account);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
-        }
-    }
+
 
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
@@ -134,8 +128,13 @@ public class TransactionService {
             throw new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino");
         }
     }
-
-
+    public List<Transaction> getTransactionsByAccount(Accounts account) {
+        try {
+            return transactionRepository.findByAccountId(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
 
     public List<Transaction> getTransactionsByAccountId(Long accountId) {
         try {
@@ -145,7 +144,12 @@ public class TransactionService {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
     }
+    public Transaction getTransactionById(Long id) {
+        return transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
+    }
 }
+
 
 
 
