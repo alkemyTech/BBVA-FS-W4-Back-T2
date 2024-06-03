@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -122,7 +123,28 @@ public class TransactionService {
             throw new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino");
         }
     }
+    public List<Transaction> getTransactionsByAccount(Accounts account) {
+        try {
+            return transactionRepository.findByAccountId(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
+
+    public List<Transaction> getTransactionsByAccountId(Long accountId) {
+        try {
+            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
+            return getTransactionsByAccount(account);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
+    }
+    public Transaction getTransactionById(Long id) {
+        return transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
+    }
 }
+
 
 
 
