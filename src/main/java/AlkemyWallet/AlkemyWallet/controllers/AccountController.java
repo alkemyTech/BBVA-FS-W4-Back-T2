@@ -42,6 +42,15 @@ public class AccountController {
         }
     }
 
+    @PatchMapping("/{accountId}")
+    public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
+        try {
+            return ResponseEntity.ok(accountService.updateAccount(accountId,transactionLimit));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al actualizar cuenta: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/{userId}")
     /*@PreAuthorize("hasRole('ADMIN')")*/
     public ResponseEntity<?> getAccountsByUserId(@PathVariable Long userId) {

@@ -54,7 +54,6 @@ public class AccountService {
             account.setUserId(user);  // --> JWT
             account.setCurrency(currencyEnum);
 
-
             Accounts savedAccount = accountRepository.save(account);
             // Add account ID to existing JWT token
 //            String token = jwtService.getTokenFromRequest(request);
@@ -71,15 +70,14 @@ public class AccountService {
     }
 
 
-
-        public List<Accounts> findAccountsByUserId ( long userId){
-            try {
-                User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-                return accountRepository.findByUserId(user);
-            } catch (Exception e) {
-                throw new RuntimeException("No se encontró al usuario", e);
-            }
+    public List<Accounts> findAccountsByUserId(long userId) {
+        try {
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            return accountRepository.findByUserId(user);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
+    }
 
 //    public Accounts addById(CurrencyEnum currencyEnum, Long id){
 //
@@ -116,7 +114,7 @@ public class AccountService {
 
         //Validacion...
 
-        if(verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
             throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
         }
 
@@ -148,22 +146,16 @@ public class AccountService {
         }
     }
 
-    public static String logicaCBU() {
-        StringBuilder cbu = new StringBuilder();
-        Random random = new Random();
-
-        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-        for (int i = 0; i < 7; i++) {
-            cbu.append(random.nextInt(10));
-        }
-        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
+        public static String logicaCBU () {
+            StringBuilder cbu = new StringBuilder();
+            Random random = new Random();
 
 
-        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-        for (int i = 0; i < 7; i++) {
-            cbu.append(random.nextInt(10));
-        }
-        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
+            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
+            for (int i = 0; i < 7; i++) {
+                cbu.append(random.nextInt(10));
+            }
+            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
             // Los siguientes 12 dígitos son generados aleatoriamente.
             for (int i = 0; i < 12; i++) {
@@ -242,7 +234,31 @@ public class AccountService {
 
             return accountDto;
         }
+
+    public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
+
+        //Logica para verificar si cuenta existe terminada
+        if (accountRepository.findById(accountId).isPresent()) {
+            Accounts account = accountRepository.getReferenceById(accountId);
+            //Logica para ver si es mayor el limite al que se puede tener por tipo de cuenta
+            if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
+                account.setTransactionLimit(transactionLimit);
+                AccountsDto accountDTO = accountMapper(accountRepository.save(account));
+                return accountDTO;
+            } else {
+                throw new RuntimeException("Limite de transaccion mayor al que el tipo de cuenta puede tener");
+            }
+
+        } else {
+            throw new RuntimeException("Cuenta no encontrada");
+        }
+
+
     }
+
+    }
+
+
 
 
 
