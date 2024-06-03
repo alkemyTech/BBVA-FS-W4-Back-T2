@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 public class UserDetailDTO {
@@ -22,4 +24,10 @@ public class UserDetailDTO {
     @NotNull
     @NotBlank
     private RoleEnum roleName;
+
+    @NotNull
+    @NotBlank
+    private LocalDate birthDate;
+
+    private String imagePath;
 }
