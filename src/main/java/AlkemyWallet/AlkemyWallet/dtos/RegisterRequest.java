@@ -32,5 +32,5 @@ public class RegisterRequest {
     private String lastName;
 
     @NotBlank
-    private LocalDate birthDate;
+    private String birthDate;
 }
