@@ -37,6 +37,7 @@ public class Transaction {
     private LocalDateTime transactionDate;
     @ManyToOne
     @JoinColumn(name = "Account_Id", nullable = false)
+    @JoinColumn(name = "Account_Id", nullable = false)
     @NotNull
     private Accounts accountId; // account destino
 
@@ -45,16 +46,16 @@ public class Transaction {
     private Accounts originAccount;  // Origin account
 
 
-
-
-    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts account) {
+    public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts accountId, Accounts originAccount) {
         this.amount = amount;
         this.type = type;
         this.description = description;
         this.transactionDate = transactionDate;
         this.accountId = accountId;
         this.originAccount = originAccount;
+
     }
 }
+
 
 

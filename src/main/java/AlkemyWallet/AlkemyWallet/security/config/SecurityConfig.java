@@ -31,8 +31,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
                                 .requestMatchers("/accounts/**").permitAll()
                                 .requestMatchers("/transactions/**").permitAll()
+                                .requestMatchers("/register/admin").hasRole("ADMIN")
+                                .requestMatchers("/loan/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
