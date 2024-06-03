@@ -1,8 +1,10 @@
 package AlkemyWallet.AlkemyWallet.services;
+
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
-import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
@@ -10,7 +12,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.List;
 
@@ -22,32 +23,41 @@ public class AccountService {
     private final UserService userService;
     private final JwtService jwtService;
 
-    public Accounts add(CurrencyDto currency, HttpServletRequest request) {
-        try {
-            AccountsDto account = new AccountsDto();
-            CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency.getCurrency());
+    public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
 
-            // Configuro datos que no se pueden inicializar normalmente
+        String currency = accountCreation.getCurrency();
+        String accountType = accountCreation.getAccountType();
+        CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
+        AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
+        Long userId = userService.getIdFromRequest(request);
+        User user = userService.findById(userId).orElseThrow();
+
+        //Validacion...
+
+        if(verificarExistenciaAccount(user,currencyEnum,accountTypeEnum)){
+            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+        }
+
+        try {
+            Accounts account = new Accounts();
+            account.setCurrency(currencyEnum);
+            account.setAccountType(accountTypeEnum);
             account.setTransactionLimit(currencyEnum.getTransactionLimit());
             account.setBalance(0.00);
             account.setCBU(generarCBU());
-            Long userId = userService.getIdFromRequest(request);
-            User user = userService.findById(userId).orElseThrow();
-            account.setUserId(user); // --> JWT
+            account.setUserId(user);  // --> JWT
             account.setCurrency(currencyEnum);
 
-            // Termino de rellenar con la Clase Account así se inicializan el resto
-            Accounts accountBD = modelMapper.modelMapper().map(account, Accounts.class);
-            Accounts savedAccount = accountRepository.save(accountBD);
-
+            Accounts savedAccount = accountRepository.save(account);
             // Add account ID to existing JWT token
-            String token = jwtService.getTokenFromRequest(request);
-            if (token != null) {
-                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-            }
+//            String token = jwtService.getTokenFromRequest(request);
+//            if (token != null) {
+//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+//            }
 
-            // Devolver la cuenta guardada
-            return savedAccount;
+            // Devolver la cuenta guardada en DTO
+
+            return accountMapper(savedAccount);
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
@@ -63,30 +73,30 @@ public class AccountService {
         }
     }
 
-    public Accounts addById(CurrencyEnum currencyEnum, Long id){
-
-        try{
-            AccountsDto account = new AccountsDto();
-
-            //Configuro datos que no se pueden inicializar normalmente
-
-            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-            account.setBalance(0.00);
-            account.setCBU(generarCBU());
-            User user = userService.findById(id).orElseThrow();
-            account.setUserId(user); // --> JWT
-            account.setCurrency(currencyEnum);
-
-            //Termino de rellenar con la Clase Account así se inicializan el resto
-
-            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
-
-            return accountRepository.save(accountBD);
-        }catch (Exception e){
-            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
-        }
-
-    }
+//    public Accounts addById(CurrencyEnum currencyEnum, Long id){
+//
+//        try{
+//            AccountsDto account = new AccountsDto();
+//
+//            //Configuro datos que no se pueden inicializar normalmente
+//
+//            account.setTransactionLimit(currencyEnum.getTransactionLimit());
+//            account.setBalance(0.00);
+//            account.setCBU(generarCBU());
+//            User user = userService.findById(id).orElseThrow();
+//            account.setUserId(user); // --> JWT
+//            account.setCurrency(currencyEnum);
+//
+//            //Termino de rellenar con la Clase Account así se inicializan el resto
+//
+//            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
+//
+//            return accountRepository.save(accountBD);
+//        }catch (Exception e){
+//            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
+//        }
+//
+//    }
 
     public static String logicaCBU() {
         StringBuilder cbu = new StringBuilder();
@@ -154,7 +164,31 @@ public class AccountService {
 
     public Accounts findById(Long id) {
         return accountRepository.findById(id).orElseThrow();
-    };
-}
+    }
 
+    public boolean verificarExistenciaAccount(User user,CurrencyEnum currency, AccountTypeEnum accountType){
+        List<Accounts> cuentas = findAccountsByUserId(user.getId());
+        return cuentas.stream()
+                .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
+    }
+
+
+    public AccountsDto accountMapper(Accounts account){
+        AccountsDto accountDto = new AccountsDto();
+        accountDto.setId(account.getId());
+        accountDto.setCurrency(account.getCurrency());
+        accountDto.setAccountType(account.getAccountType());
+        accountDto.setTransactionLimit(account.getTransactionLimit());
+        accountDto.setBalance(account.getBalance());
+        accountDto.setCBU(account.getCBU());
+        accountDto.setUserId(account.getUserId().getId());
+
+
+        return accountDto;
+    }
+
+
+
+
+}
 
