@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 
 
 import java.time.LocalDateTime;
@@ -53,6 +54,10 @@ public class Transaction {
         this.account = accountId;
         this.originAccount = originAccount;
 
+    }
+
+    public Accounts getAccount() {
+        return this.accountId;
     }
 }
 

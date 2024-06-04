@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/accounts/**").permitAll()
                                 .requestMatchers("/transactions/**").permitAll()
+                                .requestMatchers("/transactions/detail/**").permitAll()
                                 .requestMatchers("/users/**").permitAll()
                                 .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
                                 .requestMatchers("/register/admin").hasRole("ADMIN")
