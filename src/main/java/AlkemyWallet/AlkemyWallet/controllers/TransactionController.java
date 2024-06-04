@@ -18,7 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -53,11 +55,49 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.depositMoney(transaction, account));
     }
 
+    /*
+     public ResponseEntity<?> getUsers(@RequestParam(defaultValue = "0") int page) {
+        try {
+            Page<User> users = userService.getAllUsers(page);
+            return ResponseEntity.ok(users);
+            Page<User> usersPage = userService.getAllUsers(page);
+            int totalPages = usersPage.getTotalPages();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("users", usersPage.getContent());
+            response.put("currentPage", page);
+            response.put("totalPages", totalPages);
+
+            if (page < totalPages - 1) {
+                response.put("nextPage", "/users?page=" + (page + 1));
+            }
+            if (page > 0) {
+                response.put("previousPage", "/users?page=" + (page - 1));
+            }
+
+            return ResponseEntity.ok(response);
+     */
+
     @GetMapping("/admin/{userId}")
     public ResponseEntity<?> getPagedTransactions(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page) {
         try {
-            Page<Transaction> transactions = transactionService.getTransactionsByUserIdPaginated(userId, page);
-            return ResponseEntity.ok(transactions);
+            Page<Transaction> transactionsPage = transactionService.getTransactionsByUserIdPaginated(userId, page);
+            int totalPages = transactionsPage.getTotalPages();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("transactions", transactionsPage.getContent());
+            response.put("currentPage", page);
+            response.put("totalPages", totalPages);
+
+            if (page < totalPages - 1) {
+                response.put("nextPage", "/admin/" + userId + "?page=" + (page + 1));
+            }
+            if (page > 0) {
+                response.put("previousPage", "/admin/" + userId + "?page=" + (page - 1));
+            }
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las transacciones del usuario: " + e.getMessage());
 
