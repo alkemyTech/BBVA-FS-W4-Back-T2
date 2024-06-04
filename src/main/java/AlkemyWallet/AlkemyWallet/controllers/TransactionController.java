@@ -53,7 +53,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.depositMoney(transaction, account));
     }
 
-    @GetMapping("user/admin/{userId}")
+    @GetMapping("/admin/{userId}")
     public ResponseEntity<?> getPagedTransactions(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page) {
         try {
             Page<Transaction> transactions = transactionService.getTransactionsByUserIdPaginated(userId, page);

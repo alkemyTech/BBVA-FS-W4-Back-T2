@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -96,9 +98,10 @@ public class TransactionService {
     }
 
     public Page<Transaction> getTransactionsByUserIdPaginated(Long userId, int page) {
-        int transactionsPerPage = paginationConfig.getItemsPerPage();
+        int transactionsPerPage = paginationConfig.getTransactionsPerPage();
         Pageable pageable = PageRequest.of(page,transactionsPerPage);
-        return transactionRepository.findByAccountIdUserId(userId, pageable);
+        User user = userService.findById(userId).get();
+        return transactionRepository.findByAccountIdUserId(user, pageable);
     }
 
 

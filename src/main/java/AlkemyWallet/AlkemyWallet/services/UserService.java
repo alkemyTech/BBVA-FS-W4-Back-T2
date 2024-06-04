@@ -32,7 +32,7 @@ public class UserService implements UserDetailsService {
 
 
     public Page<User> getAllUsers(int page) {
-        int usersPerPage = paginationConfig.getItemsPerPage(); // Mostrar de a 10 usuarios por página
+        int usersPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 usuarios por página
         Pageable pageable = PageRequest.of(page, usersPerPage);
         return userRepository.findAll(pageable);
     }
@@ -103,6 +103,7 @@ public class UserService implements UserDetailsService {
     public Optional<User> findAuthenticatedUser(String username){
         return userRepository.findByUserName(username);
     }
+
 
     public UserDetailDTO getUserDetail(Long id, String authenticatedUsername) {
         Optional<User> authenticatedUser = userRepository.findByUserName(authenticatedUsername);

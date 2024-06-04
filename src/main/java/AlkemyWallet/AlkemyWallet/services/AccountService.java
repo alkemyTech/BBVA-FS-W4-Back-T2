@@ -78,7 +78,7 @@ public class AccountService {
     }
 
     public Page<Accounts> getAllAccounts(int page) {
-        int accountsPerPage = paginationConfig.getItemsPerPage();
+        int accountsPerPage = paginationConfig.getAccountsPerPage();
         Pageable pageable = PageRequest.of(page, accountsPerPage);
         return accountRepository.findAll(pageable);
     }
@@ -124,6 +124,7 @@ public class AccountService {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
     }
+
 
         public static String logicaCBU () {
             StringBuilder cbu = new StringBuilder();
