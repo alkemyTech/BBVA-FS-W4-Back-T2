@@ -89,30 +89,7 @@ public class AccountService {
         }
     }
 
-//    public Accounts addById(CurrencyEnum currencyEnum, Long id){
-//
-//        try{
-//            AccountsDto account = new AccountsDto();
-//
-//            //Configuro datos que no se pueden inicializar normalmente
-//
-//            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-//            account.setBalance(0.00);
-//            account.setCBU(generarCBU());
-//            User user = userService.findById(id).orElseThrow();
-//            account.setUserId(user); // --> JWT
-//            account.setCurrency(currencyEnum);
-//
-//            //Termino de rellenar con la Clase Account así se inicializan el resto
-//
-//            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
-//
-//            return accountRepository.save(accountBD);
-//        }catch (Exception e){
-//            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
-//        }
-//
-//    }
+
 
     public AccountsDto addById(AccountRequestDto accountCreation, Long userId) {
 
@@ -265,6 +242,10 @@ public class AccountService {
         } else {
             throw new RuntimeException("Cuenta no encontrada");
         }
+    }
+
+    public Accounts findById(Long id) {
+        return accountRepository.findById(id).orElseThrow();
     }
 
 

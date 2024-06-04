@@ -56,9 +56,6 @@ public class Transaction {
 
     }
 
-    public Accounts getAccount() {
-        return this.accountId;
-    }
 }
 
 
