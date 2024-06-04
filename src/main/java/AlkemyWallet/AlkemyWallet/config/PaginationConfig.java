@@ -14,4 +14,10 @@ public class PaginationConfig {
     @Value("${items.per.page}")
     private int itemsPerPage;
 
+    @Value("${transactions.per.page}")
+    private int transactionsPerPage;
+
+    @Value("${accounts.per.page}")
+    private int accountsPerPage;
+
 }
