@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,19 @@ public class TransactionController {
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
         return ResponseEntity.ok(transactionService.depositMoney(transaction, account));
+    }
+
+    @GetMapping("user/admin/{userId}")
+    public ResponseEntity<?> getPagedTransactions(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page) {
+        try {
+            Page<Transaction> transactions = transactionService.getTransactionsByUserIdPaginated(userId, page);
+            return ResponseEntity.ok(transactions);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las transacciones del usuario: " + e.getMessage());
+
+
+        }
+
     }
 
     @GetMapping("user/{userId}")
