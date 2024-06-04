@@ -1,12 +1,15 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 
+import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
+import AlkemyWallet.AlkemyWallet.services.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthenticationService authenticationService;
+    private final JwtService jwtService;
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
@@ -32,7 +36,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
-            return ResponseEntity.ok(authenticationService.login(loginRequest));
+            // Para usar header
+            String token = authenticationService.login(loginRequest);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+            return ResponseEntity.ok().headers(headers).body("Login successful!");
         } catch (AuthenticationException e) {
             return handleAuthenticationException(e);
         }
@@ -41,7 +50,13 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            return ResponseEntity.ok(authenticationService.register(registerRequest));
+            AuthResponseRegister registerResponse = authenticationService.register(registerRequest);
+            String token = jwtService.getToken(registerResponse.getUserName());
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+
+            return ResponseEntity.ok().headers(headers).body(registerResponse);
         } catch (IllegalArgumentException e) {
             return handleIllegalArgumentException(e);
         }
@@ -49,7 +64,13 @@ public class AuthController {
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            return ResponseEntity.ok(authenticationService.registerAdmin(registerRequest));
+            AuthResponseRegister registerResponse = authenticationService.registerAdmin(registerRequest);
+            String token = jwtService.getToken(registerResponse.getUserName());
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+
+            return ResponseEntity.ok().headers(headers).body(registerResponse);
         } catch (IllegalArgumentException e) {
             return handleIllegalArgumentException(e);
         }

@@ -33,4 +33,5 @@ public class FixedTermDeposit {
     private LocalDateTime creationDate;
     @Column
     private LocalDateTime closingDate;
+
 }
