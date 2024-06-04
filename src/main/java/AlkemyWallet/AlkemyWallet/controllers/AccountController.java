@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
@@ -50,6 +51,29 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al actualizar cuenta: " + e.getMessage());
         }
     }
+
+    /*
+         @GetMapping("users")
+    public ResponseEntity<?> getUsers(@RequestParam(defaultValue = "0") int page) {
+        try {
+            Page<User> users = userService.getAllUsers(page);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
+        }
+    }
+
+     */
+
+    @GetMapping("")
+    public ResponseEntity<?> getAccounts(@RequestParam(defaultValue = "0") int page){
+        try{
+            return ResponseEntity.ok(accountService.getAllAccounts(page));
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener las cuentas: " + e.getMessage());
+        }
+    }
+
 
     @GetMapping("/{userId}")
     /*@PreAuthorize("hasRole('ADMIN')")*/

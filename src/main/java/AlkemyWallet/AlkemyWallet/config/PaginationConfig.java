@@ -11,7 +11,7 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:pagination.properties")
 public class PaginationConfig {
 
-    @Value("${users.per.page}")
-    private int usersPerPage;
+    @Value("${items.per.page}")
+    private int itemsPerPage;
 
 }

@@ -11,7 +11,6 @@ import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class UserService implements UserDetailsService {
 
 
     public Page<User> getAllUsers(int page) {
-        int usersPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 usuarios por página
+        int usersPerPage = paginationConfig.getItemsPerPage(); // Mostrar de a 10 usuarios por página
         Pageable pageable = PageRequest.of(page, usersPerPage);
         return userRepository.findAll(pageable);
     }
