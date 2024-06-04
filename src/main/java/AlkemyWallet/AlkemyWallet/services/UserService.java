@@ -11,7 +11,6 @@ import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -108,6 +107,7 @@ public class UserService implements UserDetailsService {
     public Optional<User> findAuthenticatedUser(String username){
         return userRepository.findByUserName(username);
     }
+
 
     public UserDetailDTO getUserDetail(Long id, String authenticatedUsername) {
         Optional<User> authenticatedUser = userRepository.findByUserName(authenticatedUsername);

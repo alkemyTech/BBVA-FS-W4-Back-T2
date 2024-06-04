@@ -18,6 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -32,6 +35,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     public final ModelMapperConfig modelMapper;
     private final UserService userService;
+    private final PaginationConfig paginationConfig;
     private final JwtService jwtService;
     private final PaginationConfig paginationConfig;
 
@@ -63,13 +67,6 @@ public class AccountService {
 
 
             Accounts savedAccount = accountRepository.save(account);
-            // Add account ID to existing JWT token
-//            String token = jwtService.getTokenFromRequest(request);
-//            if (token != null) {
-//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-//            }
-
-            // Devolver la cuenta guardada en DTO
 
             return accountMapper(savedAccount);
         } catch (Exception e) {
@@ -87,30 +84,11 @@ public class AccountService {
         }
     }
 
-//    public Accounts addById(CurrencyEnum currencyEnum, Long id){
-//
-//        try{
-//            AccountsDto account = new AccountsDto();
-//
-//            //Configuro datos que no se pueden inicializar normalmente
-//
-//            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-//            account.setBalance(0.00);
-//            account.setCBU(generarCBU());
-//            User user = userService.findById(id).orElseThrow();
-//            account.setUserId(user); // --> JWT
-//            account.setCurrency(currencyEnum);
-//
-//            //Termino de rellenar con la Clase Account así se inicializan el resto
-//
-//            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
-//
-//            return accountRepository.save(accountBD);
-//        }catch (Exception e){
-//            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
-//        }
-//
-//    }
+    public Page<Accounts> getAllAccounts(int page) {
+        int accountsPerPage = paginationConfig.getAccountsPerPage();
+        Pageable pageable = PageRequest.of(page, accountsPerPage);
+        return accountRepository.findAll(pageable);
+    }
 
     public AccountsDto addById(AccountRequestDto accountCreation, Long userId) {
 
@@ -153,6 +131,7 @@ public class AccountService {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
     }
+
 
         public static String logicaCBU () {
             StringBuilder cbu = new StringBuilder();
