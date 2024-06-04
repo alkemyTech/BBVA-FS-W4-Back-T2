@@ -8,6 +8,7 @@ import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
@@ -71,15 +72,14 @@ public class AccountService {
     }
 
 
-
-        public List<Accounts> findAccountsByUserId ( long userId){
-            try {
-                User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-                return accountRepository.findByUserId(user);
-            } catch (Exception e) {
-                throw new RuntimeException("No se encontró al usuario", e);
-            }
+    public List<Accounts> findAccountsByUserId(long userId) {
+        try {
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            return accountRepository.findByUserId(user);
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
+    }
 
 //    public Accounts addById(CurrencyEnum currencyEnum, Long id){
 //
@@ -148,16 +148,9 @@ public class AccountService {
         }
     }
 
-    public static String logicaCBU() {
-        StringBuilder cbu = new StringBuilder();
-        Random random = new Random();
-
-        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-        for (int i = 0; i < 7; i++) {
-            cbu.append(random.nextInt(10));
-        }
-        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
-
+        public static String logicaCBU () {
+            StringBuilder cbu = new StringBuilder();
+            Random random = new Random();
 
         // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
         for (int i = 0; i < 7; i++) {
@@ -202,47 +195,81 @@ public class AccountService {
         }
 
 
-        public void updateAfterTransaction (Accounts account, Double amount){
-            account.updateBalance(amount);
-            account.updateLimit(amount);
-            accountRepository.save(account);
-        }
-        public Accounts findByCBU (String CBU){
-            return accountRepository.findByCBU(CBU)
-                    .orElseThrow(() -> new RuntimeException("Account not found"));
-        }
+    public void updateAfterTransaction(Accounts account, Double amount) {
+        account.updateBalance(amount);
+        account.updateLimit(amount);
+        accountRepository.save(account);
+    }
 
-        public Accounts getAccountFrom (String token){
-            String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
-            Long accountId = Long.parseLong(accountIdToken);
-            return accountRepository.findById(accountId).orElseThrow();
-        }
+    public void updateAfterFixedTermDeposit(Accounts account, Double amount) {
+        account.updateBalance(amount);
+        accountRepository.save(account);
+    }
 
-        public Accounts findById (Long id){
-            return accountRepository.findById(id).orElseThrow();
-        }
+    public Accounts findByCBU(String CBU) {
+        return accountRepository.findByCBU(CBU)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
 
-        public boolean verificarExistenciaAccount (User user, CurrencyEnum currency, AccountTypeEnum accountType){
-            List<Accounts> cuentas = findAccountsByUserId(user.getId());
-            return cuentas.stream()
-                    .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
-        }
+    public Accounts getAccountFrom(String token) {
+        String accountIdToken = jwtService.getClaimFromToken(token,"accountId");
+        Long accountId = Long.parseLong(accountIdToken);
+        return accountRepository.findById(accountId).orElseThrow();
+    }
+
+    public Accounts findById(Long id) {
+        return accountRepository.findById(id).orElseThrow();
+    }
+
+    public boolean verificarExistenciaAccount(User user,CurrencyEnum currency, AccountTypeEnum accountType){
+        List<Accounts> cuentas = findAccountsByUserId(user.getId());
+        return cuentas.stream()
+                .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
+    }
 
 
-        public AccountsDto accountMapper (Accounts account){
-            AccountsDto accountDto = new AccountsDto();
-            accountDto.setId(account.getId());
-            accountDto.setCurrency(account.getCurrency());
-            accountDto.setAccountType(account.getAccountType());
-            accountDto.setTransactionLimit(account.getTransactionLimit());
-            accountDto.setBalance(account.getBalance());
-            accountDto.setCBU(account.getCBU());
-            accountDto.setUserId(account.getUserId().getId());
+    public AccountsDto accountMapper(Accounts account){
+        AccountsDto accountDto = new AccountsDto();
+        accountDto.setId(account.getId());
+        accountDto.setCurrency(account.getCurrency());
+        accountDto.setAccountType(account.getAccountType());
+        accountDto.setTransactionLimit(account.getTransactionLimit());
+        accountDto.setBalance(account.getBalance());
+        accountDto.setCBU(account.getCBU());
+        accountDto.setUserId(account.getUserId().getId());
 
 
             return accountDto;
         }
+
+    public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
+
+        //Logica para verificar si cuenta existe terminada
+        if (accountRepository.findById(accountId).isPresent()) {
+            Accounts account = accountRepository.getReferenceById(accountId);
+            //Logica para ver si es mayor el limite al que se puede tener por tipo de cuenta
+            if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
+                account.setTransactionLimit(transactionLimit);
+                AccountsDto accountDTO = accountMapper(accountRepository.save(account));
+                return accountDTO;
+            } else {
+                throw new RuntimeException("Limite de transaccion mayor al que el tipo de cuenta puede tener");
+            }
+
+        } else {
+            throw new RuntimeException("Cuenta no encontrada");
+        }
+
+
     }
 
+    public Boolean hasBalance(Accounts account, Double amount) {
+        if(account.getBalance().compareTo(amount) > 0) {
+            return true;
+        }else{
+            throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
+        }
+    }
 
+}
 

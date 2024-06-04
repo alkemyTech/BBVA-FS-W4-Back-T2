@@ -59,6 +59,34 @@ public class AccountController {
     }
 
     @Operation(
+            description = "Selecciona una cuenta y actualiza el limite de transaccion",
+            summary = "Seleccionar cuenta y actualizar limite de transaccion",
+            responses = {
+                    @ApiResponse(
+                            description = "Se cambio el limite de la transaccion para esta cuenta",
+                            responseCode = "200",
+                            content = {
+                                    @Content(schema = @Schema(implementation = Accounts.class), mediaType = "application/json")
+                            }
+                    ),
+                    @ApiResponse(
+                            description = "Error al procesar la solicitud",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
+
+    @PatchMapping("/{accountId}")
+    public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
+        try {
+            return ResponseEntity.ok(accountService.updateAccount(accountId,transactionLimit));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al actualizar cuenta: " + e.getMessage());
+        }
+    }
+
+    @Operation(
             description = "Endpoint accesible a admins",
             summary = "Traer cuentas por id de usuario",
             responses = {
