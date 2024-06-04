@@ -1,14 +1,20 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
@@ -26,6 +32,7 @@ public class AccountService {
     public final ModelMapperConfig modelMapper;
     private final UserService userService;
     private final JwtService jwtService;
+    private final PaginationConfig paginationConfig;
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
@@ -67,30 +74,7 @@ public class AccountService {
         return accountRepository.findByUserId(user);
     }
 
-//    public Accounts addById(CurrencyEnum currencyEnum, Long id){
-//
-//        try{
-//            AccountsDto account = new AccountsDto();
-//
-//            //Configuro datos que no se pueden inicializar normalmente
-//
-//            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-//            account.setBalance(0.00);
-//            account.setCBU(generarCBU());
-//            User user = userService.findById(id).orElseThrow();
-//            account.setUserId(user); // --> JWT
-//            account.setCurrency(currencyEnum);
-//
-//            //Termino de rellenar con la Clase Account así se inicializan el resto
-//
-//            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
-//
-//            return accountRepository.save(accountBD);
-//        }catch (Exception e){
-//            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
-//        }
-//
-//    }
+
 
     public AccountsDto addById(AccountRequestDto accountCreation, Long userId) {
 
@@ -173,15 +157,21 @@ public class AccountService {
         }
 
 
-        public void updateAfterTransaction (Accounts account, Double amount){
-            account.updateBalance(amount);
-            account.updateLimit(amount);
-            accountRepository.save(account);
-        }
-        public Accounts findByCBU (String CBU){
-            return accountRepository.findByCBU(CBU)
-                    .orElseThrow(() -> new RuntimeException("Account not found"));
-        }
+    public void updateAfterTransaction(Accounts account, Double amount) {
+        account.updateBalance(amount);
+        account.updateLimit(amount);
+        accountRepository.save(account);
+    }
+
+    public void updateAfterFixedTermDeposit(Accounts account, Double amount) {
+        account.updateBalance(amount);
+        accountRepository.save(account);
+    }
+
+    public Accounts findByCBU(String CBU) {
+        return accountRepository.findByCBU(CBU)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
 
         public Accounts getAccountFrom (String token){
             String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
@@ -189,26 +179,24 @@ public class AccountService {
             return accountRepository.findById(accountId).orElseThrow();
         }
 
-        public Accounts findById (Long id){
-            return accountRepository.findById(id).orElseThrow();
-        }
-
-        public boolean verificarExistenciaAccount (User user, CurrencyEnum currency, AccountTypeEnum accountType){
-            List<Accounts> cuentas = findAccountsByUserId(user.getId());
-            return cuentas.stream()
-                    .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
-        }
 
 
-        public AccountsDto accountMapper (Accounts account){
-            AccountsDto accountDto = new AccountsDto();
-            accountDto.setId(account.getId());
-            accountDto.setCurrency(account.getCurrency());
-            accountDto.setAccountType(account.getAccountType());
-            accountDto.setTransactionLimit(account.getTransactionLimit());
-            accountDto.setBalance(account.getBalance());
-            accountDto.setCBU(account.getCBU());
-            accountDto.setUserId(account.getUserId().getId());
+    public boolean verificarExistenciaAccount(User user, CurrencyEnum currency, AccountTypeEnum accountType) {
+        List<Accounts> cuentas = findAccountsByUserId(user.getId());
+        return cuentas.stream()
+                .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
+    }
+
+
+    public AccountsDto accountMapper(Accounts account) {
+        AccountsDto accountDto = new AccountsDto();
+        accountDto.setId(account.getId());
+        accountDto.setCurrency(account.getCurrency());
+        accountDto.setAccountType(account.getAccountType());
+        accountDto.setTransactionLimit(account.getTransactionLimit());
+        accountDto.setBalance(account.getBalance());
+        accountDto.setCBU(account.getCBU());
+        accountDto.setUserId(account.getUserId().getId());
 
 
             return accountDto;
@@ -231,13 +219,29 @@ public class AccountService {
         } else {
             throw new RuntimeException("Cuenta no encontrada");
         }
-
-
-    }
-
     }
 
 
+    public Accounts findById(Long id) {
+        return accountRepository.findById(id).orElseThrow();
+    }
 
+    ;
+
+    public Page<Accounts> getAllAccounts(int page) {
+        int accountsPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 cuentas por página
+        Pageable pageable = PageRequest.of(page, accountsPerPage);
+        return accountRepository.findAll(pageable);
+    }
+
+
+    public Boolean hasBalance(Accounts account, Double amount) {
+        if (account.getBalance().compareTo(amount) > 0) {
+            return true;
+        } else {
+            throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
+        }
+    }
+}
 
 

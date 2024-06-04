@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/")
@@ -41,8 +40,22 @@ public class UserController {
     @GetMapping("users")
     public ResponseEntity<?> getUsers(@RequestParam(defaultValue = "0") int page) {
         try {
-            Page<User> users = userService.getAllUsers(page);
-            return ResponseEntity.ok(users);
+            Page<User> usersPage = userService.getAllUsers(page);
+            int totalPages = usersPage.getTotalPages();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("users", usersPage.getContent());
+            response.put("currentPage", page);
+            response.put("totalPages", totalPages);
+
+            if (page < totalPages - 1) {
+                response.put("nextPage", "/users?page=" + (page + 1));
+            }
+            if (page > 0) {
+                response.put("previousPage", "/users?page=" + (page - 1));
+            }
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
         }
@@ -77,8 +90,8 @@ public class UserController {
     @PostMapping("cbu/{idCbu}/users/{idUser}")
     public ResponseEntity<?> addContact(@PathVariable String idCbu, @PathVariable Long idUser, HttpServletRequest request){
         try {
-            String token = jwtService.getTokenFromRequest(request);
-            userService.addContact(idCbu,idUser);
+            Long userId = userService.getIdFromRequest(request);
+            userService.addContact(idCbu,userId);
             return ResponseEntity.ok(HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
