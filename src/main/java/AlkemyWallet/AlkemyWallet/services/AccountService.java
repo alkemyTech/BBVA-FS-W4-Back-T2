@@ -4,18 +4,14 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
-import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
-import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
-import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.util.Random;
@@ -58,13 +54,6 @@ public class AccountService {
             account.setCurrency(currencyEnum);
 
             Accounts savedAccount = accountRepository.save(account);
-            // Add account ID to existing JWT token
-//            String token = jwtService.getTokenFromRequest(request);
-//            if (token != null) {
-//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-//            }
-
-            // Devolver la cuenta guardada en DTO
 
             return accountMapper(savedAccount);
         } catch (Exception e) {
@@ -129,15 +118,6 @@ public class AccountService {
 
             Accounts savedAccount = accountRepository.save(account);
 
-            //No se si es necesario cuando se inician las 2 cuentas
-                //Por las dudas lo dejo
-            // Add account ID to existing JWT token
-//            String token = jwtService.getTokenFromRequest(request);
-//            if (token != null) {
-//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-//            }
-
-            // Devolver la cuenta guardada en DTO
 
             return accountMapper(savedAccount);
         } catch (Exception e) {

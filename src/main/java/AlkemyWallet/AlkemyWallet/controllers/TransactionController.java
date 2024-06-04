@@ -53,7 +53,6 @@ public class TransactionController {
     }
 
     @GetMapping("user/{userId}")
-    /* @PreAuthorize("hasRole('ADMIN')") */
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
             List<Accounts> accounts = accountService.findAccountsByUserId(userId);
@@ -70,7 +69,7 @@ public class TransactionController {
         }
 
     }
-    @GetMapping("transaction/{transactionId}")
+    @GetMapping("/{transactionId}")
     public ResponseEntity<?> getTransactionById(@PathVariable Long transactionId) {
         try {
             Transaction transaction = transactionService.getTransactionById(transactionId);

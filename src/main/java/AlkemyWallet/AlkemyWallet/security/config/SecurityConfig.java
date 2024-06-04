@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.security.config;
 
+import AlkemyWallet.AlkemyWallet.enums.RoleEnum;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,14 +31,24 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authRequest ->
                         authRequest
+                                .requestMatchers("/auth/register/admin").hasRole("ADMIN")
                                 .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/home/users/**").permitAll()
-                                .requestMatchers("/home/**").permitAll()
-                                .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
-                                .requestMatchers("/accounts/**").permitAll()
-                                .requestMatchers("/transactions/**").permitAll()
-                                .requestMatchers("/register/admin").hasRole("ADMIN")
+
+                                .requestMatchers("/fixedTerm/**").permitAll()
                                 .requestMatchers("/loan/**").permitAll()
+
+                                .requestMatchers("/id/{id}").hasRole("ADMIN")
+                                .requestMatchers("/users").hasRole("ADMIN")
+                                .requestMatchers("/**").permitAll()
+                                .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
+
+                                .requestMatchers("/accounts/{userId}").hasRole("ADMIN")
+                                .requestMatchers("/accounts/**").permitAll()
+
+                                .requestMatchers("/transactions/user/{userId}").hasRole("ADMIN")
+                                .requestMatchers("/transactions/**").permitAll()
+
+
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
