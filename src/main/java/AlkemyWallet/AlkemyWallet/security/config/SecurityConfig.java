@@ -33,17 +33,24 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/register/admin").hasRole("ADMIN")
                                 .requestMatchers("/auth/**").permitAll()
 
+                                //rutas de Accounts
+                                .requestMatchers("/accounts/balance").permitAll()
+                                .requestMatchers("/accounts/create").permitAll()
+                                .requestMatchers("/accounts/select/**").permitAll()
+                                .requestMatchers("/accounts/editar/**").permitAll()
+                                .requestMatchers("/accounts/{userId}").hasRole("ADMIN")
+                                .requestMatchers("/accounts").hasRole("ADMIN")
+
                                 .requestMatchers("/fixedTerm/**").permitAll()
                                 .requestMatchers("/loan/**").permitAll()
 
+                                //rutas de Usuarios
                                 .requestMatchers("/id/{id}").hasRole("ADMIN")
                                 .requestMatchers("/users").hasRole("ADMIN")
                                 .requestMatchers("/**").permitAll()
                                 .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
 
-                                .requestMatchers("/accounts/{userId}").hasRole("ADMIN")
-                                .requestMatchers("/accounts/**").permitAll()
-
+                                //rutas de transacciones
                                 .requestMatchers("/transactions/user/{userId}").hasRole("ADMIN")
                                 .requestMatchers("/transactions/**").permitAll()
 

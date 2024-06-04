@@ -75,7 +75,7 @@ public class AccountController {
         }
     }
 
-    @PatchMapping("/{accountId}")
+    @PatchMapping("/editar/{accountId}")
     public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
         try {
             return ResponseEntity.ok(accountService.updateAccount(accountId,transactionLimit));
