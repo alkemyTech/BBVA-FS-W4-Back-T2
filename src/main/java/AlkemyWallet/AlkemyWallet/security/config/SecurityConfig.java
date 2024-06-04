@@ -31,13 +31,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authRequest ->
                         authRequest
                                 .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/home/users/**").permitAll()
-                                .requestMatchers("/home/**").permitAll()
-                                .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
+                                .requestMatchers("/accounts/{userId}").hasRole("ADMIN")
                                 .requestMatchers("/accounts/**").permitAll()
                                 .requestMatchers("/transactions/**").permitAll()
+                                .requestMatchers("/users/**").permitAll()
+                                .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
                                 .requestMatchers("/register/admin").hasRole("ADMIN")
-                                .requestMatchers("/loan/**").permitAll()
+                                //.requestMatchers("/loan/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->
