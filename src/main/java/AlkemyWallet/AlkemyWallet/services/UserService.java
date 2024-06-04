@@ -37,6 +37,10 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll(pageable);
     }
 
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUserName(username);
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) {
