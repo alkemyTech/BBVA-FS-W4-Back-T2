@@ -1,6 +1,5 @@
 package AlkemyWallet.AlkemyWallet.services;
 
-import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
@@ -21,9 +20,6 @@ import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import lombok.AllArgsConstructor;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +37,6 @@ public class TransactionService {
     private final UserService userService;
     private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
-    private final PaginationConfig paginationConfig;
 
     public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
@@ -97,18 +92,11 @@ public class TransactionService {
         transactionRepository.save(incomeTransaction);
     }
 
-    public Page<Transaction> getTransactionsByUserIdPaginated(Long userId, int page) {
-        int transactionsPerPage = paginationConfig.getTransactionsPerPage();
-        Pageable pageable = PageRequest.of(page,transactionsPerPage);
-        User user = userService.findById(userId).get();
-        return transactionRepository.findByAccountIdUserId(user, pageable);
-    }
-
 
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
             Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
-            validateDepositTransaction(transaction,account,destinationAccount);
+            validateDepositTransaction(transaction, account, destinationAccount);
 
             // Crear una transacción de depósito para la cuenta de origen
             Transaction depositTransaction = transactionFactory.createTransaction(
@@ -138,10 +126,11 @@ public class TransactionService {
         if (transaction.getAmount() <= 0) {
             throw new NonPositiveAmountException("El monto del depósito debe ser mayor que cero");
         }
-        if(!Objects.equals(account.getCBU(), destinationAccount.getCBU())) {
+        if (!Objects.equals(account.getCBU(), destinationAccount.getCBU())) {
             throw new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino");
         }
     }
+
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
             return transactionRepository.findByAccountId(account);
@@ -158,12 +147,22 @@ public class TransactionService {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
     }
+
     public Transaction getTransactionById(Long id) {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
     }
+
+    public Transaction updateTransactionDescription(Long id, String description, Long userId) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Transacción no encontrada"));
+
+        // Verificar que la transacción pertenece al usuario autenticado
+        if (!transaction.getAccount().getUser().getId().equals(userId)) {
+            throw new SecurityException("No está autorizado para actualizar esta transacción");
+        }
+
+        transaction.setDescription(description);
+        return transactionRepository.save(transaction);
+    }
 }
-
-
-
-
