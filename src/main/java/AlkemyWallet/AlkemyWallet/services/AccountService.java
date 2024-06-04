@@ -14,6 +14,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
+import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
+import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
+import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.util.Random;
 import java.util.List;
@@ -41,7 +44,7 @@ public class AccountService {
         //Validacion...
 
         if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+            throw new DuplicateAccountException("No se puede tener mas de un tipo de cuenta con la misma moneda");
         }
 
         try {
@@ -71,12 +74,8 @@ public class AccountService {
 
 
     public List<Accounts> findAccountsByUserId(long userId) {
-        try {
-            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-            return accountRepository.findByUserId(user);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontró al usuario", e);
-        }
+        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontró al usuario con el ID: " + userId));
+        return accountRepository.findByUserId(user);
     }
 
 //    public Accounts addById(CurrencyEnum currencyEnum, Long id){

@@ -114,7 +114,6 @@ public class AuthenticationService {
 
         UserDetails user = userRepository.findByUserName(loginRequest.getUserName())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-        System.out.println("Usuario : " + user.getUsername());
 
         //EN DUDA SI NO CAMBIARLO POR UNA AUTHRESPONSELOGIN - RESPONDER DIRECTO EL TOKEN O DEJARLO CON TOKEN Y USERDEATLLES
         return jwtService.getToken(user.getUsername());

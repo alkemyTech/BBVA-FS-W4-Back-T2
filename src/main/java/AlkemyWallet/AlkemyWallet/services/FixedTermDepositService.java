@@ -3,7 +3,8 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.config.FixedTermDepositConfig;
 import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
-
+import AlkemyWallet.AlkemyWallet.exceptions.InvalidDateOrderException;
+import AlkemyWallet.AlkemyWallet.exceptions.MinimumDurationException;
 
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ public class FixedTermDepositService {
 
         if (fechaYHoraInicial.isAfter(fechaYHoraFinal)) {
             // Lanzar una RuntimeException con un mensaje adecuado
-            throw new IllegalArgumentException("La fecha final no puede ser mayor que la fecha inicial");
+            throw new InvalidDateOrderException("La fecha final no puede ser mayor que la fecha inicial");
         }
 
         try{
