@@ -33,7 +33,7 @@ public class AccountService {
     private final JwtService jwtService;
     private final PaginationConfig paginationConfig;
 
-    private final FixedTermDepositService fixedTermDepositService;
+   // private final FixedTermDepositService fixedTermDepositService;
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
@@ -191,7 +191,7 @@ public class AccountService {
                 totalUsdBalance += getBalanceInUSD(account);
             }
 
-            List<Transaction> accountTransactions = transactionRepository.findByAccountId(account);
+            List<Transaction> accountTransactions = transactionRepository.findByAccountId(accountId);
 
             for (Transaction transaction : accountTransactions) {
                 TransactionBalanceDTO dto = new TransactionBalanceDTO();
@@ -208,14 +208,14 @@ public class AccountService {
         }
 
         // Obtener los plazos fijos del usuario
-        List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(userId);
+      //  List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(userId);
 
 
         // Crear DTO de respuesta
         BalanceDTO balanceDTO = new BalanceDTO();
         balanceDTO.setAccountArs(totalArsBalance);
         balanceDTO.setAccountUsd(totalUsdBalance);
-        balanceDTO.setFixedTerms(fixedTermDeposits);
+      //  balanceDTO.setFixedTerms(fixedTermDeposits);
         balanceDTO.setAccountTransactions(transactionsDtos);
         return balanceDTO;
     }

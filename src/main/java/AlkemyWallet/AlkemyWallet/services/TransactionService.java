@@ -129,7 +129,7 @@ public class TransactionService {
     }
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
-            return transactionRepository.findByAccountId(account);
+            return transactionRepository.findByAccount(account);
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
