@@ -11,11 +11,8 @@ import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
+import AlkemyWallet.AlkemyWallet.services.*;
 import org.springframework.http.HttpHeaders;
-import AlkemyWallet.AlkemyWallet.services.AccountService;
-import AlkemyWallet.AlkemyWallet.services.FixedTermDepositService;
-import AlkemyWallet.AlkemyWallet.services.JwtService;
-import AlkemyWallet.AlkemyWallet.services.TransactionService;
 import io.jsonwebtoken.ExpiredJwtException;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,13 +45,15 @@ import java.util.stream.Collectors;
 public class AccountController {
 
     private final AccountService accountService;
+    private final BalanceService balanceService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
 
     @Autowired
-    public AccountController(AccountService accountService,  JwtService jwtService, UserRepository userRepository) {
+    public AccountController(AccountService accountService, BalanceService balanceService, JwtService jwtService, UserRepository userRepository) {
         this.accountService = accountService;
+        this.balanceService = balanceService;
         this.jwtService = jwtService;
         this.userRepository = userRepository;
     }
@@ -145,7 +144,7 @@ public class AccountController {
 
             if (userOptional.isPresent()) {
                 Long userId = userOptional.get().getId();
-                BalanceDTO balanceDTO = accountService.getUserBalanceAndTransactions(userId);
+                BalanceDTO balanceDTO = balanceService.getUserBalanceAndTransactions(userId);
                 return ResponseEntity.ok(balanceDTO);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");

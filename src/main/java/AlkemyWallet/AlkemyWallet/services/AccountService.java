@@ -12,6 +12,7 @@ import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,11 +30,9 @@ import java.util.List;
 public class AccountService {
     private final AccountRepository accountRepository;
     private final UserService userService;
-    private final TransactionRepository transactionRepository;
     private final JwtService jwtService;
     private final PaginationConfig paginationConfig;
 
-   // private final FixedTermDepositService fixedTermDepositService;
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
@@ -168,58 +167,6 @@ public class AccountService {
             // Devuelve el CBU generado y único
             return CBU;
         }
-
-    public BalanceDTO getUserBalanceAndTransactions(Long userId) {
-        // Obtener todas las cuentas del usuario
-        List<Accounts> accounts = findAccountsByUserId(userId);
-
-        List<TransactionBalanceDTO> transactionsDtos = new ArrayList<>();
-
-
-        // Calcular el balance total en ARS y USD
-        Double totalArsBalance = 0.0;
-        Double totalUsdBalance = 0.0;
-
-        for (Accounts account : accounts) {
-            Long accountId = account.getId();
-
-
-            // Calcular el balance total
-            if (account.getCurrency().equals(CurrencyEnum.ARS)) {
-                totalArsBalance += getBalanceInARS(account);
-            } else if (account.getCurrency().equals(CurrencyEnum.USD)) {
-                totalUsdBalance += getBalanceInUSD(account);
-            }
-
-            List<Transaction> accountTransactions = transactionRepository.findByAccountId(accountId);
-
-            for (Transaction transaction : accountTransactions) {
-                TransactionBalanceDTO dto = new TransactionBalanceDTO();
-                dto.setId(transaction.getId());
-                dto.setAmount(transaction.getAmount());
-                dto.setTransactionDate(transaction.getTransactionDate());
-                dto.setDescription(transaction.getDescription());
-                dto.setType(transaction.getType());
-                dto.setCurrency(transaction.getOriginAccount().getCurrency().toString());
-                dto.setOriginAccountCBU(transaction.getOriginAccount().getCBU());
-                transactionsDtos.add(dto);
-            }
-
-        }
-
-        // Obtener los plazos fijos del usuario
-      //  List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(userId);
-
-
-        // Crear DTO de respuesta
-        BalanceDTO balanceDTO = new BalanceDTO();
-        balanceDTO.setAccountArs(totalArsBalance);
-        balanceDTO.setAccountUsd(totalUsdBalance);
-      //  balanceDTO.setFixedTerms(fixedTermDeposits);
-        balanceDTO.setAccountTransactions(transactionsDtos);
-        return balanceDTO;
-    }
-
 
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
