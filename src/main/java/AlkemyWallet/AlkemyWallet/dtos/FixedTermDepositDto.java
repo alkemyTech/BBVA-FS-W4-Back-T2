@@ -23,12 +23,10 @@ public class FixedTermDepositDto {
     @NotNull
     private double invertedAmount;
 
-    @NotBlank
-    @NotNull
+
     private double gainedInterest;
 
-    @NotBlank
-    @NotNull
+
     private double totalAmountToCollect;
 
 }

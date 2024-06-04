@@ -1,7 +1,7 @@
 package AlkemyWallet.AlkemyWallet.services;
 
-import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -20,6 +20,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 
@@ -27,6 +28,7 @@ import java.util.function.Function;
 @AllArgsConstructor
 public class JwtService {
 
+    private final UserRepository userRepository;
     private JwtConfig jwtConfig;
 
     public String getToken(String userName) {
@@ -151,6 +153,11 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    public User getUserFromToken(String token) {
+        String username = this.getUsernameFromToken(token);
+        Optional<User> user = userRepository.findByUserName(username);
+        return user.orElse(null);
+    }
 
 
 }
