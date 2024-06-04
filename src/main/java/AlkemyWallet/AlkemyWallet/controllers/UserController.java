@@ -22,10 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/")
@@ -38,6 +35,8 @@ public class UserController {
 
 
     //Get All Users /users?page=0 ejemplo
+
+
     @GetMapping("users")
     public ResponseEntity<?> getUsers(@RequestParam(defaultValue = "0") int page) {
         try {
@@ -67,9 +66,10 @@ public class UserController {
     public void softDeleteUserById(@PathVariable Long id) {
         userService.softDeleteById(id);
     }
-//Detalle de usuario
-        @GetMapping("users-detail/{id}")
-        public ResponseEntity<?> getUserDetail (@PathVariable Long id){
+    //Detalle de usuario
+
+    @GetMapping("detail/{id}")
+    public ResponseEntity<?> getUserDetail (@PathVariable Long id){
             try {
                 UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 String authenticatedUsername = userDetails.getUsername();
@@ -87,12 +87,24 @@ public class UserController {
             }
         }
 
-        @DeleteMapping("cbu/{idCbu}/users/{idUser}")
+    @PostMapping("cbu/{idCbu}/users/{idUser}")
+    public ResponseEntity<?> addContact(@PathVariable String idCbu, @PathVariable Long idUser, HttpServletRequest request){
+        try {
+            Long userId = userService.getIdFromRequest(request);
+            userService.addContact(idCbu,userId);
+            return ResponseEntity.ok(HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
+        }
+    }
+
+
+    @DeleteMapping("cbu/{idCbu}/users/{idUser}")
         public ResponseEntity<?> deleteContact (@PathVariable String idCbu, @PathVariable Long
         idUser, HttpServletRequest request){
             try {
                 Long userId = userService.getIdFromRequest(request);
-                if (userId == idUser) {
+                if (Objects.equals(userId, idUser)) {
                     userService.deleteContact(idCbu, idUser);
                     return ResponseEntity.ok(HttpStatus.OK);
                 } else return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED);
