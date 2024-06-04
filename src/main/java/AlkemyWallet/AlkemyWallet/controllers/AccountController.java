@@ -1,22 +1,20 @@
 package AlkemyWallet.AlkemyWallet.controllers;
+
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
-import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
-import org.springframework.http.HttpHeaders;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -33,6 +31,24 @@ public class AccountController {
         this.jwtService = jwtService;
     }
 
+    @Operation(
+            description = "Crea una nueva cuenta",
+            summary = "Crear cuenta",
+            responses = {
+                    @ApiResponse(
+                            description = "Cuenta creada con éxito",
+                            responseCode = "200",
+                            content = {
+                                    @Content(schema = @Schema(implementation = Accounts.class), mediaType = "application/json")
+                            }
+                    ),
+                    @ApiResponse(
+                            description = "Error en la creación de la cuenta",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/create")
     public ResponseEntity<?> createAccount(@Valid @RequestBody AccountRequestDto accountCreation, HttpServletRequest request) {
         try {
@@ -42,6 +58,29 @@ public class AccountController {
         }
     }
 
+    @Operation(
+            description = "Endpoint accesible a admins",
+            summary = "Traer cuentas por id de usuario",
+            responses = {
+                    @ApiResponse(
+                            description = "Éxito",
+                            responseCode = "200",
+                            content = {
+                                    @Content(schema = @Schema(implementation = Accounts.class), mediaType = "application/json")
+                            }
+                    ),
+                    @ApiResponse(
+                            description = "Usuario no encontrado",
+                            responseCode = "404",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "No autenticado / Token inválido",
+                            responseCode = "403",
+                            content = @Content
+                    )
+            }
+    )
     @GetMapping("/{userId}")
     /*@PreAuthorize("hasRole('ADMIN')")*/
     public ResponseEntity<?> getAccountsByUserId(@PathVariable Long userId) {
@@ -53,7 +92,22 @@ public class AccountController {
         }
     }
 
-    // Endpoint para seleccionar una cuenta y actualizar el token JWT
+    @Operation(
+            description = "Selecciona una cuenta y actualiza el token JWT",
+            summary = "Seleccionar cuenta y actualizar token",
+            responses = {
+                    @ApiResponse(
+                            description = "Token actualizado con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al procesar la solicitud",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/select/{accountId}")
     public ResponseEntity<String> selectAccount(HttpServletRequest request, @PathVariable Long accountId) {
         try {
@@ -67,7 +121,6 @@ public class AccountController {
             // Para usar header
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
-
 
             // Devolver el nuevo token en la respuesta
             return ResponseEntity.ok().headers(headers).body("Token actualizado con éxito");
