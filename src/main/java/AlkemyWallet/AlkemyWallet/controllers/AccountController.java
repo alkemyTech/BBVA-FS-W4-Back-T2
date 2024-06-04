@@ -91,7 +91,7 @@ public class AccountController {
         }
     }
 
-    @PatchMapping("/{accountId}")
+    @PatchMapping("/editar/{accountId}")
     public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
         try {
             return ResponseEntity.ok(accountService.updateAccount(accountId,transactionLimit));
@@ -101,7 +101,6 @@ public class AccountController {
     }
 
     @GetMapping("/{userId}")
-    /*@PreAuthorize("hasRole('ADMIN')")*/
     public ResponseEntity<?> getAccountsByUserId(@PathVariable Long userId) {
         try {
             List<Accounts> accounts = accountService.findAccountsByUserId(userId);

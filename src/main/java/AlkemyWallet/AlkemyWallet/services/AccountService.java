@@ -6,6 +6,8 @@ import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.*;
+import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
+import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
@@ -21,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
+import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.util.*;
 import java.util.Random;
@@ -35,7 +39,6 @@ public class AccountService {
     private final PaginationConfig paginationConfig;
 
 
-
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
 
         String currency = accountCreation.getCurrency();
@@ -48,7 +51,7 @@ public class AccountService {
         //Validacion...
 
         if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+            throw new DuplicateAccountException("No se puede tener mas de un tipo de cuenta con la misma moneda");
         }
 
         try {
@@ -60,7 +63,6 @@ public class AccountService {
             account.setCBU(generarCBU());
             account.setUserId(user);  // --> JWT
             account.setCurrency(currencyEnum);
-
 
             Accounts savedAccount = accountRepository.save(account);
             // Add account ID to existing JWT token
@@ -138,15 +140,6 @@ public class AccountService {
 
             Accounts savedAccount = accountRepository.save(account);
 
-            //No se si es necesario cuando se inician las 2 cuentas
-                //Por las dudas lo dejo
-            // Add account ID to existing JWT token
-//            String token = jwtService.getTokenFromRequest(request);
-//            if (token != null) {
-//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-//            }
-
-            // Devolver la cuenta guardada en DTO
 
             return accountMapper(savedAccount);
         } catch (Exception e) {
@@ -154,52 +147,52 @@ public class AccountService {
         }
     }
 
-    public static String logicaCBU() {
-        StringBuilder cbu = new StringBuilder();
-        Random random = new Random();
+        public static String logicaCBU () {
+            StringBuilder cbu = new StringBuilder();
+            Random random = new Random();
 
-        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-        for (int i = 0; i < 7; i++) {
-            cbu.append(random.nextInt(10));
-        }
-        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
-        // Los siguientes 12 dígitos son generados aleatoriamente.
-        for (int i = 0; i < 12; i++) {
-            cbu.append(random.nextInt(10));
-        }
-
-        // Calculamos el dígito verificador provisorio.
-        int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
-        int sum = 0;
-        for (int i = 0; i < cbu.length(); i++) {
-            sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
-        }
-        int dv = (10 - (sum % 10)) % 10;
-        cbu.setCharAt(7, Character.forDigit(dv, 10));
-
-        return cbu.toString();
-    }
-
-    public String generarCBU() {
-        String CBU = null;
-        boolean cbuExistente = true;
-
-        // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
-        while (cbuExistente) {
-            // Genera un nuevo CBU
-            CBU = logicaCBU();
-
-            // Verifica si el CBU generado ya existe en la base de datos
-            if (!accountRepository.findByCBU(CBU).isPresent()) {
-                // Si el CBU no existe, sal del bucle
-                cbuExistente = false;
+            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
+            for (int i = 0; i < 7; i++) {
+                cbu.append(random.nextInt(10));
             }
-        }
+            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
-        // Devuelve el CBU generado y único
-        return CBU;
-    }
+            // Los siguientes 12 dígitos son generados aleatoriamente.
+            for (int i = 0; i < 12; i++) {
+                cbu.append(random.nextInt(10));
+            }
+
+            // Calculamos el dígito verificador provisorio.
+            int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
+            int sum = 0;
+            for (int i = 0; i < cbu.length(); i++) {
+                sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
+            }
+            int dv = (10 - (sum % 10)) % 10;
+            cbu.setCharAt(7, Character.forDigit(dv, 10));
+
+            return cbu.toString();
+        }
+        public String generarCBU () {
+            String CBU = null;
+            boolean cbuExistente = true;
+
+            // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
+            while (cbuExistente) {
+                // Genera un nuevo CBU
+                CBU = logicaCBU();
+
+                // Verifica si el CBU generado ya existe en la base de datos
+                if (!accountRepository.findByCBU(CBU).isPresent()) {
+                    // Si el CBU no existe, sal del bucle
+                    cbuExistente = false;
+                }
+            }
+
+            // Devuelve el CBU generado y único
+            return CBU;
+        }
 
 
     public void updateAfterTransaction(Accounts account, Double amount) {
@@ -252,8 +245,8 @@ public class AccountService {
         accountDto.setUserId(account.getUserId().getId());
 
 
-        return accountDto;
-    }
+            return accountDto;
+        }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
 
@@ -272,7 +265,6 @@ public class AccountService {
         } else {
             throw new RuntimeException("Cuenta no encontrada");
         }
-
     }
 
 

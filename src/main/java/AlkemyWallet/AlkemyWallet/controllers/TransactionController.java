@@ -3,11 +3,9 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
-import AlkemyWallet.AlkemyWallet.dtos.TransactionDescriptionDTO;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
-import AlkemyWallet.AlkemyWallet.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -55,7 +53,6 @@ public class TransactionController {
     }
 
     @GetMapping("user/{userId}")
-    /* @PreAuthorize("hasRole('ADMIN')") */
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
             List<Accounts> accounts = accountService.findAccountsByUserId(userId);
@@ -72,8 +69,7 @@ public class TransactionController {
         }
 
     }
-
-    @GetMapping("transaction/{transactionId}")
+    @GetMapping("/{transactionId}")
     public ResponseEntity<?> getTransactionById(@PathVariable Long transactionId) {
         try {
             Transaction transaction = transactionService.getTransactionById(transactionId);
