@@ -1,13 +1,10 @@
 package AlkemyWallet.AlkemyWallet.services;
 
-import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -23,6 +20,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 
@@ -30,18 +28,19 @@ import java.util.function.Function;
 @AllArgsConstructor
 public class JwtService {
 
+    private final UserRepository userRepository;
     private JwtConfig jwtConfig;
 
-
-    public String getToken(UserDetails user) {
-        return getToken(new HashMap<>(), user);
+    public String getToken(String userName) {
+        return getToken(new HashMap<>(), userName);
     }
 
-    private String getToken(Map<String,Object> extraClaims, UserDetails user) {
+
+    private String getToken(Map<String,Object> extraClaims, String userName) {
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
-                .setSubject(user.getUsername())
+                .setSubject(userName)
                 .setIssuer(jwtConfig.getIssuer())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
@@ -51,10 +50,18 @@ public class JwtService {
 
     public String addAccountIdToToken(String token, String accountId) {
         // Decodificar el token
-        Claims claims = Jwts.parserBuilder()
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Key key = this.getKey();
+        Claims claims;
+        try {
+            claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            System.out.println("Error decodificando el token: " + e.getMessage());
+            return null;
+        }
 
         // Añadir el nuevo campo
         claims.put("accountId", accountId);
@@ -106,6 +113,20 @@ public class JwtService {
         return getClaim(token, Claims::getExpiration);
     }
 
+    public String removeAccountIdFromToken(String token) {
+        Claims claims = getAllClaims(token);
+        claims.remove("accountId");
+        return generateNewTokenWithClaims(claims);
+    }
+
+    private String generateNewTokenWithClaims(Claims claims) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) // 24 minutes
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username=getUsernameFromToken(token);
@@ -132,6 +153,11 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    public User getUserFromToken(String token) {
+        String username = this.getUsernameFromToken(token);
+        Optional<User> user = userRepository.findByUserName(username);
+        return user.orElse(null);
+    }
 
 
 }

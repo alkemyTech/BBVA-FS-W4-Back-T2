@@ -13,8 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthResponseRegister {
-    @NotNull
-    String token;
+
     @NotBlank
     @Email
     String userName;

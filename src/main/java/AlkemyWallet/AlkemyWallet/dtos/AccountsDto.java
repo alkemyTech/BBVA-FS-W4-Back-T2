@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.dtos;
 
 
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +23,9 @@ public class AccountsDto {
     private CurrencyEnum currency;
     @NotNull
     @NotBlank
+    private AccountTypeEnum accountType;
+    @NotNull
+    @NotBlank
     private Double transactionLimit;
     @NotNull
     @NotBlank
@@ -31,5 +35,5 @@ public class AccountsDto {
     private String CBU;
     @NotNull
     @NotBlank
-    private User userId;
+    private Long userId;
 }

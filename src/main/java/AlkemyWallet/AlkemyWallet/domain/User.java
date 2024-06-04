@@ -8,7 +8,9 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.time.Period;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +55,25 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @NotNull
-    private boolean softDelete;
+    private int softDelete;
+
+    public boolean isSoftDelete() {
+        return this.softDelete == 1; // Devuelve true si softDelete es 1
+    }
+
+
+    public void setSoftDelete(boolean softDelete) {
+        this.softDelete = softDelete ? 1 : 0; // Almacena 1 si es true, 0 si es false
+    }
+
+    @Column(nullable = false)
+    private LocalDate birthDate;
+
+    @Column(nullable = true)
+    private String imagePath;
+
+    @ElementCollection
+    private List<String> cbuTerceros;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -65,24 +85,34 @@ public class User implements UserDetails {
         return this.userName;
     }
 
+    public int getAge() {
+        LocalDate currentDate = LocalDate.now();
+        Period period = Period.between(birthDate, currentDate);
+        return period.getYears();
+    }
+
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
      @ManyToOne(cascade=CascadeType.PERSIST)

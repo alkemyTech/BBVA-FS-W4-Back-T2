@@ -8,24 +8,24 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class TransactionBalanceDTO {
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public class TransactionBalanceDTO {
 
-    @NotNull
-    private Long id;
-    @NotNull
-    private Double amount;
-    @NotNull
-    private LocalDateTime transactionDate;
-    private String description;
-    @NotNull
-    private TransactionEnum type;
-    @NotNull
-    private String currency;
-    @NotNull
-    private String originAccountCBU;
+        @NotNull
+        private Long id;
+        @NotNull
+        private Double amount;
+        @NotNull
+        private LocalDateTime transactionDate;
+        private String description;
+        @NotNull
+        private TransactionEnum type;
+        @NotNull
+        private String currency;
+        @NotNull
+        private String originAccountCBU;
 
 
-}
+    }
