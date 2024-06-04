@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 @Service
@@ -94,7 +96,7 @@ public class TransactionService {
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
             Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
-            validateDepositTransaction(transaction,account,destinationAccount);
+            validateDepositTransaction(transaction, account, destinationAccount);
 
             // Crear una transacción de depósito para la cuenta de origen
             Transaction depositTransaction = transactionFactory.createTransaction(
@@ -124,10 +126,11 @@ public class TransactionService {
         if (transaction.getAmount() <= 0) {
             throw new NonPositiveAmountException("El monto del depósito debe ser mayor que cero");
         }
-        if(!Objects.equals(account.getCBU(), destinationAccount.getCBU())) {
+        if (!Objects.equals(account.getCBU(), destinationAccount.getCBU())) {
             throw new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino");
         }
     }
+
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
             return transactionRepository.findByAccountId(account);
@@ -144,12 +147,22 @@ public class TransactionService {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
     }
+
     public Transaction getTransactionById(Long id) {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transacción no encontrada"));
     }
+
+    public Transaction updateTransactionDescription(Long id, String description, Long userId) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Transacción no encontrada"));
+
+        // Verificar que la transacción pertenece al usuario autenticado
+        if (!transaction.getAccount().getUser().getId().equals(userId)) {
+            throw new SecurityException("No está autorizado para actualizar esta transacción");
+        }
+
+        transaction.setDescription(description);
+        return transactionRepository.save(transaction);
+    }
 }
-
-
-
-
