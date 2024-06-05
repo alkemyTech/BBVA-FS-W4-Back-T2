@@ -2,34 +2,38 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
+import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
-import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import jakarta.servlet.http.HttpServletRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
+import java.util.*;
 import java.util.Random;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-
-
 public class AccountService {
     private final AccountRepository accountRepository;
-    public final ModelMapperConfig modelMapper;
     private final UserService userService;
     private final JwtService jwtService;
     private final PaginationConfig paginationConfig;
@@ -61,6 +65,13 @@ public class AccountService {
             account.setCurrency(currencyEnum);
 
             Accounts savedAccount = accountRepository.save(account);
+            // Add account ID to existing JWT token
+            String token = jwtService.getTokenFromRequest(request);
+            if (token != null) {
+                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
+            }
+
+            // Devolver la cuenta guardada en DTO
 
             return accountMapper(savedAccount);
         } catch (Exception e) {
@@ -70,8 +81,12 @@ public class AccountService {
 
 
     public List<Accounts> findAccountsByUserId(long userId) {
-        User user = userService.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontró al usuario con el ID: " + userId));
-        return accountRepository.findByUserId(user);
+        try{
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            return accountRepository.findByUserId(user);
+        }catch (Exception e){
+            throw new RuntimeException("No se encontró al usuario",e);
+        }
     }
 
 
@@ -173,11 +188,19 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
-        public Accounts getAccountFrom (String token){
-            String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
-            Long accountId = Long.parseLong(accountIdToken);
-            return accountRepository.findById(accountId).orElseThrow();
-        }
+    public Double getBalanceInARS(Accounts account) {
+        return account.getCurrency() == CurrencyEnum.ARS ? account.getBalance() : 0.0;
+    }
+
+    public Double getBalanceInUSD(Accounts account) {
+        return account.getCurrency() == CurrencyEnum.USD ? account.getBalance() : 0.0;
+    }
+
+    public Accounts getAccountFrom(String token) {
+        String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
+        Long accountId = Long.parseLong(accountIdToken);
+        return accountRepository.findById(accountId).orElseThrow();
+    }
 
 
 
@@ -221,12 +244,10 @@ public class AccountService {
         }
     }
 
-
     public Accounts findById(Long id) {
         return accountRepository.findById(id).orElseThrow();
     }
 
-    ;
 
     public Page<Accounts> getAllAccounts(int page) {
         int accountsPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 cuentas por página

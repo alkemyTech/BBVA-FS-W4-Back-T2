@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+// Imports omitidos para mayor claridad
 
 import AlkemyWallet.AlkemyWallet.config.FixedTermDepositConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
@@ -14,6 +15,7 @@ import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -132,5 +134,10 @@ public class FixedTermDepositService {
 
         return (int) ChronoUnit.DAYS.between(fechaInicial, fechaFinal);
     }
+    public List<FixedTermDeposit> getFixedTermDepositsByUser(Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return fixedTermDepositRepository.findByUser(user);
+    }
+
 }
 

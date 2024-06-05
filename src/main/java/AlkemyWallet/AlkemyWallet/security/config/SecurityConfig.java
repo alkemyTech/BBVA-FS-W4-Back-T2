@@ -52,9 +52,8 @@ public class SecurityConfig {
 
                                 //rutas de transacciones
                                 .requestMatchers("/transactions/user/{userId}").hasRole("ADMIN")
+                                .requestMatchers("/accounts/**").permitAll()
                                 .requestMatchers("/transactions/**").permitAll()
-
-
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager->

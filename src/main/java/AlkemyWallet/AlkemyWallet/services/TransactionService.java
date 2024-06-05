@@ -65,7 +65,6 @@ public class TransactionService {
         return transactionResponseMapper.mapToTransactionResponse(transactionRegistro, originAccount, destinationAccount);
     }
 
-
     public Transaction sendMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction paymentTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
@@ -132,7 +131,7 @@ public class TransactionService {
 
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
-            return transactionRepository.findByAccountId(account);
+            return transactionRepository.findByAccount(account);
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
