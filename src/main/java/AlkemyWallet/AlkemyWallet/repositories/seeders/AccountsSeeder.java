@@ -32,18 +32,26 @@ public class AccountsSeeder {
         Long userId = 0L;
         // Crear cuentas para usuarios
         for (int i = 1; i <= 20; i++) {
+
             userId=(long)i;
-            User user = userService.findById(userId).get();
-            // Asignar cuentas según el rango de ID
-            if (i <= 10) {
-                // USER
-                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
-                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
+
+            if (userService.findById(userId).isPresent()) {
+                User user = userService.findById(userId).get();
+
+                if (i <= 10) {
+                    // USER
+                    createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
+                    createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
+                } else {
+                    // ADMIN
+                    createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
+                    createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
+                }
+
             } else {
-                // ADMIN
-                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
-                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
+                throw new IllegalStateException("El usuario no se encontró");
             }
+
         }
     }
 

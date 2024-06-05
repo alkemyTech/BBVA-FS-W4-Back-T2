@@ -15,6 +15,7 @@ import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,12 +31,15 @@ import java.util.Random;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
 public class AccountService {
-    private final AccountRepository accountRepository;
-    private final UserService userService;
-    private final JwtService jwtService;
-    private final PaginationConfig paginationConfig;
+    @Autowired
+    private  AccountRepository accountRepository;
+    @Autowired
+    private  UserService userService;
+    @Autowired
+    private  JwtService jwtService;
+    @Autowired
+    private  PaginationConfig paginationConfig;
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
