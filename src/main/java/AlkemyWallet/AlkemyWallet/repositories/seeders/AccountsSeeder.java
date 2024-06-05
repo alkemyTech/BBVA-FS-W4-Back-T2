@@ -6,6 +6,7 @@ import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
 import AlkemyWallet.AlkemyWallet.services.UserService;
@@ -22,6 +23,8 @@ public class AccountsSeeder {
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private TransactionService transactionService;
     @Autowired
     private UserService userService;
@@ -35,8 +38,8 @@ public class AccountsSeeder {
 
             userId=(long)i;
 
-            if (userService.findById(userId).isPresent()) {
-                User user = userService.findById(userId).get();
+            if (userRepository.findById(userId).isPresent()) {
+                User user = userRepository.findById(userId).get();
 
                 if (i <= 10) {
                     // USER

@@ -29,8 +29,6 @@ public class AlkemyWalletApplication {
 	public void init() {
 		databaseService.checkDatabaseConnection();
 		CurrencyEnum.initializeLimits(currencyConfig);
-		AccountsSeeder accountsSeeder = new AccountsSeeder();
-		accountsSeeder.seedAccounts();
 	}
 
 

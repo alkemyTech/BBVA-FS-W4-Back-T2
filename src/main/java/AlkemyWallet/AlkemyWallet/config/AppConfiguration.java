@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.config;
 
+import AlkemyWallet.AlkemyWallet.repositories.seeders.AccountsSeeder;
 import AlkemyWallet.AlkemyWallet.repositories.seeders.UserSeeder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -12,10 +13,14 @@ public class AppConfiguration {
     @Autowired
     private UserSeeder userSeeder;
 
+    @Autowired
+    AccountsSeeder accountsSeeder;
+
     @Bean
     public CommandLineRunner runSeeder(){
         return args -> {
             userSeeder.seed();
+            accountsSeeder.seedAccounts();
         };
     }
 }

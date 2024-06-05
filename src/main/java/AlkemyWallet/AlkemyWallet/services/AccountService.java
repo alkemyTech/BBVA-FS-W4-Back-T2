@@ -96,30 +96,32 @@ public class AccountService {
         String accountType = accountCreation.getAccountType();
         CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
         AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
-        User user = userService.findById(userId).orElseThrow();
 
-        //Validacion...
+        if (userService.findById(userId).isPresent()) {
+            User user = userService.findById(userId).get();
+            if (!verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
+                try {
+                    Accounts account = new Accounts();
+                    account.setCurrency(currencyEnum);
+                    account.setAccountType(accountTypeEnum);
+                    account.setTransactionLimit(currencyEnum.getTransactionLimit());
+                    account.setBalance(0.00);
+                    account.setCBU(generarCBU());
+                    account.setUserId(user);  // --> JWT
+                    account.setCurrency(currencyEnum);
 
-        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
-        }
-
-        try {
-            Accounts account = new Accounts();
-            account.setCurrency(currencyEnum);
-            account.setAccountType(accountTypeEnum);
-            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-            account.setBalance(0.00);
-            account.setCBU(generarCBU());
-            account.setUserId(user);  // --> JWT
-            account.setCurrency(currencyEnum);
-
-            Accounts savedAccount = accountRepository.save(account);
+                    Accounts savedAccount = accountRepository.save(account);
 
 
-            return accountMapper(savedAccount);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al agregar la cuenta", e);
+                    return accountMapper(savedAccount);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al agregar la cuenta", e);
+                }
+            }else{
+                throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+            }
+        } else {
+            throw new IllegalStateException("Usuario no encontrado");
         }
     }
 
