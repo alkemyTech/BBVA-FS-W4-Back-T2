@@ -1,19 +1,19 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
-
-import AlkemyWallet.AlkemyWallet.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class TransactionController {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-        return ResponseEntity.ok().headers(headers).body(transactionService.registrarTransaccion(transaction,account));
+        return ResponseEntity.ok().headers(headers).body(transactionService.registrarTransaccion(transaction, account));
     }
 
     @PostMapping({"/deposit"})
@@ -53,7 +53,6 @@ public class TransactionController {
     }
 
     @GetMapping("user/{userId}")
-    /* @PreAuthorize("hasRole('ADMIN')") */
     public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
         try {
             List<Accounts> accounts = accountService.findAccountsByUserId(userId);
@@ -70,13 +69,29 @@ public class TransactionController {
         }
 
     }
-    @GetMapping("transaction/{transactionId}")
+    @GetMapping("/{transactionId}")
     public ResponseEntity<?> getTransactionById(@PathVariable Long transactionId) {
         try {
             Transaction transaction = transactionService.getTransactionById(transactionId);
             return ResponseEntity.ok(transaction);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al obtener la transacción: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("detail/{id}")
+    public ResponseEntity<?> updateTransactionDescription(@PathVariable Long id, @RequestBody String description) {
+        try {
+            // Obtener el userId del usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User authenticatedUser = (User) authentication.getPrincipal();
+            Long userId = authenticatedUser.getId();
+
+            // Actualizar la descripción de la transacción
+            Transaction transaction = transactionService.updateTransactionDescription(id, description, userId);
+            return ResponseEntity.ok(transaction);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error al actualizar la transacción: " + e.getMessage());
         }
     }
 }

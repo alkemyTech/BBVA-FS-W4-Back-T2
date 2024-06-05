@@ -93,6 +93,9 @@ public class Accounts {
         this.updateDate = LocalDateTime.now();
         this.softDelete = false;
     }
-
+    // Método para obtener el usuario asociado
+    public User getUser() {
+        return this.userId;
+    }
 
 }
