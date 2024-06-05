@@ -91,7 +91,7 @@ public class AccountsSeeder {
             Long transactionId = transactionService.depositMoney(depositTransaction, account);
 
             // Imprimir mensaje de éxito
-            System.out.println("Se realizó un depósito de " + depositAmount + " en la cuenta con ID " + account.getId());
+            //System.out.println("Se realizó un depósito de " + depositAmount + " en la cuenta con ID " + account.getId());
         } catch (Exception e) {
             // Manejar cualquier excepción ocurrida durante el depósito
             System.err.println("Error al realizar el depósito en la cuenta con ID " + account.getId() + ": " + e.getMessage());
