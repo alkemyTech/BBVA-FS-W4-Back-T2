@@ -19,13 +19,7 @@ public class AlkemyWalletApplication {
 	@Autowired
 	private CurrencyConfig currencyConfig;
 	@Autowired
-	private AppConfiguration appConfig;
-
-	@Autowired
 	private DatabaseService databaseService;
-
-	@Autowired
-	private RoleFactory roleFactory;
 
 	public static void main(String[] args) {
 		SpringApplication.run(AlkemyWalletApplication.class, args);
@@ -34,8 +28,7 @@ public class AlkemyWalletApplication {
 	public void init() {
 		databaseService.checkDatabaseConnection();
 		CurrencyEnum.initializeLimits(currencyConfig);
-		roleFactory.initializeRoles();
-		appConfig.runSeeder();
+
 	}
 
 

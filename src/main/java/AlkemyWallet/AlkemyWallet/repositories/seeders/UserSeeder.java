@@ -26,7 +26,7 @@ public class UserSeeder {
     private UserRepository userRepository;
 
     @Autowired
-    private RoleRepository roleRepository;
+    private RoleFactory roleFactory;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -35,6 +35,7 @@ public class UserSeeder {
 
     public void seed() {
 
+        roleFactory.initializeRoles();
         // Crear usuarios administradores y regulares utilizando los nombres predefinidos
         for (int i = 0; i < 10; i++) {
 
@@ -50,18 +51,14 @@ public class UserSeeder {
     private List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "pedro@exampleAdmin.com", "ana@exampleAdmin.com", "luis@exampleAdmin.com", "roberto@exampleAdmin.com", "pablo@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "liliana@exampleAdmin.com");
 
     private void createAdminUser() {
-            Role adminRole = roleRepository.findByName(RoleEnum.ADMIN);
-            if (adminRole == null) {
-                adminRole = roleRepository.save(new Role(null, RoleEnum.ADMIN, "Administrator role", LocalDateTime.now(), LocalDateTime.now()));
-            }
 
             User user = User.builder()
-                    .userName(getNextPredefinedEmail())
+                    .userName(getNextPredefinedEmailAdmin())
                     .password(passwordEncoder.encode("adminPassword"))
                     .firstName(getNextPredefinedName())
                     .lastName(getNextPredefinedLastName())
                     .birthDate(generateRandomBirthDate())
-                    .role(adminRole)
+                    .role(RoleFactory.getAdminRole())
                     .creationDate(LocalDateTime.now())
                     .updateDate(LocalDateTime.now())
                     .build();
@@ -70,10 +67,6 @@ public class UserSeeder {
 
 
 private void createRegularUser() {
-    Role userRole = roleRepository.findByName(RoleEnum.USER);
-    if (userRole == null) {
-        userRole = roleRepository.save(new Role(null, RoleEnum.USER, "User role", LocalDateTime.now(), LocalDateTime.now()));
-    }
 
     User user = User.builder()
             .userName(getNextPredefinedEmail())
@@ -81,7 +74,7 @@ private void createRegularUser() {
             .firstName(getNextPredefinedName())
             .lastName(getNextPredefinedLastName())
             .birthDate(generateRandomBirthDate())
-            .role(userRole)
+            .role(RoleFactory.getUserRole())
             .creationDate(LocalDateTime.now())
             .updateDate(LocalDateTime.now())
             .build();
