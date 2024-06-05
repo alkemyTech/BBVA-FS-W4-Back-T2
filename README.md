@@ -46,7 +46,7 @@ Usuarios para realizar pruebas de funcionalidad
 | luis@exampleAdmin.com  | adminPassword   |
 | ana@exampleAdmin.com | adminPassword |
 | liliana@exampleAdmin.com | adminOassword |
-| roberto@exampleAdmin | adminPassword |
-| maria@exampleAdmin | adminPassword |
-| duki@exampleAdmin | adminPassword |
+| roberto@exampleAdmin.com | adminPassword |
+| maria@exampleAdmin.com | adminPassword |
+| duki@exampleAdmin.com | adminPassword |
 
