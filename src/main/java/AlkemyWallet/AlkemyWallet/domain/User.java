@@ -55,7 +55,16 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @NotNull
-    private boolean softDelete;
+    private int softDelete;
+
+    public boolean isSoftDelete() {
+        return this.softDelete == 1; // Devuelve true si softDelete es 1
+    }
+
+
+    public void setSoftDelete(boolean softDelete) {
+        this.softDelete = softDelete ? 1 : 0; // Almacena 1 si es true, 0 si es false
+    }
 
     @Column(nullable = false)
     private LocalDate birthDate;
@@ -68,7 +77,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.getName().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName().name()));
     }
 
     @Override
@@ -84,25 +93,28 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return this.softDelete == 0;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+
+        return this.softDelete == 0;
     }
 
-     @ManyToOne(cascade=CascadeType.PERSIST)
+     @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
     private Role role;
 
