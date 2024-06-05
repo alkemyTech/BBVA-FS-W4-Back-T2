@@ -1,6 +1,8 @@
 package AlkemyWallet.AlkemyWallet;
 
+import AlkemyWallet.AlkemyWallet.config.AppConfiguration;
 import AlkemyWallet.AlkemyWallet.config.CurrencyConfig;
+import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.services.DatabaseService;
 import jakarta.annotation.PostConstruct;
@@ -26,6 +28,7 @@ public class AlkemyWalletApplication {
 	public void init() {
 		databaseService.checkDatabaseConnection();
 		CurrencyEnum.initializeLimits(currencyConfig);
+
 	}
 
 
