@@ -1,11 +1,14 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
-
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequest;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -33,6 +36,27 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
+    @Operation(
+            description = "Endpoint accesible para autenticación de usuarios",
+            summary = "Inicia sesión con credenciales de usuario",
+            responses = {
+                    @ApiResponse(
+                            description = "Login successful!",
+                            responseCode = "200",
+                            content = @Content(mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Invalid username or password",
+                            responseCode = "401",
+                            content = @Content(mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al procesar la solicitud",
+                            responseCode = "500",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
@@ -47,6 +71,27 @@ public class AuthController {
         }
     }
 
+    @Operation(
+            description = "Endpoint accesible para registro de nuevos usuarios",
+            summary = "Registra un nuevo usuario",
+            responses = {
+                    @ApiResponse(
+                            description = "Registro exitoso",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = AuthResponseRegister.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Solicitud inválida",
+                            responseCode = "400",
+                            content = @Content(mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al procesar la solicitud",
+                            responseCode = "500",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
@@ -55,12 +100,33 @@ public class AuthController {
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-
             return ResponseEntity.ok().headers(headers).body(registerResponse);
         } catch (IllegalArgumentException e) {
             return handleIllegalArgumentException(e);
         }
     }
+
+    @Operation(
+            description = "Endpoint accesible para registro de nuevos administradores",
+            summary = "Registra un nuevo administrador",
+            responses = {
+                    @ApiResponse(
+                            description = "Registro exitoso",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = AuthResponseRegister.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Solicitud inválida",
+                            responseCode = "400",
+                            content = @Content(mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al procesar la solicitud",
+                            responseCode = "500",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
@@ -69,12 +135,9 @@ public class AuthController {
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-
             return ResponseEntity.ok().headers(headers).body(registerResponse);
         } catch (IllegalArgumentException e) {
             return handleIllegalArgumentException(e);
         }
     }
 }
-
-

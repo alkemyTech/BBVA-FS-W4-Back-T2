@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionDescriptionDTO {
-    @NotNull
+    @NotNull(message = "La descripción no puede ser nula")
     private String description;
 
     public String getDescription() {

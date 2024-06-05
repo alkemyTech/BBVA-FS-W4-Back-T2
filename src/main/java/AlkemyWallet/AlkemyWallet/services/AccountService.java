@@ -15,11 +15,11 @@ import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,12 +31,15 @@ import java.util.Random;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
 public class AccountService {
-    private final AccountRepository accountRepository;
-    private final UserService userService;
-    private final JwtService jwtService;
-    private final PaginationConfig paginationConfig;
+    @Autowired
+    private  AccountRepository accountRepository;
+    @Autowired
+    private  UserService userService;
+    @Autowired
+    private  JwtService jwtService;
+    @Autowired
+    private  PaginationConfig paginationConfig;
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
@@ -65,11 +68,7 @@ public class AccountService {
             account.setCurrency(currencyEnum);
 
             Accounts savedAccount = accountRepository.save(account);
-            // Add account ID to existing JWT token
-            String token = jwtService.getTokenFromRequest(request);
-            if (token != null) {
-                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-            }
+
 
             // Devolver la cuenta guardada en DTO
 
@@ -97,30 +96,32 @@ public class AccountService {
         String accountType = accountCreation.getAccountType();
         CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
         AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
-        User user = userService.findById(userId).orElseThrow();
 
-        //Validacion...
+        if (userService.findById(userId).isPresent()) {
+            User user = userService.findById(userId).get();
+            if (!verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
+                try {
+                    Accounts account = new Accounts();
+                    account.setCurrency(currencyEnum);
+                    account.setAccountType(accountTypeEnum);
+                    account.setTransactionLimit(currencyEnum.getTransactionLimit());
+                    account.setBalance(0.00);
+                    account.setCBU(generarCBU());
+                    account.setUserId(user);  // --> JWT
+                    account.setCurrency(currencyEnum);
 
-        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
-        }
-
-        try {
-            Accounts account = new Accounts();
-            account.setCurrency(currencyEnum);
-            account.setAccountType(accountTypeEnum);
-            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-            account.setBalance(0.00);
-            account.setCBU(generarCBU());
-            account.setUserId(user);  // --> JWT
-            account.setCurrency(currencyEnum);
-
-            Accounts savedAccount = accountRepository.save(account);
+                    Accounts savedAccount = accountRepository.save(account);
 
 
-            return accountMapper(savedAccount);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al agregar la cuenta", e);
+                    return accountMapper(savedAccount);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al agregar la cuenta", e);
+                }
+            }else{
+                throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+            }
+        } else {
+            throw new IllegalStateException("Usuario no encontrado");
         }
     }
 
