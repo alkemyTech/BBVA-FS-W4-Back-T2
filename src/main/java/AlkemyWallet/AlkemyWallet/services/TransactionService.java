@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
@@ -20,6 +21,9 @@ import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import lombok.AllArgsConstructor;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +41,7 @@ public class TransactionService {
     private final UserService userService;
     private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
+    private final PaginationConfig paginationConfig;
 
     public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
@@ -144,6 +149,13 @@ public class TransactionService {
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
+    }
+
+    public Page<Transaction> getTransactionsByUserIdPaginated(Long userId, int page) {
+        int transactionsPerPage = paginationConfig.getTransactionsPerPage();
+        Pageable pageable = PageRequest.of(page,transactionsPerPage);
+        User user = userService.findById(userId).get();
+        return transactionRepository.findByAccountIdUserId(user, pageable);
     }
 
     public Transaction getTransactionById(Long id) {
