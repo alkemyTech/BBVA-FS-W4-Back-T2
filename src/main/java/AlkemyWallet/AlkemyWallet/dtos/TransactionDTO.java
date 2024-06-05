@@ -20,7 +20,7 @@ public class TransactionDTO {
     @NotBlank
     Double amount;
 
-    @Schema(description = "Moneda de la Transaccion", required = true)
+    @Schema(description = "Moneda de la Transacción", required = true)
     @NotNull
     @NotBlank
     String currency;

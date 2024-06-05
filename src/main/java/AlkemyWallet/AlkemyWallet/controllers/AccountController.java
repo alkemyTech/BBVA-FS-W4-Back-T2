@@ -1,51 +1,31 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
-import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.BalanceDTO;
-import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
-import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
-import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
-import AlkemyWallet.AlkemyWallet.security.JwtAuthenticationFilter;
-import AlkemyWallet.AlkemyWallet.services.*;
-import org.springframework.http.HttpHeaders;
-import io.jsonwebtoken.ExpiredJwtException;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
+import AlkemyWallet.AlkemyWallet.services.BalanceService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.*;
-import java.util.logging.ErrorManager;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/accounts")
@@ -56,7 +36,6 @@ public class AccountController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
-
     @Autowired
     public AccountController(AccountService accountService, BalanceService balanceService, JwtService jwtService, UserRepository userRepository) {
         this.accountService = accountService;
@@ -65,6 +44,22 @@ public class AccountController {
         this.userRepository = userRepository;
     }
 
+    @Operation(
+            description = "Obtiene una lista de todas las cuentas con paginación",
+            summary = "Obtener todas las cuentas",
+            responses = {
+                    @ApiResponse(
+                            description = "Cuentas obtenidas con éxito",
+                            responseCode = "200",
+                            content = @Content(mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al obtener las cuentas",
+                            responseCode = "500",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
     @GetMapping("")
     public ResponseEntity<?> getAccounts(@RequestParam(defaultValue = "0") int page) {
         try {
@@ -85,7 +80,7 @@ public class AccountController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos las cuentas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todas las cuentas: " + e.getMessage());
         }
     }
 
@@ -96,14 +91,12 @@ public class AccountController {
                     @ApiResponse(
                             description = "Cuenta creada con éxito",
                             responseCode = "200",
-                            content = {
-                                    @Content(schema = @Schema(implementation = Accounts.class), mediaType = "application/json")
-                            }
+                            content = @Content(schema = @Schema(implementation = Accounts.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Error en la creación de la cuenta",
                             responseCode = "500",
-                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                            content = @Content(mediaType = "text/plain")
                     )
             }
     )
@@ -116,35 +109,44 @@ public class AccountController {
         }
     }
 
+    @Operation(
+            description = "Actualiza el límite de transacción de una cuenta",
+            summary = "Actualizar cuenta",
+            responses = {
+                    @ApiResponse(
+                            description = "Cuenta actualizada con éxito",
+                            responseCode = "200",
+                            content = @Content(mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al actualizar la cuenta",
+                            responseCode = "404",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
     @PatchMapping("/editar/{accountId}")
     public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
         try {
-            return ResponseEntity.ok(accountService.updateAccount(accountId,transactionLimit));
+            return ResponseEntity.ok(accountService.updateAccount(accountId, transactionLimit));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al actualizar cuenta: " + e.getMessage());
         }
     }
 
     @Operation(
-            description = "Endpoint accesible a admins",
-            summary = "Traer cuentas por id de usuario",
+            description = "Obtiene las cuentas por el ID del usuario",
+            summary = "Obtener cuentas por ID de usuario",
             responses = {
                     @ApiResponse(
-                            description = "Éxito",
+                            description = "Cuentas obtenidas con éxito",
                             responseCode = "200",
-                            content = {
-                                    @Content(schema = @Schema(implementation = Accounts.class), mediaType = "application/json")
-                            }
+                            content = @Content(mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Usuario no encontrado",
                             responseCode = "404",
-                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
-                    ),
-                    @ApiResponse(
-                            description = "No autenticado / Token inválido",
-                            responseCode = "403",
-                            content = @Content
+                            content = @Content(mediaType = "text/plain")
                     )
             }
     )
@@ -170,12 +172,10 @@ public class AccountController {
                     @ApiResponse(
                             description = "Error al procesar la solicitud",
                             responseCode = "500",
-                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                            content = @Content(mediaType = "text/plain")
                     )
             }
     )
-
-    // Endpoint para seleccionar una cuenta y actualizar el token JWT
     @PostMapping("/select/{accountId}")
     public ResponseEntity<String> selectAccount(HttpServletRequest request, @PathVariable Long accountId) {
         try {
@@ -198,6 +198,32 @@ public class AccountController {
         }
     }
 
+    @Operation(
+            description = "Obtiene el balance del usuario y sus transacciones",
+            summary = "Obtener balance y transacciones del usuario",
+            responses = {
+                    @ApiResponse(
+                            description = "Balance obtenido con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = BalanceDTO.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Usuario no encontrado",
+                            responseCode = "404",
+                            content = @Content(mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Token ha expirado",
+                            responseCode = "401",
+                            content = @Content(mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al procesar la solicitud",
+                            responseCode = "500",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
     @GetMapping("/balance")
     public ResponseEntity<?> getBalance(HttpServletRequest request) {
         try {
@@ -215,8 +241,7 @@ public class AccountController {
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token ha expirado");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la ");        }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
+        }
     }
-
-
 }

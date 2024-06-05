@@ -1,22 +1,21 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.domain.Loan;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
-import AlkemyWallet.AlkemyWallet.dtos.LoanRequestDTO;
-import AlkemyWallet.AlkemyWallet.dtos.LoanResponseDTO;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.FixedTermDepositService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
-import AlkemyWallet.AlkemyWallet.services.LoanService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,6 +26,22 @@ public class FixedTermDepositController {
     private final JwtService jwtService;
     private final AccountService accountService;
 
+    @Operation(
+            description = "Simula un depósito a plazo fijo",
+            summary = "Simular depósito a plazo fijo",
+            responses = {
+                    @ApiResponse(
+                            description = "Simulación realizada con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = FixedTermDepositDto.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error en la simulación del plazo fijo",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/simulate")
     public ResponseEntity<?> simulateFixedTermDeposit(@Valid @RequestBody FixedTermDepositDto fixedTermDepositDto){
         try {
@@ -36,6 +51,22 @@ public class FixedTermDepositController {
         }
     }
 
+    @Operation(
+            description = "Crea un depósito a plazo fijo",
+            summary = "Crear depósito a plazo fijo",
+            responses = {
+                    @ApiResponse(
+                            description = "Depósito a plazo fijo creado con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = FixedTermDepositDto.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al crear el depósito a plazo fijo",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("/fixedTerm")
     public ResponseEntity<?> createFixedTermDeposit(@Valid @RequestBody FixedTermDepositDto fixedTermDepositDto, HttpServletRequest request){
         String token = jwtService.getTokenFromRequest(request);

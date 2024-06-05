@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,15 +35,13 @@ public class TransactionController {
     private final JwtService jwtService;
 
     @Operation(
-            description = "Endpoint accesible a usuarios autenticados",
-            summary = "Realiza un envío de dinero ya sea en pesos o USD",
+            description = "Realiza un envío de dinero ya sea en pesos o USD",
+            summary = "Enviar dinero",
             responses = {
                     @ApiResponse(
-                            description = "Created",
+                            description = "Transacción realizada con éxito",
                             responseCode = "201",
-                            content = {
-                                    @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
-                            }
+                            content = @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Error en el envío de dinero",
@@ -58,7 +55,7 @@ public class TransactionController {
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
 
-        // Tengo que devolver el token sin la nueva info de cuenta
+        // Devolver el token sin la nueva info de cuenta
         token = jwtService.removeAccountIdFromToken(token);
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
@@ -67,15 +64,13 @@ public class TransactionController {
     }
 
     @Operation(
-            description = "Endpoint accesible a usuarios autenticados",
-            summary = "Realiza un depósito en su cuenta",
+            description = "Realiza un depósito en su cuenta",
+            summary = "Depositar dinero",
             responses = {
                     @ApiResponse(
-                            description = "Success",
+                            description = "Depósito realizado con éxito",
                             responseCode = "200",
-                            content = {
-                                    @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
-                            }
+                            content = @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Error en el depósito",
@@ -92,15 +87,13 @@ public class TransactionController {
     }
 
     @Operation(
-            description = "Endpoint accesible a usuarios Admin",
-            summary = "Devuelve un listado de transacciones por usuario",
+            description = "Devuelve un listado de transacciones por usuario",
+            summary = "Obtener transacciones por ID de usuario",
             responses = {
                     @ApiResponse(
-                            description = "Success",
+                            description = "Listado de transacciones obtenido con éxito",
                             responseCode = "200",
-                            content = {
-                                    @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
-                            }
+                            content = @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Usuario no encontrado",
@@ -130,15 +123,13 @@ public class TransactionController {
     }
 
     @Operation(
-            description = "Endpoint accesible a usuarios autenticados",
-            summary = "Devuelve la transacción por id",
+            description = "Devuelve la transacción por ID",
+            summary = "Obtener transacción por ID",
             responses = {
                     @ApiResponse(
-                            description = "Success",
+                            description = "Transacción obtenida con éxito",
                             responseCode = "200",
-                            content = {
-                                    @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
-                            }
+                            content = @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Transacción no encontrada",
@@ -162,6 +153,22 @@ public class TransactionController {
         }
     }
 
+    @Operation(
+            description = "Actualiza la descripción de una transacción",
+            summary = "Actualizar descripción de la transacción",
+            responses = {
+                    @ApiResponse(
+                            description = "Descripción actualizada con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = Transaction.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al actualizar la transacción",
+                            responseCode = "403",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @PatchMapping("detail/{id}")
     public ResponseEntity<?> updateTransactionDescription(@PathVariable Long id, @RequestBody String description) {
         try {

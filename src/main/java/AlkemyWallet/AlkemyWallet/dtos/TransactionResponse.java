@@ -28,13 +28,13 @@ public class TransactionResponse {
     @NotBlank
     String origen;
 
-    @Schema(description = "Fecha de la transaccion realizada", required = true)
+    @Schema(description = "Fecha de la transacción realizada", required = true)
     LocalDate fechaDeTransaccion;
 
-    @Schema(description = "Tipo de Transaccion", required = true)
+    @Schema(description = "Tipo de Transacción", required = true)
     TransactionEnum tipoDeTransaccion;
 
-    @Schema(description = "Moneda de la Transaccion", required = true)
+    @Schema(description = "Moneda de la Transacción", required = true)
     @NotNull
     @NotBlank
     String currency;

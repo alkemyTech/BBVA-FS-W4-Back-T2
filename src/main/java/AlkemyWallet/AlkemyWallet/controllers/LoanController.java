@@ -1,6 +1,5 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
-import AlkemyWallet.AlkemyWallet.domain.Loan;
 import AlkemyWallet.AlkemyWallet.dtos.LoanRequestDTO;
 import AlkemyWallet.AlkemyWallet.dtos.LoanResponseDTO;
 import AlkemyWallet.AlkemyWallet.services.LoanService;

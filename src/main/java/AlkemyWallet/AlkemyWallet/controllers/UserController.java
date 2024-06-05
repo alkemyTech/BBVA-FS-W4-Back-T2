@@ -54,8 +54,6 @@ public class UserController {
                     )
             }
     )
-    //Get All Users /users?page=0 ejemplo
-
     @GetMapping("users")
     public ResponseEntity<?> getUsers(@RequestParam(defaultValue = "0") int page) {
         try {
@@ -99,13 +97,45 @@ public class UserController {
     public void softDeleteUserById(@PathVariable Long id) {
         userService.softDeleteById(id);
     }
-    //Detalle de usuario
 
+    @Operation(
+            description = "Endpoint accesible a usuarios autenticados",
+            summary = "Obtiene los detalles de un usuario por su ID",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200",
+                            content = {
+                                    @Content(schema = @Schema(implementation = UserDetailDTO.class), mediaType = "application/json")
+                            }
+                    ),
+                    @ApiResponse(
+                            description = "Transacción no autorizada",
+                            responseCode = "401",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Prohibido",
+                            responseCode = "403",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Usuario no encontrado",
+                            responseCode = "404",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al obtener el usuario",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @GetMapping("detail/{id}")
     public ResponseEntity<?> getUserDetail (@PathVariable Long id){
-            try {
-                UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                String authenticatedUsername = userDetails.getUsername();
+        try {
+            UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            String authenticatedUsername = userDetails.getUsername();
 
             UserDetailDTO userDetailDTO = userService.getUserDetail(id, authenticatedUsername);
             return ResponseEntity.ok(userDetailDTO);
@@ -120,6 +150,22 @@ public class UserController {
         }
     }
 
+    @Operation(
+            description = "Endpoint accesible a usuarios autenticados",
+            summary = "Añade un contacto por CBU",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = HttpStatus.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al añadir el contacto",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
     @PostMapping("cbu/{idCbu}/users/{idUser}")
     public ResponseEntity<?> addContact(@PathVariable String idCbu, @PathVariable Long idUser, HttpServletRequest request){
         try {
@@ -127,24 +173,38 @@ public class UserController {
             userService.addContact(idCbu,userId);
             return ResponseEntity.ok(HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al añadir el contacto: " + e.getMessage());
         }
     }
 
-
-    @DeleteMapping("cbu/{idCbu}/users/{idUser}")
-        public ResponseEntity<?> deleteContact (@PathVariable String idCbu, @PathVariable Long
-        idUser, HttpServletRequest request){
-            try {
-                Long userId = userService.getIdFromRequest(request);
-                if (Objects.equals(userId, idUser)) {
-                    userService.deleteContact(idCbu, idUser);
-                    return ResponseEntity.ok(HttpStatus.OK);
-                } else return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener todos los usuarios: " + e.getMessage());
+    @Operation(
+            description = "Endpoint accesible a usuarios autenticados",
+            summary = "Elimina un contacto por CBU",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = HttpStatus.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al eliminar el contacto",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
             }
+    )
+    @DeleteMapping("cbu/{idCbu}/users/{idUser}")
+    public ResponseEntity<?> deleteContact (@PathVariable String idCbu, @PathVariable Long idUser, HttpServletRequest request){
+        try {
+            Long userId = userService.getIdFromRequest(request);
+            if (Objects.equals(userId, idUser)) {
+                userService.deleteContact(idCbu, idUser);
+                return ResponseEntity.ok(HttpStatus.OK);
+            } else return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el contacto: " + e.getMessage());
         }
+    }
 
     @Operation(
             description = "Endpoint accesible a usuarios autenticados",
