@@ -64,11 +64,7 @@ public class AccountService {
             account.setCurrency(currencyEnum);
 
             Accounts savedAccount = accountRepository.save(account);
-            // Add account ID to existing JWT token
-            String token = jwtService.getTokenFromRequest(request);
-            if (token != null) {
-                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-            }
+
 
             // Devolver la cuenta guardada en DTO
 

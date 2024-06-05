@@ -8,39 +8,48 @@ import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
-import lombok.AllArgsConstructor;
+import AlkemyWallet.AlkemyWallet.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
 
 @Component
-@AllArgsConstructor
 public class AccountsSeeder {
 
-    private final AccountService accountService;
-    private final AccountRepository accountRepository;
-    private final TransactionService transactionService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private TransactionService transactionService;
+    @Autowired
+    private UserService userService;
+
 
     public void seedAccounts() {
         Random random = new Random();
-
+        Long userId = 0L;
         // Crear cuentas para usuarios
         for (int i = 1; i <= 20; i++) {
+            userId=(long)i;
+            User user = userService.findById(userId).get();
             // Asignar cuentas según el rango de ID
             if (i <= 10) {
                 // USER
-                createAccounts(AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
-                createAccounts(AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
+                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
+                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
             } else {
                 // ADMIN
-                createAccounts(AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
-                createAccounts(AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
+                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.ARS);
+                createAccounts(user, AccountTypeEnum.CAJA_AHORRO, CurrencyEnum.USD);
             }
         }
     }
 
-    private void createAccounts(AccountTypeEnum accountType, CurrencyEnum currency) {
+    private void createAccounts(User user, AccountTypeEnum accountType, CurrencyEnum currency) {
         Accounts account = new Accounts();
+        account.setUserId(user);
         account.setAccountType(accountType);
         account.setCurrency(currency);
         account.setTransactionLimit(currency.getTransactionLimit());
@@ -55,15 +64,16 @@ public class AccountsSeeder {
         try {
             double depositAmount;
             if (account.getCurrency() == CurrencyEnum.ARS && account.getTransactionLimit() <= 300000) {
-                depositAmount = Math.random() * 300000;
+                depositAmount = Math.round((Math.random() * 300000) * 100.0) / 100.0;
             } else if (account.getCurrency() == CurrencyEnum.USD && account.getTransactionLimit() <= 1000) {
-                depositAmount = Math.random() * 1000;
+                depositAmount = Math.round((Math.random() * 1000) * 100.0) / 100.0;;
             } else {
                 // No se cumple ninguna condición, no se realiza el depósito
                 return;
             }
 
             // Crear la transacción de depósito
+
             TransactionDTO depositTransaction = new TransactionDTO();
             depositTransaction.setAmount(depositAmount);
             depositTransaction.setDestino(account.getCBU());
