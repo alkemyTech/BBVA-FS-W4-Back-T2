@@ -4,6 +4,7 @@ import AlkemyWallet.AlkemyWallet.config.AppConfiguration;
 import AlkemyWallet.AlkemyWallet.config.CurrencyConfig;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.repositories.seeders.AccountsSeeder;
 import AlkemyWallet.AlkemyWallet.services.DatabaseService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,6 @@ public class AlkemyWalletApplication {
 	public void init() {
 		databaseService.checkDatabaseConnection();
 		CurrencyEnum.initializeLimits(currencyConfig);
-
 	}
 
 
