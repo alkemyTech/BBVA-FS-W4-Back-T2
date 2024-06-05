@@ -3,9 +3,12 @@ import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.Role;
 
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
+import AlkemyWallet.AlkemyWallet.enums.RoleEnum;
 import AlkemyWallet.AlkemyWallet.repositories.RoleRepository;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
@@ -29,6 +32,7 @@ public class UserSeeder {
     private PasswordEncoder passwordEncoder;
 
 
+
     public void seed() {
 
         // Crear usuarios administradores y regulares utilizando los nombres predefinidos
@@ -46,52 +50,73 @@ public class UserSeeder {
     private List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "pedro@exampleAdmin.com", "ana@exampleAdmin.com", "luis@exampleAdmin.com", "roberto@exampleAdmin.com", "pablo@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "liliana@exampleAdmin.com");
 
     private void createAdminUser() {
+            Role adminRole = roleRepository.findByName(RoleEnum.ADMIN);
+            if (adminRole == null) {
+                adminRole = roleRepository.save(new Role(null, RoleEnum.ADMIN, "Administrator role", LocalDateTime.now(), LocalDateTime.now()));
+            }
 
-        User user = User.builder()
-                .userName(getNextPredefinedEmail())
-                .password(passwordEncoder.encode("adminPassword"))
-                .firstName(getNextPredefinedName())
-                .lastName(getNextPredefinedLastName())
-                .birthDate(generateRandomBirthDate())
-                .role(RoleFactory.getAdminRole())
-                .creationDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
-        userRepository.save(user);
+            User user = User.builder()
+                    .userName(getNextPredefinedEmail())
+                    .password(passwordEncoder.encode("adminPassword"))
+                    .firstName(getNextPredefinedName())
+                    .lastName(getNextPredefinedLastName())
+                    .birthDate(generateRandomBirthDate())
+                    .role(adminRole)
+                    .creationDate(LocalDateTime.now())
+                    .updateDate(LocalDateTime.now())
+                    .build();
+            userRepository.save(user);
+        }
+
+
+private void createRegularUser() {
+    Role userRole = roleRepository.findByName(RoleEnum.USER);
+    if (userRole == null) {
+        userRole = roleRepository.save(new Role(null, RoleEnum.USER, "User role", LocalDateTime.now(), LocalDateTime.now()));
     }
 
-    private void createRegularUser() {
-
-        User user = User.builder()
-                .userName(getNextPredefinedEmail())
-                .password(passwordEncoder.encode("adminPassword"))
-                .firstName(getNextPredefinedName())
-                .lastName(getNextPredefinedLastName())
-                .birthDate(generateRandomBirthDate())
-                .role(RoleFactory.getUserRole())
-                .creationDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now())
-                .build();
-        userRepository.save(user);
-    }
+    User user = User.builder()
+            .userName(getNextPredefinedEmail())
+            .password(passwordEncoder.encode("adminPassword"))
+            .firstName(getNextPredefinedName())
+            .lastName(getNextPredefinedLastName())
+            .birthDate(generateRandomBirthDate())
+            .role(userRole)
+            .creationDate(LocalDateTime.now())
+            .updateDate(LocalDateTime.now())
+            .build();
+    userRepository.save(user);
+}
 
     private String getNextPredefinedName() {
         // Obtener el siguiente nombre de la lista predefinida
+        if (index >= predefinedNames.size()) {
+            index = 0; // Reiniciar el índice si alcanza el límite
+        }
         return predefinedNames.get(index++);
     }
 
     private String getNextPredefinedLastName() {
         // Obtener el siguiente apellido de la lista predefinida
+        if (index >= predefinedLastNames.size()) {
+            index = 0; // Reiniciar el índice si alcanza el límite
+        }
         return predefinedLastNames.get(index++);
     }
 
     private String getNextPredefinedEmail() {
         // Obtener el siguiente correo electrónico de la lista predefinida
+        if (index >= predefinedEmails.size()) {
+            index = 0; // Reiniciar el índice si alcanza el límite
+        }
         return predefinedEmails.get(index++);
     }
 
     private String getNextPredefinedEmailAdmin() {
         // Obtener el siguiente correo electrónico de la lista predefinida para los administradores
+        if (index >= predefinedEmailsAdmin.size()) {
+            index = 0; // Reiniciar el índice si alcanza el límite
+        }
         return predefinedEmailsAdmin.get(index++);
     }
 
