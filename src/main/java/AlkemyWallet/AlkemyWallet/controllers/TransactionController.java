@@ -188,7 +188,7 @@ public class TransactionController {
         }
     }
 
-    @GetMapping("/admin/{userId}")
+    @GetMapping("user/{userId}")
     public ResponseEntity<?> getPagedTransactions(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page) {
         try {
             Page<Transaction> transactionsPage = transactionService.getTransactionsByUserIdPaginated(userId, page);
