@@ -39,28 +39,26 @@ Usuarios para realizar pruebas de funcionalidad
 ### Usuarios Administradores
 | Usuario   | Contraseña    |
 |-----------|---------------|
-| juan@exampleAdmin.com  | adminPassword   |
-| pedro@exampleAdmin.com  | adminPassword   |
-| pablo@exampleAdmin.com  | adminPassword   |
+| luk@exampleAdmin.com  | adminPassword   |
+| frank@exampleAdmin.com  | adminPassword   |
+| ricardo@exampleAdmin.com  | adminPassword   |
 | messi@exampleAdmin.com  | adminPassword   |
-| luis@exampleAdmin.com  | adminPassword   |
-| ana@exampleAdmin.com | adminPassword |
-| liliana@exampleAdmin.com | adminOassword |
-| roberto@exampleAdmin.com | adminPassword |
+| moria@exampleAdmin.com  | adminPassword   |
+| mirtha@exampleAdmin.com | adminPassword |
+| lizy@exampleAdmin.com | adminOassword |
 | maria@exampleAdmin.com | adminPassword |
 | duki@exampleAdmin.com | adminPassword |
 
 ### Usuarios Regulares
 | Usuario   | Contraseña    |
 |-----------|---------------|
-| juan@example.com  | password   |
-| pedro@example.com  | password   |
-| pablo@example.com  | password   |
+| luk@example.com  | password   |
+| frank@example.com  | password   |
+| ricardo@example.com  | password   |
 | messi@example.com  | password   |
-| luis@example.com  | password   |
-| ana@example.com | password |
-| liliana@example.com | password |
-| roberto@example.com | password |
+| moria@example.com  | password   |
+| mirtha@example.com | password |
+| lizy@example.com | password |
 | maria@example.com | password |
 | duki@example.com | password |
 
