@@ -45,8 +45,9 @@ public class TransactionService {
     private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
     private final PaginationConfig paginationConfig;
+    private final AccountRepository accountRepository;
 
-    public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
+    public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
         Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
 
@@ -83,9 +84,15 @@ public class TransactionService {
                 originAccount
         );
 
+        if (paymentTransaction == null) {
+            throw new RuntimeException("Failed to create transaction");
+        }
+
         transactionRepository.save(paymentTransaction);
         return paymentTransaction;
     }
+
+
 
     public void receiveMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction incomeTransaction = transactionFactory.createTransaction(

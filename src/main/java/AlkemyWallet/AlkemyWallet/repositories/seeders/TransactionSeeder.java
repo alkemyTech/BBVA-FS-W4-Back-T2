@@ -44,7 +44,7 @@ public class TransactionSeeder implements CommandLineRunner {
                 transaction.setType(type);
                 transaction.setDescription(description);
                 transaction.setTransactionDate(LocalDateTime.now());
-                transaction.setAccountId(account);
+                transaction.setAccount(account);
 
                 switch (type) {
                     case DEPOSIT:
@@ -54,7 +54,7 @@ public class TransactionSeeder implements CommandLineRunner {
                     case INCOME:
                         Accounts destinationAccount = getRandomAccount(startId, endId, random);
                         if (destinationAccount != null) {
-                            transaction.setAccountId(destinationAccount);
+                            transaction.setAccount(destinationAccount);
                             transaction.setOriginAccount(account);
                             transactionRepository.save(transaction);
                         }
