@@ -10,6 +10,7 @@ import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.exceptions.AccountNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
@@ -200,7 +201,8 @@ public class AccountService {
     public Accounts getAccountFrom(String token) {
         String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
         Long accountId = Long.parseLong(accountIdToken);
-        return accountRepository.findById(accountId).orElseThrow();
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("La cuenta seleccionada no fue encontrada"));
     }
 
 
