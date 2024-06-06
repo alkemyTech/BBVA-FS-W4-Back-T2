@@ -45,7 +45,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNonPositiveAmountException(NonPositiveAmountException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
+    @ExceptionHandler(IncorrectCurrencyException.class)
+    public ResponseEntity<String> handleIncorrectCurrencyException(IncorrectCurrencyException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body( e.getMessage());
+    }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
 
 
     //==EXCEPCIONES DE FIXED DEPOSIT==//
@@ -76,6 +84,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+
 
 
 }

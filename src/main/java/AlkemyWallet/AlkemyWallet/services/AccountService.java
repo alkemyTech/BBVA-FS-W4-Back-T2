@@ -125,52 +125,52 @@ public class AccountService {
         }
     }
 
-        public static String logicaCBU () {
-            StringBuilder cbu = new StringBuilder();
-            Random random = new Random();
+    public static String logicaCBU () {
+        StringBuilder cbu = new StringBuilder();
+        Random random = new Random();
 
 
-            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-            for (int i = 0; i < 7; i++) {
-                cbu.append(random.nextInt(10));
-            }
-            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
-
-            // Los siguientes 12 dígitos son generados aleatoriamente.
-            for (int i = 0; i < 12; i++) {
-                cbu.append(random.nextInt(10));
-            }
-
-            // Calculamos el dígito verificador provisorio.
-            int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
-            int sum = 0;
-            for (int i = 0; i < cbu.length(); i++) {
-                sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
-            }
-            int dv = (10 - (sum % 10)) % 10;
-            cbu.setCharAt(7, Character.forDigit(dv, 10));
-
-            return cbu.toString();
+        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
+        for (int i = 0; i < 7; i++) {
+            cbu.append(random.nextInt(10));
         }
-        public String generarCBU () {
-            String CBU = null;
-            boolean cbuExistente = true;
+        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
-            // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
-            while (cbuExistente) {
-                // Genera un nuevo CBU
-                CBU = logicaCBU();
-
-                // Verifica si el CBU generado ya existe en la base de datos
-                if (!accountRepository.findByCBU(CBU).isPresent()) {
-                    // Si el CBU no existe, sal del bucle
-                    cbuExistente = false;
-                }
-            }
-
-            // Devuelve el CBU generado y único
-            return CBU;
+        // Los siguientes 12 dígitos son generados aleatoriamente.
+        for (int i = 0; i < 12; i++) {
+            cbu.append(random.nextInt(10));
         }
+
+        // Calculamos el dígito verificador provisorio.
+        int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
+        int sum = 0;
+        for (int i = 0; i < cbu.length(); i++) {
+            sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
+        }
+        int dv = (10 - (sum % 10)) % 10;
+        cbu.setCharAt(7, Character.forDigit(dv, 10));
+
+        return cbu.toString();
+    }
+    public String generarCBU () {
+        String CBU = null;
+        boolean cbuExistente = true;
+
+        // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
+        while (cbuExistente) {
+            // Genera un nuevo CBU
+            CBU = logicaCBU();
+
+            // Verifica si el CBU generado ya existe en la base de datos
+            if (!accountRepository.findByCBU(CBU).isPresent()) {
+                // Si el CBU no existe, sal del bucle
+                cbuExistente = false;
+            }
+        }
+
+        // Devuelve el CBU generado y único
+        return CBU;
+    }
 
 
     public void updateAfterTransaction(Accounts account, Double amount) {
@@ -223,8 +223,8 @@ public class AccountService {
         accountDto.setUserId(account.getUserId().getId());
 
 
-            return accountDto;
-        }
+        return accountDto;
+    }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
 
@@ -264,6 +264,6 @@ public class AccountService {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
         }
     }
+
+
 }
-
-
