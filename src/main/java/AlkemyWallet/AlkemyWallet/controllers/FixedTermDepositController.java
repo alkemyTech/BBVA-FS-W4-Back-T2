@@ -67,7 +67,7 @@ public class FixedTermDepositController {
                     )
             }
     )
-    @PostMapping("/fixedTerm")
+    @PostMapping()
     public ResponseEntity<?> createFixedTermDeposit(@Valid @RequestBody FixedTermDepositDto fixedTermDepositDto, HttpServletRequest request){
         String token = jwtService.getTokenFromRequest(request);
         Accounts account = accountService.getAccountFrom(token);
