@@ -43,74 +43,77 @@ public class UserSeeder {
             createRegularUser(); // Rol regular
         }
     }
-    private int index = 0;
+    private int indexNames = 0;
+    private int indexLastNames = 0;
+    private  int indexEmailUser = 0;
+    private int indexEmailAdmin = 0;
 
-    private List<String> predefinedNames = List.of("Juan", "María", "Frank", "Luk", "Ricardo","Moria", "Mirtha", "Duki", "Lionel", "Lizy");
-    private List<String> predefinedLastNames =List.of("Pecados","Becerra", "Sinatra", "Ra","Fort", "Casan", "Legrand","Lombardo", "Messi", "Tagliani" );
-    private List<String> predefinedEmails = List.of("juan@example.com", "maria@example.com", "pedro@example.com", "ana@example.com", "luis@example.com", "roberto@example.com", "pablo@example.com", "duki@example.com", "messi@example.com", "liliana@example.com");
-    private List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "pedro@exampleAdmin.com", "ana@exampleAdmin.com", "luis@exampleAdmin.com", "roberto@exampleAdmin.com", "pablo@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "liliana@exampleAdmin.com");
+    private final List<String> predefinedNames = List.of("Juan", "María", "Frank", "Luk", "Ricardo","Moria", "Mirtha", "Duki", "Lionel", "Lizy");
+    private final List<String> predefinedLastNames =List.of("Pecados","Becerra", "Sinatra", "Ra","Fort", "Casan", "Legrand","Lombardo", "Messi", "Tagliani" );
+    private final List<String> predefinedEmails = List.of("juan@example.com", "maria@example.com", "frank@example.com", "luk@example.com", "ricardo@example.com", "moria@example.com", "mirtha@example.com", "duki@example.com", "messi@example.com", "lizy@example.com");
+    private final List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "frank@exampleAdmin.com", "luk@exampleAdmin.com", "ricardo@exampleAdmin.com", "moria@exampleAdmin.com", "mirtha@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "lizy@exampleAdmin.com");
 
     private void createAdminUser() {
 
-            User user = User.builder()
-                    .userName(getNextPredefinedEmailAdmin())
-                    .password(passwordEncoder.encode("adminPassword"))
-                    .firstName(getNextPredefinedName())
-                    .lastName(getNextPredefinedLastName())
-                    .birthDate(generateRandomBirthDate())
-                    .role(RoleFactory.getAdminRole())
-                    .creationDate(LocalDateTime.now())
-                    .updateDate(LocalDateTime.now())
-                    .build();
-            userRepository.save(user);
-        }
+        User user = User.builder()
+                .userName(getNextPredefinedEmailAdmin())
+                .password(passwordEncoder.encode("adminPassword"))
+                .firstName(getNextPredefinedName())
+                .lastName(getNextPredefinedLastName())
+                .birthDate(generateRandomBirthDate())
+                .role(RoleFactory.getAdminRole())
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
 
 
-private void createRegularUser() {
+    private void createRegularUser() {
 
-    User user = User.builder()
-            .userName(getNextPredefinedEmail())
-            .password(passwordEncoder.encode("adminPassword"))
-            .firstName(getNextPredefinedName())
-            .lastName(getNextPredefinedLastName())
-            .birthDate(generateRandomBirthDate())
-            .role(RoleFactory.getUserRole())
-            .creationDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
-            .build();
-    userRepository.save(user);
-}
+        User user = User.builder()
+                .userName(getNextPredefinedEmail())
+                .password(passwordEncoder.encode("password"))
+                .firstName(getNextPredefinedName())
+                .lastName(getNextPredefinedLastName())
+                .birthDate(generateRandomBirthDate())
+                .role(RoleFactory.getUserRole())
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
 
     private String getNextPredefinedName() {
         // Obtener el siguiente nombre de la lista predefinida
-        if (index >= predefinedNames.size()) {
-            index = 0; // Reiniciar el índice si alcanza el límite
+        if (indexNames >= predefinedNames.size()) {
+            indexNames = 0; // Reiniciar el índice si alcanza el límite
         }
-        return predefinedNames.get(index++);
+        return predefinedNames.get(indexNames++);
     }
 
     private String getNextPredefinedLastName() {
         // Obtener el siguiente apellido de la lista predefinida
-        if (index >= predefinedLastNames.size()) {
-            index = 0; // Reiniciar el índice si alcanza el límite
+        if (indexLastNames >= predefinedLastNames.size()) {
+            indexLastNames = 0; // Reiniciar el índice si alcanza el límite
         }
-        return predefinedLastNames.get(index++);
+        return predefinedLastNames.get(indexLastNames++);
     }
 
     private String getNextPredefinedEmail() {
         // Obtener el siguiente correo electrónico de la lista predefinida
-        if (index >= predefinedEmails.size()) {
-            index = 0; // Reiniciar el índice si alcanza el límite
+        if (indexEmailUser >= predefinedEmails.size()) {
+            indexEmailUser = 0; // Reiniciar el índice si alcanza el límite
         }
-        return predefinedEmails.get(index++);
+        return predefinedEmails.get(indexEmailUser++);
     }
 
     private String getNextPredefinedEmailAdmin() {
         // Obtener el siguiente correo electrónico de la lista predefinida para los administradores
-        if (index >= predefinedEmailsAdmin.size()) {
-            index = 0; // Reiniciar el índice si alcanza el límite
+        if (indexEmailAdmin >= predefinedEmailsAdmin.size()) {
+            indexEmailAdmin = 0; // Reiniciar el índice si alcanza el límite
         }
-        return predefinedEmailsAdmin.get(index++);
+        return predefinedEmailsAdmin.get(indexEmailAdmin++);
     }
 
     private LocalDate generateRandomBirthDate() {

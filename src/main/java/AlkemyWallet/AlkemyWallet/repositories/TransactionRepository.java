@@ -18,5 +18,8 @@ public interface TransactionRepository extends JpaRepository <Transaction, Long>
 
     List<Transaction> findByAccount(Accounts account);
 
-    Page<Transaction> findByAccountIdUserId(User userId, Pageable pageable);
+    @Query("SELECT t FROM Transaction t WHERE t.originAccount.id = :accountId or t.account.id =:accountId")
+    Page<Transaction> findByOriginAccountOrAccount(Long accountId, Pageable pageable);
+
+
 }
