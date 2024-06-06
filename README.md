@@ -46,7 +46,6 @@ Usuarios para realizar pruebas de funcionalidad
 | moria@exampleAdmin.com  | adminPassword   |
 | mirtha@exampleAdmin.com | adminPassword |
 | lizy@exampleAdmin.com | adminOassword |
-| roberto@exampleAdmin.com | adminPassword |
 | maria@exampleAdmin.com | adminPassword |
 | duki@exampleAdmin.com | adminPassword |
 
@@ -60,7 +59,6 @@ Usuarios para realizar pruebas de funcionalidad
 | moria@example.com  | password   |
 | mirtha@example.com | password |
 | lizy@example.com | password |
-| roberto@example.com | password |
 | maria@example.com | password |
 | duki@example.com | password |
 
