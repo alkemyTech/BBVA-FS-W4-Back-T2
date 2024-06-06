@@ -57,7 +57,6 @@ public class Accounts {
     private Boolean softDelete;
 
     @NotNull
-    @NotBlank
     @Column(name = "CBU", nullable = false)
     @Size(min=22, max=22)
     private String CBU;
@@ -98,4 +97,9 @@ public class Accounts {
         return this.userId;
     }
 
+
+
+    public @NotNull @NotBlank String getCBU() {
+        return this.CBU;
+    }
 }
