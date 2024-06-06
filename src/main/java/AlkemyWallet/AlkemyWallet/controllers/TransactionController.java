@@ -4,6 +4,9 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
+import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
+import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
+import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
@@ -50,17 +53,32 @@ public class TransactionController {
                     )
             }
     )
+
     @PostMapping({"/sendArs", "/sendUsd", "/payment"})
     public ResponseEntity<?> sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
-        String token = jwtService.getTokenFromRequest(request);
-        Accounts account = accountService.getAccountFrom(token);
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            Accounts account = accountService.getAccountFrom(token);
 
-        // Devolver el token sin la nueva info de cuenta
-        token = jwtService.removeAccountIdFromToken(token);
+            // Lógica para registrar la transacción
+            TransactionResponse response = transactionService.registrarTransaccion(transaction, account);
+
+            // Devolver una respuesta exitosa
+            return ResponseEntity.ok().headers(createHeadersWithUpdatedToken(token)).body(response);
+        } catch (InsufficientFundsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: No hay suficientes fondos para completar la transacción");
+        } catch (IncorrectCurrencyException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: La moneda seleccionada no es la correcta para este tipo de cuenta");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error genérico: " + e.getMessage());
+        }
+    }
+
+    private HttpHeaders createHeadersWithUpdatedToken(String currentToken) {
+        String updatedToken = jwtService.removeAccountIdFromToken(currentToken);
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-
-        return ResponseEntity.ok().headers(headers).body(transactionService.registrarTransaccion(transaction, account));
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
+        return headers;
     }
 
     @Operation(

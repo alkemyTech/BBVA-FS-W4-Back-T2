@@ -1,4 +1,4 @@
-package AlkemyWallet.AlkemyWallet;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
@@ -70,8 +70,6 @@ public class SendArsTest {
         destinationAccount.setBalance(500.0);
         destinationAccount.setTransactionLimit(500.0);
         destinationAccount.setCBU("123456789");
-
-
 
     }
 
