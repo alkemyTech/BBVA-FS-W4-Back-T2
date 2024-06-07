@@ -59,6 +59,7 @@ public class UserSeeder {
                 .lastName(getNextPredefinedLastName())
                 .birthDate(generateRandomBirthDate())
                 .role(RoleFactory.getAdminRole())
+                .softDelete(0)
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .build();
@@ -75,6 +76,7 @@ public class UserSeeder {
                 .lastName(getNextPredefinedLastName())
                 .birthDate(generateRandomBirthDate())
                 .role(RoleFactory.getUserRole())
+                .softDelete(0)
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .build();
