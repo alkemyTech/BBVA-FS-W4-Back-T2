@@ -22,7 +22,9 @@ public class TransactionSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        createRandomTransactionsForAccounts(1, 20, 40); // Limitado a 40 transacciones en total
+        if (transactionRepository.count() == 0) {
+            createRandomTransactionsForAccounts(1, 20, 40); // Limitado a 40 transacciones en total
+        }
     }
 
     private void createRandomTransactionsForAccounts(int startId, int endId, int totalTransactions) {
