@@ -227,7 +227,6 @@ public class AccountService {
         }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
-
         //Logica para verificar si cuenta existe terminada
         if (accountRepository.findById(accountId).isPresent()) {
             Accounts account = accountRepository.getReferenceById(accountId);
