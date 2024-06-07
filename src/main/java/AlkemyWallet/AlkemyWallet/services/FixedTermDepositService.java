@@ -10,6 +10,7 @@ import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
 
 
 import AlkemyWallet.AlkemyWallet.exceptions.InvalidDateOrderException;
+import AlkemyWallet.AlkemyWallet.exceptions.MinimumDurationException;
 import AlkemyWallet.AlkemyWallet.repositories.FixedTermDepositRepository;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
@@ -109,7 +110,7 @@ public class FixedTermDepositService {
         LocalDate creationDate = LocalDate.parse(fixedTermDepositDto.getCreationDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         LocalDate closingDate = LocalDate.parse(fixedTermDepositDto.getClosingDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         if (ChronoUnit.DAYS.between(creationDate, closingDate) < 30) {
-            throw new IllegalArgumentException("La duración mínima del plazo fijo es de 30 días");
+            throw new MinimumDurationException("La duración mínima del plazo fijo es de 30 días");
         } else {
             return true;
         }
@@ -129,7 +130,7 @@ public class FixedTermDepositService {
         LocalDate fechaFinal = LocalDate.parse(endDate, formatter);
 
         if (fechaInicial.isAfter(fechaFinal)) {
-            throw new IllegalArgumentException("La fecha final no puede ser mayor que la fecha inicial");
+            throw new InvalidDateOrderException("La fecha final no puede ser mayor que la fecha inicial");
         }
 
         return (int) ChronoUnit.DAYS.between(fechaInicial, fechaFinal);

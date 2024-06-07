@@ -39,7 +39,7 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "Account_Id", nullable = false)
     @NotNull
-    private Accounts account; // account destino
+    private Accounts accountId; // account destino
 
     @ManyToOne
     @JoinColumn(name = "origin_account_id", nullable = true)
@@ -51,12 +51,14 @@ public class Transaction {
         this.type = type;
         this.description = description;
         this.transactionDate = transactionDate;
-        this.account = accountId;
+        this.accountId = accountId;
         this.originAccount = originAccount;
 
     }
 
+    public Accounts getAccount() {
+        return this.accountId;
+    }
 }
-
 
 
