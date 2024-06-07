@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.exceptions.ForbiddenException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
+import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 import AlkemyWallet.AlkemyWallet.mappers.UserDetailMapper;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.dtos.UserUpdateRequest;
@@ -241,6 +242,10 @@ public class UserController {
             throw new UnauthorizedUserException("No tienes permiso para editar este usuario");
         }
 
-        return ResponseEntity.ok(userService.updateUser(id, userUpdateRequest, request));
+        try {
+            return ResponseEntity.ok(userService.updateUser(id, userUpdateRequest, request));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e);
+        }
     }
 }
