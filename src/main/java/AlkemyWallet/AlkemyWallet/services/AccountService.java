@@ -10,7 +10,7 @@ import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
-import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
+import AlkemyWallet.AlkemyWallet.exceptions.*;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
@@ -23,8 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
-import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.util.*;
 import java.util.Random;
@@ -227,20 +225,19 @@ public class AccountService {
         }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
-        //Logica para verificar si cuenta existe terminada
+        // Logica para verificar si la cuenta existe
         if (accountRepository.findById(accountId).isPresent()) {
             Accounts account = accountRepository.getReferenceById(accountId);
-            //Logica para ver si es mayor el limite al que se puede tener por tipo de cuenta
+            // Logica para verificar si el límite es mayor al permitido por tipo de cuenta
             if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
                 account.setTransactionLimit(transactionLimit);
                 AccountsDto accountDTO = accountMapper(accountRepository.save(account));
                 return accountDTO;
             } else {
-                throw new RuntimeException("Limite de transaccion mayor al que el tipo de cuenta puede tener");
+                throw new LimiteTransaccionExcedidoException("Límite de transacción mayor al que el tipo de cuenta puede tener");
             }
-
         } else {
-            throw new RuntimeException("Cuenta no encontrada");
+            throw new CuentaNotFoundException("Cuenta no encontrada");
         }
     }
 

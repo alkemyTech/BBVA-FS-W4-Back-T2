@@ -70,8 +70,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
+    @ExceptionHandler(CuentaNotFoundException.class)
+    public ResponseEntity<String> handleCuentaNotFoundException(CuentaNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 
-    //==EXCPECIONES USER ==//
+    @ExceptionHandler(LimiteTransaccionExcedidoException.class)
+    public ResponseEntity<String> handleLimiteTransaccionExcedidoException(LimiteTransaccionExcedidoException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    //==EXCEPCIONES USER ==//
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

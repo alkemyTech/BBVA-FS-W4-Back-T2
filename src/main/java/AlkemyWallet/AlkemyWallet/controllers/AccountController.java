@@ -4,6 +4,8 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.BalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
+import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
+import AlkemyWallet.AlkemyWallet.exceptions.LimiteTransaccionExcedidoException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.BalanceService;
@@ -129,8 +131,12 @@ public class AccountController {
     public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
         try {
             return ResponseEntity.ok(accountService.updateAccount(accountId, transactionLimit));
-        } catch (Exception e) {
+        } catch (CuentaNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al actualizar cuenta: " + e.getMessage());
+        } catch (LimiteTransaccionExcedidoException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al actualizar cuenta: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar cuenta: " + e.getMessage());
         }
     }
 
