@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.services;
 
+import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
@@ -21,8 +22,13 @@ import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import lombok.AllArgsConstructor;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +40,11 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
+    private final UserRepository userRepository;
+    private final UserService userService;
+    private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
+    private final PaginationConfig paginationConfig;
     private final AccountRepository accountRepository;
 
     public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
@@ -149,6 +159,25 @@ public class TransactionService {
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
+    }
+
+    public Page<Transaction> getTransactionsByUserIdPaginated(Long userId, int page) {
+        int transactionsPerPage = paginationConfig.getTransactionsPerPage();
+        Pageable pageable = PageRequest.of(page,transactionsPerPage);
+        User user = userService.findById(userId).get();
+        List<Accounts> cuentasDelUsuario = accountService.findAccountsByUserId(user.getId());
+        List<Transaction> allTransactions = new ArrayList<>();
+
+        for (Accounts account : cuentasDelUsuario) {
+            Page<Transaction> transactionsPage = transactionRepository.findByOriginAccountOrAccount(account.getId(), pageable);
+            allTransactions.addAll(transactionsPage.getContent());
+        }
+
+        int totalElements = allTransactions.size();
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), totalElements);
+
+        return new PageImpl<>(allTransactions.subList(start, end), pageable, totalElements);
     }
 
     public Transaction getTransactionById(Long id) {
