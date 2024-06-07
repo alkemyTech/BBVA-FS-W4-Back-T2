@@ -49,7 +49,8 @@ public class AccountService {
         CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
         AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
         Long userId = userService.getIdFromRequest(request);
-        User user = userService.findById(userId).orElseThrow();
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 
         //Validacion...
 
@@ -69,17 +70,13 @@ public class AccountService {
 
             Accounts savedAccount = accountRepository.save(account);
 
-
-            // Devolver la cuenta guardada en DTO
-
             return accountMapper(savedAccount);
         } catch (Exception e) {
             throw new RuntimeException("Error al agregar la cuenta", e);
         }
     }
 
-
-    public List<Accounts> findAccountsByUserId(long userId) {
+    public List<Accounts> findAccountsByUserId(Long userId) {
         try{
             User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
             return accountRepository.findByUserId(user);
@@ -87,8 +84,6 @@ public class AccountService {
             throw new RuntimeException("No se encontró al usuario",e);
         }
     }
-
-
 
     public AccountsDto addById(AccountRequestDto accountCreation, Long userId) {
 
@@ -125,23 +120,20 @@ public class AccountService {
         }
     }
 
-        public static String logicaCBU () {
-            StringBuilder cbu = new StringBuilder();
-            Random random = new Random();
+    public static String logicaCBU () {
+        StringBuilder cbu = new StringBuilder();
+        Random random = new Random();
 
-
-            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
             for (int i = 0; i < 7; i++) {
                 cbu.append(random.nextInt(10));
             }
-            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
+            cbu.append("0");
 
-            // Los siguientes 12 dígitos son generados aleatoriamente.
+
             for (int i = 0; i < 12; i++) {
                 cbu.append(random.nextInt(10));
             }
 
-            // Calculamos el dígito verificador provisorio.
             int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
             int sum = 0;
             for (int i = 0; i < cbu.length(); i++) {
@@ -152,26 +144,22 @@ public class AccountService {
 
             return cbu.toString();
         }
-        public String generarCBU () {
+
+    public String generarCBU () {
             String CBU = null;
             boolean cbuExistente = true;
 
-            // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
+
             while (cbuExistente) {
-                // Genera un nuevo CBU
                 CBU = logicaCBU();
 
-                // Verifica si el CBU generado ya existe en la base de datos
                 if (!accountRepository.findByCBU(CBU).isPresent()) {
-                    // Si el CBU no existe, sal del bucle
                     cbuExistente = false;
                 }
             }
 
-            // Devuelve el CBU generado y único
             return CBU;
         }
-
 
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
@@ -203,14 +191,11 @@ public class AccountService {
         return accountRepository.findById(accountId).orElseThrow();
     }
 
-
-
     public boolean verificarExistenciaAccount(User user, CurrencyEnum currency, AccountTypeEnum accountType) {
-        List<Accounts> cuentas = findAccountsByUserId(user.getId());
+        List<Accounts> cuentas = accountRepository.findByUserId(user);
         return cuentas.stream()
                 .anyMatch(cuenta -> cuenta.getCurrency().equals(currency) && cuenta.getAccountType().equals(accountType));
     }
-
 
     public AccountsDto accountMapper(Accounts account) {
         AccountsDto accountDto = new AccountsDto();
@@ -223,15 +208,15 @@ public class AccountService {
         accountDto.setUserId(account.getUserId().getId());
 
 
-            return accountDto;
-        }
+        return accountDto;
+    }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
 
-        //Logica para verificar si cuenta existe terminada
+
         if (accountRepository.findById(accountId).isPresent()) {
             Accounts account = accountRepository.getReferenceById(accountId);
-            //Logica para ver si es mayor el limite al que se puede tener por tipo de cuenta
+
             if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
                 account.setTransactionLimit(transactionLimit);
                 AccountsDto accountDTO = accountMapper(accountRepository.save(account));
@@ -248,7 +233,6 @@ public class AccountService {
     public Accounts findById(Long id) {
         return accountRepository.findById(id).orElseThrow();
     }
-
 
     public Page<Accounts> getAllAccounts(int page) {
         int accountsPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 cuentas por página

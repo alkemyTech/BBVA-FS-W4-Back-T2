@@ -60,10 +60,11 @@ public class UserService implements UserDetailsService {
 
 
     public void softDeleteById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
-        user.setSoftDelete(true);
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setSoftDelete(!user.isSoftDelete());
         userRepository.save(user);
     }
+
 
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
