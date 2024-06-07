@@ -77,7 +77,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.getName().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getName().name()));
     }
 
     @Override
@@ -105,7 +105,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-
         return this.softDelete == 0;
     }
 
@@ -115,7 +114,7 @@ public class User implements UserDetails {
         return this.softDelete == 0;
     }
 
-     @ManyToOne(cascade=CascadeType.PERSIST)
+    @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
     private Role role;
 
