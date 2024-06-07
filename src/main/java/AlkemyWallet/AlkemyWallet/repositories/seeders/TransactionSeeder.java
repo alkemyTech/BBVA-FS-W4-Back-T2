@@ -22,7 +22,9 @@ public class TransactionSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        createRandomTransactionsForAccounts(1, 20, 40); // Limitado a 40 transacciones en total
+        if (transactionRepository.count() == 0) {
+            createRandomTransactionsForAccounts(1, 20, 40); // Limitado a 40 transacciones en total
+        }
     }
 
     private void createRandomTransactionsForAccounts(int startId, int endId, int totalTransactions) {
@@ -46,7 +48,7 @@ public class TransactionSeeder implements CommandLineRunner {
                 if (depositCount < 20) {
                     transaction.setType(TransactionEnum.DEPOSIT);
                     transaction.setDescription("Transaction DEPOSIT of " + amount + " " + currency);
-                    transaction.setAccountId(account);
+                    transaction.setAccount(account);
                     transaction.setOriginAccount(account);
                     transactionRepository.save(transaction);
                     depositCount++;
@@ -55,7 +57,7 @@ public class TransactionSeeder implements CommandLineRunner {
                     if (destinationAccount != null && !account.equals(destinationAccount)) {
                         transaction.setType(TransactionEnum.PAYMENT);
                         transaction.setDescription("Transaction PAYMENT of " + amount + " " + currency);
-                        transaction.setAccountId(destinationAccount);
+                        transaction.setAccount(destinationAccount);
                         transaction.setOriginAccount(account);
                         transactionRepository.save(transaction);
                         paymentCount++;
@@ -66,7 +68,7 @@ public class TransactionSeeder implements CommandLineRunner {
                         incomeTransaction.setType(TransactionEnum.INCOME);
                         incomeTransaction.setDescription("Transaction INCOME of " + amount + " " + currency);
                         incomeTransaction.setTransactionDate(LocalDateTime.now());
-                        incomeTransaction.setAccountId(account);
+                        incomeTransaction.setAccount(account);
                         incomeTransaction.setOriginAccount(destinationAccount);
                         transactionRepository.save(incomeTransaction);
                         incomeCount++;

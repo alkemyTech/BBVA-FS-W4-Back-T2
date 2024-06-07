@@ -35,14 +35,15 @@ public class AuthenticationService {
 
 
     public AuthResponseRegister register(RegisterRequest registerRequest) {
+        if (userExists(registerRequest.getUserName())) {
+            throw new IllegalArgumentException("User already exists");
+        }
+
         LocalDate birthDate = parseBirthDate(registerRequest.getBirthDate());
         roleFactory.initializeRoles();
         User user = createUser(registerRequest, RoleFactory.getUserRole(), birthDate);
         user.setSoftDelete(false);
 
-        if (userExists(registerRequest.getUserName())) {
-            throw new IllegalArgumentException("User already exists");
-        }
 
         saveUser(user);
         createAccounts(user.getId());
