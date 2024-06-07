@@ -2,6 +2,8 @@ package AlkemyWallet.AlkemyWallet;
 
 import AlkemyWallet.AlkemyWallet.controllers.AccountController;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.LimiteTransaccionExcedidoException;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
@@ -69,17 +71,26 @@ public class AccountsUpdateTest {
     }
 
     @Test
-    public void updateAccountTest_LimiteExcedido() {
+    public void updateAccountTest_LimiteExcedido_USD() {
         // Datos de prueba
-        Long accountId = 1L;
-        Double newTransactionLimit = 350000.00;
+        Double newTransactionLimit = 1200.00; // Límite excedido para USD
 
-        // Simular el servicio de cuenta para lanzar una excepción cuando se llama a updateAccount con un límite de transacción nuevo que excede el permitido
-        when(accountService.updateAccount(accountId, newTransactionLimit))
+        // Crear un objeto AccountDto con los datos especificados
+        AccountsDto accountDto = new AccountsDto();
+        accountDto.setId(1L);
+        accountDto.setCurrency(CurrencyEnum.USD);
+        accountDto.setAccountType(AccountTypeEnum.CAJA_AHORRO);
+        accountDto.setTransactionLimit(CurrencyEnum.USD.getTransactionLimit()); // Límite actual
+        accountDto.setBalance(5000.00);
+        accountDto.setCBU("1234567890123456789012");
+        accountDto.setUserId(1L);
+
+        // Simular el servicio de cuenta para lanzar una excepción cuando se llama a updateAccount con un límite de transacción nuevo que excede el permitido para USD
+        when(accountService.updateAccount(accountDto.getId(), newTransactionLimit))
                 .thenThrow(new LimiteTransaccionExcedidoException("Límite de transacción mayor al permitido"));
 
         // Llamada al método bajo prueba
-        ResponseEntity<?> response = accountController.updateAccount(accountId, newTransactionLimit);
+        ResponseEntity<?> response = accountController.updateAccount(accountDto.getId(), newTransactionLimit);
 
         // Verificar que se devolvió un ResponseEntity con estado BAD_REQUEST
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -87,4 +98,35 @@ public class AccountsUpdateTest {
         // Verificar que el cuerpo de la respuesta contiene el mensaje de error esperado
         assertEquals("Error al actualizar cuenta: Límite de transacción mayor al permitido", response.getBody());
     }
+
+    @Test
+    public void updateAccountTest_LimiteExcedido_ARS() {
+        // Datos de prueba
+        Double newTransactionLimit = 350000.00; // Límite excedido para USD
+
+        // Crear un objeto AccountDto con los datos especificados
+        AccountsDto accountDto = new AccountsDto();
+        accountDto.setId(1L);
+        accountDto.setCurrency(CurrencyEnum.ARS);
+        accountDto.setAccountType(AccountTypeEnum.CAJA_AHORRO);
+        accountDto.setTransactionLimit(CurrencyEnum.ARS.getTransactionLimit()); // Límite actual
+        accountDto.setBalance(5000.00);
+        accountDto.setCBU("1234567890123456789012");
+        accountDto.setUserId(1L);
+
+        // Simular el servicio de cuenta para lanzar una excepción cuando se llama a updateAccount con un límite de transacción nuevo que excede el permitido para USD
+        when(accountService.updateAccount(accountDto.getId(), newTransactionLimit))
+                .thenThrow(new LimiteTransaccionExcedidoException("Límite de transacción mayor al permitido"));
+
+        // Llamada al método bajo prueba
+        ResponseEntity<?> response = accountController.updateAccount(accountDto.getId(), newTransactionLimit);
+
+        // Verificar que se devolvió un ResponseEntity con estado BAD_REQUEST
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        // Verificar que el cuerpo de la respuesta contiene el mensaje de error esperado
+        assertEquals("Error al actualizar cuenta: Límite de transacción mayor al permitido", response.getBody());
+    }
+
+
 }
