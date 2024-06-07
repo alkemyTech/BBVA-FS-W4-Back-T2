@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -7,9 +8,11 @@ import lombok.Data;
 public class LoanRequestDTO {
 
     @NotNull
-     Double amount;
+    @Schema(description = "Monto del préstamo", example = "10000", required = true)
+    Double amount;
 
     @NotNull
-     Integer months;
+    @Schema(description = "Número de cuotas del préstamo", example = "12", required = true)
+    Integer months;
 
 }

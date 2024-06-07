@@ -34,3 +34,31 @@ Alkywall es una billetera virtual desarrollada para ofrecer a los clientes de nu
 - Servidor: JDK 11 o superior, servidor de aplicaciones compatible con Spring Boot.
 - Cliente: Navegador web moderno (Chrome, Firefox, Safari).
 - Base de Datos: Sistema de gestión de bases de datos SQL (MySQL, PostgreSQL).
+## Test 📝
+Usuarios para realizar pruebas de funcionalidad
+### Usuarios Administradores
+| Usuario   | Contraseña    |
+|-----------|---------------|
+| luk@exampleAdmin.com  | adminPassword   |
+| frank@exampleAdmin.com  | adminPassword   |
+| ricardo@exampleAdmin.com  | adminPassword   |
+| messi@exampleAdmin.com  | adminPassword   |
+| moria@exampleAdmin.com  | adminPassword   |
+| mirtha@exampleAdmin.com | adminPassword |
+| lizy@exampleAdmin.com | adminOassword |
+| maria@exampleAdmin.com | adminPassword |
+| duki@exampleAdmin.com | adminPassword |
+
+### Usuarios Regulares
+| Usuario   | Contraseña    |
+|-----------|---------------|
+| luk@example.com  | password   |
+| frank@example.com  | password   |
+| ricardo@example.com  | password   |
+| messi@example.com  | password   |
+| moria@example.com  | password   |
+| mirtha@example.com | password |
+| lizy@example.com | password |
+| maria@example.com | password |
+| duki@example.com | password |
+

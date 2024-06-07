@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
@@ -33,12 +34,10 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
-    private final UserRepository userRepository;
-    private final UserService userService;
-    private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
+    private final AccountRepository accountRepository;
 
-    public Object registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
+    public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
         Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
 
@@ -65,7 +64,6 @@ public class TransactionService {
         return transactionResponseMapper.mapToTransactionResponse(transactionRegistro, originAccount, destinationAccount);
     }
 
-
     public Transaction sendMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction paymentTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
@@ -76,9 +74,15 @@ public class TransactionService {
                 originAccount
         );
 
+        if (paymentTransaction == null) {
+            throw new RuntimeException("Failed to create transaction");
+        }
+
         transactionRepository.save(paymentTransaction);
         return paymentTransaction;
     }
+
+
 
     public void receiveMoney(TransactionDTO transaction, Accounts originAccount, Accounts destinationAccount) {
         Transaction incomeTransaction = transactionFactory.createTransaction(
@@ -114,7 +118,6 @@ public class TransactionService {
 
             return depositTransaction.getId();
         } catch (NonPositiveAmountException e) {
-            System.err.println(e.getMessage());
             throw e;
         } catch (Exception e) {
             System.err.println("Se produjo un error inesperado al procesar el depósito: " + e.getMessage());
@@ -133,7 +136,7 @@ public class TransactionService {
 
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
-            return transactionRepository.findByAccountId(account);
+            return transactionRepository.findByAccount(account);
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }

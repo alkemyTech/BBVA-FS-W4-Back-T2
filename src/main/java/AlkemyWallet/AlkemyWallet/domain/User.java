@@ -114,8 +114,10 @@ public class User implements UserDetails {
         return this.softDelete == 0;
     }
 
-    @ManyToOne(cascade=CascadeType.MERGE)
+
+     @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
     private Role role;
 
 }
+

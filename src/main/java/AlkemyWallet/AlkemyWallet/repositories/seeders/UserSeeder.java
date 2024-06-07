@@ -52,34 +52,34 @@ public class UserSeeder {
 
     private void createAdminUser() {
 
-            User user = User.builder()
-                    .userName(getNextPredefinedEmailAdmin())
-                    .password(passwordEncoder.encode("adminPassword"))
-                    .firstName(getNextPredefinedName())
-                    .lastName(getNextPredefinedLastName())
-                    .birthDate(generateRandomBirthDate())
-                    .role(RoleFactory.getAdminRole())
-                    .creationDate(LocalDateTime.now())
-                    .updateDate(LocalDateTime.now())
-                    .build();
-            userRepository.save(user);
-        }
+        User user = User.builder()
+                .userName(getNextPredefinedEmailAdmin())
+                .password(passwordEncoder.encode("adminPassword"))
+                .firstName(getNextPredefinedName())
+                .lastName(getNextPredefinedLastName())
+                .birthDate(generateRandomBirthDate())
+                .role(RoleFactory.getAdminRole())
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
 
 
-private void createRegularUser() {
+    private void createRegularUser() {
 
-    User user = User.builder()
-            .userName(getNextPredefinedEmail())
-            .password(passwordEncoder.encode("adminPassword"))
-            .firstName(getNextPredefinedName())
-            .lastName(getNextPredefinedLastName())
-            .birthDate(generateRandomBirthDate())
-            .role(RoleFactory.getUserRole())
-            .creationDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
-            .build();
-    userRepository.save(user);
-}
+        User user = User.builder()
+                .userName(getNextPredefinedEmail())
+                .password(passwordEncoder.encode("adminPassword"))
+                .firstName(getNextPredefinedName())
+                .lastName(getNextPredefinedLastName())
+                .birthDate(generateRandomBirthDate())
+                .role(RoleFactory.getUserRole())
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
 
     private String getNextPredefinedName() {
         // Obtener el siguiente nombre de la lista predefinida

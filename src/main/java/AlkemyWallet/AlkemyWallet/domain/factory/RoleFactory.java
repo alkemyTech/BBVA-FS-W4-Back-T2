@@ -25,16 +25,14 @@ public class RoleFactory {
 
     @PostConstruct
     public void initializeRoles() {
-        if (roleRepository.findByName(RoleEnum.ADMIN) == null) {
+        adminRole = roleRepository.findByName(RoleEnum.ADMIN);
+        if (adminRole == null) {
             adminRole = roleRepository.save(new Role(null, RoleEnum.ADMIN, "Administrator role", LocalDateTime.now(), LocalDateTime.now()));
-        } else {
-            adminRole = roleRepository.findByName(RoleEnum.ADMIN);
         }
 
-        if (roleRepository.findByName(RoleEnum.USER) == null) {
+        userRole = roleRepository.findByName(RoleEnum.USER);
+        if (userRole == null) {
             userRole = roleRepository.save(new Role(null, RoleEnum.USER, "User role", LocalDateTime.now(), LocalDateTime.now()));
-        } else {
-            userRole = roleRepository.findByName(RoleEnum.USER);
         }
     }
 

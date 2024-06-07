@@ -2,38 +2,45 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
+import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
-import AlkemyWallet.AlkemyWallet.dtos.CurrencyDto;
-import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
+import AlkemyWallet.AlkemyWallet.exceptions.AccountNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
-import AlkemyWallet.AlkemyWallet.mappers.ModelMapperConfig;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
+import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpServletRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
+import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
+import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
+
+import java.util.*;
 import java.util.Random;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
-
-
 public class AccountService {
-    private final AccountRepository accountRepository;
-    public final ModelMapperConfig modelMapper;
-    private final UserService userService;
-    private final JwtService jwtService;
-    private final PaginationConfig paginationConfig;
+    @Autowired
+    private  AccountRepository accountRepository;
+    @Autowired
+    private  UserService userService;
+    @Autowired
+    private  JwtService jwtService;
+    @Autowired
+    private  PaginationConfig paginationConfig;
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
@@ -48,7 +55,7 @@ public class AccountService {
         //Validacion...
 
         if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+            throw new DuplicateAccountException("No se puede tener mas de un tipo de cuenta con la misma moneda");
         }
 
         try {
@@ -61,13 +68,8 @@ public class AccountService {
             account.setUserId(user);  // --> JWT
             account.setCurrency(currencyEnum);
 
-
             Accounts savedAccount = accountRepository.save(account);
-            // Add account ID to existing JWT token
-//            String token = jwtService.getTokenFromRequest(request);
-//            if (token != null) {
-//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-//            }
+
 
             // Devolver la cuenta guardada en DTO
 
@@ -79,38 +81,15 @@ public class AccountService {
 
 
     public List<Accounts> findAccountsByUserId(long userId) {
-        try {
+        try{
             User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
             return accountRepository.findByUserId(user);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontró al usuario", e);
+        }catch (Exception e){
+            throw new RuntimeException("No se encontró al usuario",e);
         }
     }
 
-//    public Accounts addById(CurrencyEnum currencyEnum, Long id){
-//
-//        try{
-//            AccountsDto account = new AccountsDto();
-//
-//            //Configuro datos que no se pueden inicializar normalmente
-//
-//            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-//            account.setBalance(0.00);
-//            account.setCBU(generarCBU());
-//            User user = userService.findById(id).orElseThrow();
-//            account.setUserId(user); // --> JWT
-//            account.setCurrency(currencyEnum);
-//
-//            //Termino de rellenar con la Clase Account así se inicializan el resto
-//
-//            Accounts accountBD = modelMapper.modelMapper().map(account,Accounts.class);
-//
-//            return accountRepository.save(accountBD);
-//        }catch (Exception e){
-//            throw new RuntimeException("No se pudo añadir la cuenta al usuario",e);
-//        }
-//
-//    }
+
 
     public AccountsDto addById(AccountRequestDto accountCreation, Long userId) {
 
@@ -118,45 +97,39 @@ public class AccountService {
         String accountType = accountCreation.getAccountType();
         CurrencyEnum currencyEnum = CurrencyEnum.valueOf(currency);
         AccountTypeEnum accountTypeEnum = AccountTypeEnum.valueOf(accountType);
-        User user = userService.findById(userId).orElseThrow();
 
-        //Validacion...
+        if (userService.findById(userId).isPresent()) {
+            User user = userService.findById(userId).get();
+            if (!verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
+                try {
+                    Accounts account = new Accounts();
+                    account.setCurrency(currencyEnum);
+                    account.setAccountType(accountTypeEnum);
+                    account.setTransactionLimit(currencyEnum.getTransactionLimit());
+                    account.setBalance(0.00);
+                    account.setCBU(generarCBU());
+                    account.setUserId(user);  // --> JWT
+                    account.setCurrency(currencyEnum);
 
-        if (verificarExistenciaAccount(user, currencyEnum, accountTypeEnum)) {
-            throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
-        }
+                    Accounts savedAccount = accountRepository.save(account);
 
-        try {
-            Accounts account = new Accounts();
-            account.setCurrency(currencyEnum);
-            account.setAccountType(accountTypeEnum);
-            account.setTransactionLimit(currencyEnum.getTransactionLimit());
-            account.setBalance(0.00);
-            account.setCBU(generarCBU());
-            account.setUserId(user);  // --> JWT
-            account.setCurrency(currencyEnum);
 
-            Accounts savedAccount = accountRepository.save(account);
-
-            //No se si es necesario cuando se inician las 2 cuentas
-            //Por las dudas lo dejo
-            // Add account ID to existing JWT token
-//            String token = jwtService.getTokenFromRequest(request);
-//            if (token != null) {
-//                token = jwtService.addAccountIdToToken(token, String.valueOf(savedAccount.getId()));
-//            }
-
-            // Devolver la cuenta guardada en DTO
-
-            return accountMapper(savedAccount);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al agregar la cuenta", e);
+                    return accountMapper(savedAccount);
+                } catch (Exception e) {
+                    throw new RuntimeException("Error al agregar la cuenta", e);
+                }
+            }else{
+                throw new IllegalArgumentException("No se puede tener mas de un tipo de cuenta con la misma moneda");
+            }
+        } else {
+            throw new IllegalStateException("Usuario no encontrado");
         }
     }
 
-    public static String logicaCBU() {
+    public static String logicaCBU () {
         StringBuilder cbu = new StringBuilder();
         Random random = new Random();
+
 
         // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
         for (int i = 0; i < 7; i++) {
@@ -180,8 +153,7 @@ public class AccountService {
 
         return cbu.toString();
     }
-
-    public String generarCBU() {
+    public String generarCBU () {
         String CBU = null;
         boolean cbuExistente = true;
 
@@ -218,10 +190,19 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }
 
+    public Double getBalanceInARS(Accounts account) {
+        return account.getCurrency() == CurrencyEnum.ARS ? account.getBalance() : 0.0;
+    }
+
+    public Double getBalanceInUSD(Accounts account) {
+        return account.getCurrency() == CurrencyEnum.USD ? account.getBalance() : 0.0;
+    }
+
     public Accounts getAccountFrom(String token) {
         String accountIdToken = jwtService.getClaimFromToken(token, "accountId");
         Long accountId = Long.parseLong(accountIdToken);
-        return accountRepository.findById(accountId).orElseThrow();
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException("La cuenta seleccionada no fue encontrada"));
     }
 
 
@@ -264,15 +245,12 @@ public class AccountService {
         } else {
             throw new RuntimeException("Cuenta no encontrada");
         }
-
     }
-
 
     public Accounts findById(Long id) {
         return accountRepository.findById(id).orElseThrow();
     }
 
-    ;
 
     public Page<Accounts> getAllAccounts(int page) {
         int accountsPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 cuentas por página
@@ -288,6 +266,6 @@ public class AccountService {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
         }
     }
+
+
 }
-
-

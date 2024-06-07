@@ -18,8 +18,4 @@ public interface AccountRepository extends JpaRepository<Accounts, Long> {
 
     List<Accounts> findByUserId(User userId);
 
-
-
-//    @Query("SELECT a FROM Accounts a WHERE a.user_id = :userId AND a.currency = :currency AND a.accountType =: accountType")
-//    Optional<Accounts> findTypeAccountExistence(@Param("userId") Long userId, @Param("currency") String currency, @Param(""));
 }

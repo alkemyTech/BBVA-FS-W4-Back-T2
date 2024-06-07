@@ -1,5 +1,6 @@
 package AlkemyWallet.AlkemyWallet.handlers;
 
+import AlkemyWallet.AlkemyWallet.exceptions.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,57 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+
+    //== EXCPCIONES DE TRANSACCIONES ==//
+    @ExceptionHandler(NonPositiveAmountException.class)
+    public ResponseEntity<String> handleNonPositiveAmountException(NonPositiveAmountException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+    @ExceptionHandler(IncorrectCurrencyException.class)
+    public ResponseEntity<String> handleIncorrectCurrencyException(IncorrectCurrencyException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body( e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
+
+
+    //==EXCEPCIONES DE FIXED DEPOSIT==//
+    @ExceptionHandler(MinimumDurationException.class)
+    public ResponseEntity<String> handleMinimumDurationException(MinimumDurationException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidDateOrderException.class)
+    public ResponseEntity<String> handleInvalidDateOrderException(InvalidDateOrderException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<String> handleInsufficientFundsException(InsufficientFundsException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    //==EXCEPCIONES ACCOUNT==//
+    @ExceptionHandler(DuplicateAccountException.class)
+    public ResponseEntity<String> handleDuplicateAccountException(DuplicateAccountException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<String> handleAccountNotFoundException(AccountNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+
+    //==EXCPECIONES USER ==//
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
 
 
 }
