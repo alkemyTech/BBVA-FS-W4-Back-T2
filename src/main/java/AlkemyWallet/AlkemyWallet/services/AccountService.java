@@ -42,6 +42,7 @@ public class AccountService {
     private  PaginationConfig paginationConfig;
 
 
+
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
 
         String currency = accountCreation.getCurrency();
@@ -234,10 +235,8 @@ public class AccountService {
             AccountsDto accountDto = accountMapper(accountRepository.save(account));
 
             return accountDto;
-        } catch (CuentaNotFoundException e) {
-            throw e; // Lanzar la excepción al nivel superior
-        } catch (LimiteTransaccionExcedidoException e) {
-            throw e; // Lanzar la excepción al nivel superior
+        } catch (CuentaNotFoundException | LimiteTransaccionExcedidoException e) {
+            throw e; // Lanzar las excepciones específicas al nivel superior
         } catch (Exception e) {
             throw new RuntimeException("Error al actualizar la cuenta", e); // Lanzar una excepción general si ocurre otro tipo de error
         }

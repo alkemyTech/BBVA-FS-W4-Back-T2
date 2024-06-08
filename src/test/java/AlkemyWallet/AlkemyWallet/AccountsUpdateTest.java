@@ -7,6 +7,7 @@ import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.LimiteTransaccionExcedidoException;
+import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,8 +29,18 @@ public class AccountsUpdateTest {
     @Mock
     private AccountService accountService;
 
+    @Mock
+    private AccountRepository accountRepository;
+
     @InjectMocks
     private AccountController accountController;
+
+
+
+
+
+
+
 
     @Test
     public void updateAccountTest_Success() {
@@ -66,8 +80,8 @@ public class AccountsUpdateTest {
         Long accountId = 1L;
         Double newTransactionLimit = 1000.00;
 
-        // Simular el servicio de cuenta para lanzar una excepción cuando se llama a findById
-        when(accountService.findById(accountId))
+        // Simular que el servicio lanza una excepción cuando se llama a updateAccount
+        when(accountService.updateAccount(accountId, newTransactionLimit))
                 .thenThrow(new CuentaNotFoundException("Cuenta no encontrada"));
 
         // Llamada al método bajo prueba
