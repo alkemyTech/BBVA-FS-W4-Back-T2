@@ -31,5 +31,16 @@ public class Role {
     @Column(name="updateDate")
     private LocalDateTime updateDate;
 
+    @PrePersist
+    protected void onCreate() {
+        creationDate = LocalDateTime.now();
+        updateDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateDate = LocalDateTime.now();
+    }
+
 
 }
