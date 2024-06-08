@@ -8,6 +8,7 @@ import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
+import AlkemyWallet.AlkemyWallet.exceptions.NonPositiveAmountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
@@ -37,7 +38,7 @@ class TransactionDepositTest {
 
     //Test para cuando los 2 valores son correctos
     @Test
-    void depositMoney_ValidTransaction_ReturnsTransactionId() {
+    void testParaCuandoLosDatosIngresadosSonCorrectos() {
         // Creo un transactionDTo
         TransactionDTO mockTransaction = new TransactionDTO();
         mockTransaction.setDestino("mocked_destination_cbu");
@@ -47,28 +48,30 @@ class TransactionDepositTest {
         // Creo un Accounts con CBU vacio
         Accounts mockAccount = new Accounts();
 
-        // Mocking destination account retrieval
-        Accounts mockDestinationAccount = new Accounts();
-        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockDestinationAccount);
+        // Hacemos que el metodo tenga sentido, simulando el servicio
+        Accounts mockCuentDestino = new Accounts();
+        mockCuentDestino.setCBU("mocked_destination_cbu");
+        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockCuentDestino);
 
-        // Mocking deposit transaction creation
+        // Creamos una nueva transaccion
         Transaction mockDepositTransaction = new Transaction();
         mockDepositTransaction.setId(1L);
         mockDepositTransaction.setAmount(mockTransaction.getAmount());
         mockDepositTransaction.setType(TransactionEnum.DEPOSIT);
         mockDepositTransaction.setDescription("");
         mockDepositTransaction.setTransactionDate(LocalDateTime.now());
-        mockDepositTransaction.setAccountId(mockDestinationAccount); // Destination account
-        mockDepositTransaction.setOriginAccount(mockAccount); // Origin account
+        mockDepositTransaction.setAccountId(mockCuentDestino); // Cuenta destino
+        mockDepositTransaction.setOriginAccount(mockAccount); // Cuenta origen
+
         when(transactionFactory.createTransaction(
                 eq(mockTransaction.getAmount()),
                 eq(TransactionEnum.DEPOSIT),
                 eq(""),
                 any(LocalDateTime.class),
-                eq(mockDestinationAccount),
+                eq(mockCuentDestino),
                 eq(mockAccount))).thenReturn(mockDepositTransaction);
 
-        // Mocking transaction saving
+        // Guardando la transaccion
         when(transactionRepository.save(mockDepositTransaction)).thenReturn(mockDepositTransaction);
 
         // Performing the test
@@ -81,73 +84,52 @@ class TransactionDepositTest {
 
     //Lógica para cuando la cuenta origen y destino son distintas
     @Test
-    void depositMoney_UnauthorizedTransaction_ThrowsUnauthorizedTransactionException() {
+    void testParaCuandoLaCuentaOrigenEsDistintaALaCuentaDestino() {
         // Mocking TransactionDTO
         TransactionDTO mockTransaction = new TransactionDTO();
         mockTransaction.setDestino("mocked_destination_cbu");
         mockTransaction.setAmount(100.0);
         mockTransaction.setCurrency("USD");
 
-        // Mocking destination account retrieval
-        Accounts mockDestinationAccount = new Accounts();
-        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockDestinationAccount);
+        //"Busco" la cuenta destino
+        Accounts mockCuentaDestino = new Accounts();
+        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockCuentaDestino);
 
-        // Mocking origin account retrieval
-        Accounts mockOriginAccount = new Accounts();
+        // Defino la cuenta origen
+        Accounts mockCuentaOrigen = new Accounts();
 
-        // Setting up accounts to have different CBUs
-        mockDestinationAccount.setCBU("mocked_destination_cbu");
-        mockOriginAccount.setCBU("mocked_origin_cbu");
+        // Las cuentas tienen distinto CBU
+        mockCuentaDestino.setCBU("mocked_destination_cbu");
+        mockCuentaOrigen.setCBU("mocked_origin_cbu");
 
-//        // Mocking transaction creation
-//        Transaction mockDepositTransaction = new Transaction();
-//        when(transactionFactory.createTransaction(
-//                eq(mockTransaction.getAmount()),
-//                eq(TransactionEnum.DEPOSIT),
-//                eq(""),
-//                any(LocalDateTime.class),
-//                eq(mockDestinationAccount),
-//                eq(mockOriginAccount))).thenReturn(mockDepositTransaction);
-//
-//        // Mocking transaction saving
-//        when(transactionRepository.save(mockDepositTransaction)).thenReturn(mockDepositTransaction);
-
-        // Mocking account retrieval from token
-        when(accountService.getAccountFrom(anyString())).thenReturn(mockOriginAccount);
-
-        // Performing the test and asserting that an UnauthorizedTransactionException is thrown
-        assertThrows(UnauthorizedTransactionException.class, () -> {
-            transactionService.depositMoney(mockTransaction, mockOriginAccount);
+        Exception exception = assertThrows(UnauthorizedTransactionException.class, () -> {
+            transactionService.depositMoney(mockTransaction, mockCuentaOrigen);
         });
+
+        assertEquals("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino", exception.getMessage());
     }
 
-    //Lógica cambiada para que verifique el runtimeError
     @Test
-    void depositMoney_UnauthorizedTransaction_ThrowsUnauthorizedTransactionExceptionSegundo() {
-        // Mocking TransactionDTO
+    void testParaCuandoElAmountEsMenorOIgualA0() {
+        // Creo el TransactionDto
         TransactionDTO mockTransaction = new TransactionDTO();
         mockTransaction.setDestino("mocked_destination_cbu");
-        mockTransaction.setAmount(100.0);
+        mockTransaction.setAmount(0.0); // El amount es cero para que tire la otra exception
         mockTransaction.setCurrency("USD");
 
-        // Mocking destination account retrieval
+        // Hago que las cuentas concuerden
         Accounts mockDestinationAccount = new Accounts();
+        mockDestinationAccount.setCBU("mocked_destination_cbu");
         when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockDestinationAccount);
 
-        // Mocking origin account retrieval
+        // Defino la cuenta origen y hago que concuerden con el mismo CBU
         Accounts mockOriginAccount = new Accounts();
+        mockOriginAccount.setCBU("mocked_destination_cbu");
 
-        // Setting up accounts to have different CBUs
-        mockDestinationAccount.setCBU("mocked_destination_cbu");
-        mockOriginAccount.setCBU("mocked_origin_cbu");
-
-        // Mocking the transaction service to throw RuntimeException
-        when(transactionService.depositMoney(mockTransaction, mockOriginAccount))
-                .thenThrow(new RuntimeException("Error al procesar el depósito"));
-
-        // Performing the test and asserting that either UnauthorizedTransactionException or RuntimeException is thrown
-        assertThrows(RuntimeException.class, () -> {
+        Exception exception = assertThrows(NonPositiveAmountException.class, () -> {
             transactionService.depositMoney(mockTransaction, mockOriginAccount);
-        }, "Error al procesar el depósito");
+        });
+
+        assertEquals("El monto del depósito debe ser mayor que cero", exception.getMessage());
     }
 }
