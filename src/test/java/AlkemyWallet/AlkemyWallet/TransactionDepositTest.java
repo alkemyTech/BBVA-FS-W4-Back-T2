@@ -45,13 +45,15 @@ class TransactionDepositTest {
         mockTransaction.setAmount(100.0);
         mockTransaction.setCurrency("USD");
 
-        // Creo un Accounts con CBU vacio
+        // Account que viene por parametro
         Accounts mockAccount = new Accounts();
+        mockAccount.setCBU("mocked_destination_cbu");
 
         // Hacemos que el metodo tenga sentido, simulando el servicio
-        Accounts mockCuentDestino = new Accounts();
-        mockCuentDestino.setCBU("mocked_destination_cbu");
-        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockCuentDestino);
+        Accounts mockCuentaDestino = new Accounts();
+        mockCuentaDestino.setCBU("mocked_destination_cbu");
+
+        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockCuentaDestino);
 
         // Creamos una nueva transaccion
         Transaction mockDepositTransaction = new Transaction();
@@ -60,7 +62,7 @@ class TransactionDepositTest {
         mockDepositTransaction.setType(TransactionEnum.DEPOSIT);
         mockDepositTransaction.setDescription("");
         mockDepositTransaction.setTransactionDate(LocalDateTime.now());
-        mockDepositTransaction.setAccountId(mockCuentDestino); // Cuenta destino
+        mockDepositTransaction.setAccount(mockCuentaDestino); // Cuenta destino
         mockDepositTransaction.setOriginAccount(mockAccount); // Cuenta origen
 
         when(transactionFactory.createTransaction(
@@ -68,7 +70,7 @@ class TransactionDepositTest {
                 eq(TransactionEnum.DEPOSIT),
                 eq(""),
                 any(LocalDateTime.class),
-                eq(mockCuentDestino),
+                eq(mockCuentaDestino),
                 eq(mockAccount))).thenReturn(mockDepositTransaction);
 
         // Guardando la transaccion
