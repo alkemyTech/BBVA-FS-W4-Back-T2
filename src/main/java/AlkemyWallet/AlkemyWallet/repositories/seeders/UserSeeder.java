@@ -47,39 +47,41 @@ public class UserSeeder {
 
     private List<String> predefinedNames = List.of("Juan", "María", "Frank", "Luk", "Ricardo","Moria", "Mirtha", "Duki", "Lionel", "Lizy");
     private List<String> predefinedLastNames =List.of("Pecados","Becerra", "Sinatra", "Ra","Fort", "Casan", "Legrand","Lombardo", "Messi", "Tagliani" );
-    private List<String> predefinedEmails = List.of("juan@example.com", "maria@example.com", "pedro@example.com", "ana@example.com", "luis@example.com", "roberto@example.com", "pablo@example.com", "duki@example.com", "messi@example.com", "liliana@example.com");
-    private List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "pedro@exampleAdmin.com", "ana@exampleAdmin.com", "luis@exampleAdmin.com", "roberto@exampleAdmin.com", "pablo@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "liliana@exampleAdmin.com");
+    private List<String> predefinedEmails = List.of("juan@example.com", "maria@example.com", "frank@example.com", "luk@example.com", "ricardo@example.com", "moria@example.com", "mirtha@example.com", "duki@example.com", "messi@example.com", "lizy@example.com");
+    private List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "frank@exampleAdmin.com", "luk@exampleAdmin.com", "ricardo@exampleAdmin.com", "moria@exampleAdmin.com", "mirtha@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "lizy@exampleAdmin.com");
 
     private void createAdminUser() {
 
-            User user = User.builder()
-                    .userName(getNextPredefinedEmailAdmin())
-                    .password(passwordEncoder.encode("adminPassword"))
-                    .firstName(getNextPredefinedName())
-                    .lastName(getNextPredefinedLastName())
-                    .birthDate(generateRandomBirthDate())
-                    .role(RoleFactory.getAdminRole())
-                    .creationDate(LocalDateTime.now())
-                    .updateDate(LocalDateTime.now())
-                    .build();
-            userRepository.save(user);
-        }
+        User user = User.builder()
+                .userName(getNextPredefinedEmailAdmin())
+                .password(passwordEncoder.encode("adminPassword"))
+                .firstName(getNextPredefinedName())
+                .lastName(getNextPredefinedLastName())
+                .birthDate(generateRandomBirthDate())
+                .role(RoleFactory.getAdminRole())
+                .softDelete(0)
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
 
 
-private void createRegularUser() {
+    private void createRegularUser() {
 
-    User user = User.builder()
-            .userName(getNextPredefinedEmail())
-            .password(passwordEncoder.encode("adminPassword"))
-            .firstName(getNextPredefinedName())
-            .lastName(getNextPredefinedLastName())
-            .birthDate(generateRandomBirthDate())
-            .role(RoleFactory.getUserRole())
-            .creationDate(LocalDateTime.now())
-            .updateDate(LocalDateTime.now())
-            .build();
-    userRepository.save(user);
-}
+        User user = User.builder()
+                .userName(getNextPredefinedEmail())
+                .password(passwordEncoder.encode("adminPassword"))
+                .firstName(getNextPredefinedName())
+                .lastName(getNextPredefinedLastName())
+                .birthDate(generateRandomBirthDate())
+                .role(RoleFactory.getUserRole())
+                .softDelete(0)
+                .creationDate(LocalDateTime.now())
+                .updateDate(LocalDateTime.now())
+                .build();
+        userRepository.save(user);
+    }
 
     private String getNextPredefinedName() {
         // Obtener el siguiente nombre de la lista predefinida

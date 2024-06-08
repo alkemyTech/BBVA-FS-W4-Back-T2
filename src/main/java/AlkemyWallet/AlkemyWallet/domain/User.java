@@ -55,15 +55,14 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @NotNull
-    private int softDelete;
-
-    public boolean isSoftDelete() {
-        return this.softDelete == 1; // Devuelve true si softDelete es 1
-    }
-
+    private Integer softDelete;
 
     public void setSoftDelete(boolean softDelete) {
         this.softDelete = softDelete ? 1 : 0; // Almacena 1 si es true, 0 si es false
+    }
+
+    public boolean isSoftDelete() {
+        return this.softDelete == 1; // Devuelve true si softDelete es 1
     }
 
     @Column(nullable = false)
@@ -114,8 +113,10 @@ public class User implements UserDetails {
         return this.softDelete == 0;
     }
 
+
      @ManyToOne(cascade=CascadeType.MERGE)
     @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
     private Role role;
 
 }
+

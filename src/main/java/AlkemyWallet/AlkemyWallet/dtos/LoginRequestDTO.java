@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest{
+public class LoginRequestDTO {
 
         @NotBlank
         @Email

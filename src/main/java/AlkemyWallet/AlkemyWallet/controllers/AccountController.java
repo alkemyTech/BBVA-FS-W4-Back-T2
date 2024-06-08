@@ -6,6 +6,7 @@ import AlkemyWallet.AlkemyWallet.dtos.BalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.LimiteTransaccionExcedidoException;
+import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedAccountAccessException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.BalanceService;
@@ -182,25 +183,34 @@ public class AccountController {
                     )
             }
     )
+
     @PostMapping("/select/{accountId}")
     public ResponseEntity<String> selectAccount(HttpServletRequest request, @PathVariable Long accountId) {
         try {
             // Obtener el token actual del usuario autenticado
             String currentToken = jwtService.getTokenFromRequest(request);
 
-            // Agregar el ID de cuenta al token
-            String accountIdAdd = String.valueOf(accountId);
-            String updatedToken = jwtService.addAccountIdToToken(currentToken, accountIdAdd);
+            User userAccount = accountService.findById(accountId).getUserId();
 
-            // Para usar header
-            HttpHeaders headers = new HttpHeaders();
-            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
+            if (jwtService.getUsernameFromToken(currentToken).equals(userAccount.getUsername())) {
+                // Agregar el ID de cuenta al token
+                String accountIdAdd = String.valueOf(accountId);
+                String updatedToken = jwtService.addAccountIdToToken(currentToken, accountIdAdd);
 
-            // Devolver el nuevo token en la respuesta
-            return ResponseEntity.ok().headers(headers).body("Token actualizado con éxito");
+                // Para usar header
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
+
+                // Devolver el nuevo token en la respuesta
+                return ResponseEntity.ok().headers(headers).body("Token actualizado con éxito");
+            } else {
+                throw new UnauthorizedAccountAccessException("No está autorizado para acceder a esta cuenta");
+            }
+        } catch (UnauthorizedAccountAccessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (Exception e) {
-            // Manejar cualquier error que pueda ocurrir
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
+            // Manejar cualquier otro error que pueda ocurrir
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud: " + e.getMessage());
         }
     }
 

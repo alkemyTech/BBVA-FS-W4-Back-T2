@@ -6,6 +6,7 @@ import AlkemyWallet.AlkemyWallet.dtos.UserDetailDTO;
 import AlkemyWallet.AlkemyWallet.dtos.UserUpdateRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.ForbiddenException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
+import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 import AlkemyWallet.AlkemyWallet.mappers.UserDetailMapper;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,10 +62,11 @@ public class UserService implements UserDetailsService {
 
 
     public void softDeleteById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
-        user.setSoftDelete(true);
+        User user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setSoftDelete(!user.isSoftDelete());
         userRepository.save(user);
     }
+
 
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
@@ -74,7 +77,7 @@ public class UserService implements UserDetailsService {
 
 
         // Obtener el usuario a editar
-        User existingUser = findById(id).orElseThrow(() -> new RuntimeException() );
+        User existingUser = findById(id).orElseThrow(() -> new UserNotFoundException("No se encontro un usuario con ese Id") );
 
         // Actualizar los campos permitidos
         if (userUpdateRequest.getFirstName() != null) {
@@ -87,6 +90,7 @@ public class UserService implements UserDetailsService {
             existingUser.setPassword(userUpdateRequest.getPassword());
         }
 
+        existingUser.setUpdateDate(LocalDateTime.now());
         // Guardar los cambios
         userRepository.save(existingUser);
 

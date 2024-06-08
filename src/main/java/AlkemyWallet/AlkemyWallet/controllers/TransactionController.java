@@ -4,6 +4,9 @@ import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
+import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
+import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
+import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +27,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/transactions")
@@ -50,17 +56,32 @@ public class TransactionController {
                     )
             }
     )
+
     @PostMapping({"/sendArs", "/sendUsd", "/payment"})
     public ResponseEntity<?> sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
-        String token = jwtService.getTokenFromRequest(request);
-        Accounts account = accountService.getAccountFrom(token);
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            Accounts account = accountService.getAccountFrom(token);
 
-        // Devolver el token sin la nueva info de cuenta
-        token = jwtService.removeAccountIdFromToken(token);
+            // Lógica para registrar la transacción
+            TransactionResponse response = transactionService.registrarTransaccion(transaction, account);
+
+            // Devolver una respuesta exitosa
+            return ResponseEntity.ok().headers(createHeadersWithUpdatedToken(token)).body(response);
+        } catch (InsufficientFundsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: No hay suficientes fondos para completar la transacción");
+        } catch (IncorrectCurrencyException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: La moneda seleccionada no es la correcta para este tipo de cuenta");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error genérico: " + e.getMessage());
+        }
+    }
+
+    private HttpHeaders createHeadersWithUpdatedToken(String currentToken) {
+        String updatedToken = jwtService.removeAccountIdFromToken(currentToken);
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-
-        return ResponseEntity.ok().headers(headers).body(transactionService.registrarTransaccion(transaction, account));
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
+        return headers;
     }
 
     @Operation(
@@ -108,18 +129,31 @@ public class TransactionController {
             }
     )
     @GetMapping("user/{userId}")
-    public ResponseEntity<?> getTransactionsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getPagedTransactions(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page) {
         try {
-            List<Accounts> accounts = accountService.findAccountsByUserId(userId);
-            List<Transaction> transactions = new ArrayList<>();
+            Page<Transaction> transactionsPage = transactionService.getTransactionsByUserIdPaginated(userId, page);
+            int totalPages = transactionsPage.getTotalPages();
 
-            for (Accounts account : accounts) {
-                transactions.addAll(transactionService.getTransactionsByAccountId(account.getId()));
+            Map<String, Object> response = new HashMap<>();
+            response.put("transactions", transactionsPage.getContent());
+            response.put("currentPage", page);
+            response.put("totalPages", totalPages);
+
+            if (page < totalPages - 1) {
+                response.put("nextPage", "/admin/" + userId + "?page=" + (page + 1));
             }
-            return ResponseEntity.ok(transactions);
+            if (page > 0) {
+                response.put("previousPage", "/admin/" + userId + "?page=" + (page - 1));
+            }
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las transacciones del usuario: " + e.getMessage());
+
+
         }
+
     }
 
     @Operation(
@@ -184,4 +218,6 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error al actualizar la transacción: " + e.getMessage());
         }
     }
+
+
 }
