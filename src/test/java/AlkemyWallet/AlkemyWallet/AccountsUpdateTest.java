@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet;
 
 import AlkemyWallet.AlkemyWallet.controllers.AccountController;
+import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
@@ -32,13 +33,20 @@ public class AccountsUpdateTest {
         // Datos de prueba
         Long accountId = 1L;
         Double newTransactionLimit = 1000.00;
-
-        // Mock del servicio de cuenta
+        // Mock del AccountsDto
         AccountsDto mockAccountsDto = new AccountsDto();
         mockAccountsDto.setId(accountId);
         mockAccountsDto.setTransactionLimit(newTransactionLimit);
+        // Mock de la cuenta encontrada:
+        Accounts accountInDB = new Accounts();
+        accountInDB.setId(accountId);
+        accountInDB.setTransactionLimit(mockAccountsDto.getTransactionLimit());
 
+        when(accountService.findById(mockAccountsDto.getId())).thenReturn(accountInDB);
         when(accountService.updateAccount(accountId, newTransactionLimit)).thenReturn(mockAccountsDto);
+
+        //Verificar que la cuenta en la base de datos existe
+        assertEquals(accountService.findById(mockAccountsDto.getId()), accountInDB);
 
         // Llamada al método bajo prueba
         ResponseEntity<?> response = accountController.updateAccount(accountId, newTransactionLimit);
@@ -48,6 +56,8 @@ public class AccountsUpdateTest {
 
         // Verificar que el cuerpo de la respuesta contiene el objeto de cuenta actualizado
         assertEquals(mockAccountsDto, response.getBody());
+
+
     }
 
     @Test
@@ -56,8 +66,8 @@ public class AccountsUpdateTest {
         Long accountId = 1L;
         Double newTransactionLimit = 1000.00;
 
-        // Simular el servicio de cuenta para lanzar una excepción cuando se llama a updateAccount con un ID que no se puede encontrar
-        when(accountService.updateAccount(accountId, newTransactionLimit))
+        // Simular el servicio de cuenta para lanzar una excepción cuando se llama a findById
+        when(accountService.findById(accountId))
                 .thenThrow(new CuentaNotFoundException("Cuenta no encontrada"));
 
         // Llamada al método bajo prueba

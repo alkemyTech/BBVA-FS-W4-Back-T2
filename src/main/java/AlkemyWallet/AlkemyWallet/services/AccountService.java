@@ -218,24 +218,34 @@ public class AccountService {
     }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
-        // Logica para verificar si la cuenta existe
-        if (accountRepository.findById(accountId).isPresent()) {
-            Accounts account = accountRepository.getReferenceById(accountId);
-            // Logica para verificar si el límite es mayor al permitido por tipo de cuenta
-            if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
-                account.setTransactionLimit(transactionLimit);
-                AccountsDto accountDTO = accountMapper(accountRepository.save(account));
-                return accountDTO;
-            } else {
-                throw new LimiteTransaccionExcedidoException("Límite de transacción mayor al que el tipo de cuenta puede tener");
+        try {
+            // Buscar la cuenta, lanzando una excepción si no se encuentra
+            Accounts account = findById(accountId);
+
+            // Verificar si el límite es mayor al permitido por tipo de cuenta
+            if (transactionLimit > account.getCurrency().getTransactionLimit() + 1) {
+                throw new LimiteTransaccionExcedidoException("Límite de transacción mayor al permitido");
             }
-        } else {
-            throw new CuentaNotFoundException("Cuenta no encontrada");
+
+            // Actualizar el límite de transacción
+            account.setTransactionLimit(transactionLimit);
+
+            // Guardar los cambios y convertir la cuenta actualizada en un DTO
+            AccountsDto accountDto = accountMapper(accountRepository.save(account));
+
+            return accountDto;
+        } catch (CuentaNotFoundException e) {
+            throw e; // Lanzar la excepción al nivel superior
+        } catch (LimiteTransaccionExcedidoException e) {
+            throw e; // Lanzar la excepción al nivel superior
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar la cuenta", e); // Lanzar una excepción general si ocurre otro tipo de error
         }
     }
 
     public Accounts findById(Long id) {
-        return accountRepository.findById(id).orElseThrow();
+        return accountRepository.findById(id)
+                .orElseThrow(() -> new CuentaNotFoundException("Cuenta no encontrada"));
     }
 
     public Page<Accounts> getAllAccounts(int page) {

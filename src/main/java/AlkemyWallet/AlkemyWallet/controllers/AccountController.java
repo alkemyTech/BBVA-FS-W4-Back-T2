@@ -131,7 +131,9 @@ public class AccountController {
     @PatchMapping("/editar/{accountId}")
     public ResponseEntity<?> updateAccount(@PathVariable Long accountId, @RequestBody Double transactionLimit) {
         try {
+
             return ResponseEntity.ok(accountService.updateAccount(accountId, transactionLimit));
+
         } catch (CuentaNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al actualizar cuenta: " + e.getMessage());
         } catch (LimiteTransaccionExcedidoException e) {
