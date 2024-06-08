@@ -38,13 +38,13 @@ class TransactionDepositTest {
     //Test para cuando los 2 valores son correctos
     @Test
     void depositMoney_ValidTransaction_ReturnsTransactionId() {
-        // Mocking TransactionDTO
+        // Creo un transactionDTo
         TransactionDTO mockTransaction = new TransactionDTO();
         mockTransaction.setDestino("mocked_destination_cbu");
         mockTransaction.setAmount(100.0);
         mockTransaction.setCurrency("USD");
 
-        // Mocking Accounts
+        // Creo un Accounts con CBU vacio
         Accounts mockAccount = new Accounts();
 
         // Mocking destination account retrieval
