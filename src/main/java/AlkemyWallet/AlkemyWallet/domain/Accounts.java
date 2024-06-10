@@ -87,7 +87,6 @@ public class Accounts {
     @PrePersist
     protected void onCreate(){
         //Estará bien "this.???"
-        this.balance = 0.00;
         this.creationDate = LocalDateTime.now();
         this.updateDate = LocalDateTime.now();
         this.softDelete = false;

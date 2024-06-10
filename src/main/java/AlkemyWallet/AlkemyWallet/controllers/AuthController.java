@@ -27,15 +27,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-    }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
 
     @Operation(
             description = "Endpoint accesible para autenticación de usuarios",
@@ -67,8 +59,6 @@ public class AuthController {
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
             return ResponseEntity.ok().headers(headers).body("Login successful!");
-        } catch (AuthenticationException e) {
-            return handleAuthenticationException(e);
         } catch (UserDeletedException e) {
             throw new RuntimeException(e);
         }
@@ -97,16 +87,12 @@ public class AuthController {
     )
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
             AuthResponseRegister registerResponse = authenticationService.register(registerRequest);
             String token = jwtService.getToken(registerResponse.getUserName());
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
             return ResponseEntity.ok().headers(headers).body(registerResponse);
-        } catch (IllegalArgumentException e) {
-            return handleIllegalArgumentException(e);
-        }
     }
 
     @Operation(
@@ -132,15 +118,13 @@ public class AuthController {
     )
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
+
             AuthResponseRegister registerResponse = authenticationService.registerAdmin(registerRequest);
             String token = jwtService.getToken(registerResponse.getUserName());
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
             return ResponseEntity.ok().headers(headers).body(registerResponse);
-        } catch (IllegalArgumentException e) {
-            return handleIllegalArgumentException(e);
-        }
+
     }
 }

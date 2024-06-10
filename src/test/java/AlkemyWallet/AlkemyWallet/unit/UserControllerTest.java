@@ -1,4 +1,4 @@
-package AlkemyWallet.AlkemyWallet.test;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.UserController;
 import AlkemyWallet.AlkemyWallet.domain.User;
@@ -7,7 +7,6 @@ import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

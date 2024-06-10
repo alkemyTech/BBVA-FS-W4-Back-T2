@@ -1,4 +1,4 @@
-package AlkemyWallet.AlkemyWallet;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

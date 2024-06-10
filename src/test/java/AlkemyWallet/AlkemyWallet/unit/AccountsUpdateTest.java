@@ -1,4 +1,4 @@
-package AlkemyWallet.AlkemyWallet;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.AccountController;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;

@@ -7,7 +7,6 @@ import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -15,13 +14,12 @@ import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
-public class TransactionSeeder implements CommandLineRunner {
+public class TransactionSeeder {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
 
-    @Override
-    public void run(String... args) throws Exception {
+    public void seedTransactions() {
         if (transactionRepository.count() == 0) {
             createRandomTransactionsForAccounts(1, 20, 40); // Limitado a 40 transacciones en total
         }
