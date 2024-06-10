@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
+
 
 @RestController
 @AllArgsConstructor
@@ -47,6 +49,10 @@ public class AuthController {
     public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
     }
+    @ExceptionHandler(UserDeletedException.class)
+    public ResponseEntity<String> handleUserDeletedException(UserDeletedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User account is deleted");
+    }
 
     @Operation(
             description = "Endpoint accesible para autenticación de usuarios",
@@ -72,8 +78,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
         try {
-            // Para usar header
-            String token = authenticationService.login(loginRequest);
+            String token = authenticationService.login(loginRequest); // Línea que lanza UserDeletedException
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
@@ -81,7 +86,11 @@ public class AuthController {
         } catch (AuthenticationException e) {
             return handleAuthenticationException(e);
         } catch (UserDeletedException e) {
-            throw new RuntimeException(e);
+            return handleUserDeletedException(e);
+        } catch (IllegalArgumentException e) {
+            return handleIllegalArgumentException(e);
+        } catch (RuntimeException e) {
+            return handleRuntimeException(e);
         }
     }
 
