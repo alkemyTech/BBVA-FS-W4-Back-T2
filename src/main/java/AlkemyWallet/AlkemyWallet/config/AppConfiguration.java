@@ -25,9 +25,7 @@ public class AppConfiguration {
         return args -> {
             userSeeder.seed();
             accountsSeeder.seedAccounts();
-            userSeeder.seed();
-            accountsSeeder.seedAccounts();
-            transactionSeeder.run();
+            transactionSeeder.seedTransactions();
         };
     }
 }

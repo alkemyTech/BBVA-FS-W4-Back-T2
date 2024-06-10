@@ -19,7 +19,7 @@ public class AccountsDto {
     @NotBlank
     @NotNull
     @Schema(description = "ID de la cuenta", example = "1", required = true)
-    private long id;
+    private Long id;
     @NotNull
     @NotBlank
     @Schema(description = "Moneda de la cuenta", example = "USD", required = true)

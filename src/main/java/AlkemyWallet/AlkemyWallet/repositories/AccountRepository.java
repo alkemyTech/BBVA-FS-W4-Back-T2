@@ -2,6 +2,8 @@ package AlkemyWallet.AlkemyWallet.repositories;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,5 +19,7 @@ public interface AccountRepository extends JpaRepository<Accounts, Long> {
     Optional<Accounts> findByCBU(@Param("cbu") String cbu);
 
     List<Accounts> findByUserId(User userId);
+
+    Accounts save(Accounts accounts);
 
 }

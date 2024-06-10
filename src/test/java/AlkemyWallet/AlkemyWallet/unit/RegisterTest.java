@@ -1,4 +1,4 @@
-package AlkemyWallet.AlkemyWallet;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.AuthController;
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;

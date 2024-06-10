@@ -129,6 +129,8 @@ public class TransactionService {
             return depositTransaction.getId();
         } catch (NonPositiveAmountException e) {
             throw e;
+        } catch (UnauthorizedTransactionException e) {
+            throw e;
         } catch (Exception e) {
             System.err.println("Se produjo un error inesperado al procesar el depósito: " + e.getMessage());
             throw new RuntimeException("Error al procesar el depósito");

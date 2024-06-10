@@ -1,12 +1,10 @@
-package AlkemyWallet.AlkemyWallet.integration;
+package AlkemyWallet.AlkemyWallet.unit;
 
 
 import AlkemyWallet.AlkemyWallet.controllers.TransactionController;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
-import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
-import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
@@ -14,16 +12,12 @@ import AlkemyWallet.AlkemyWallet.services.TransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;

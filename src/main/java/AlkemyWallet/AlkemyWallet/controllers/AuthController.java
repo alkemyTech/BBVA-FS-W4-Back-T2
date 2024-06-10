@@ -30,6 +30,8 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
 
+
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
@@ -53,7 +55,6 @@ public class AuthController {
     public ResponseEntity<String> handleUserDeletedException(UserDeletedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User account is deleted");
     }
-
     @Operation(
             description = "Endpoint accesible para autenticación de usuarios",
             summary = "Inicia sesión con credenciales de usuario",
@@ -133,6 +134,7 @@ public class AuthController {
 
 
 
+
     @Operation(
             description = "Endpoint accesible para registro de nuevos administradores",
             summary = "Registra un nuevo administrador",
@@ -168,6 +170,8 @@ public class AuthController {
         }
     }
 }
+
+
 
 
 
