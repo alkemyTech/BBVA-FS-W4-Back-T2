@@ -3,10 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
-import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
-import AlkemyWallet.AlkemyWallet.dtos.LoginRequestDTO;
-import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
+import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
@@ -111,20 +108,19 @@ public class AuthenticationService {
 
 
 
-    public String login(LoginRequestDTO loginRequest) throws UserDeletedException {
+    public LoginResponseDTO login(LoginRequestDTO loginRequest) throws UserDeletedException {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUserName(), loginRequest.getPassword()));
 
-        UserDetails user = userRepository.findByUserName(loginRequest.getUserName())
+        User user = userRepository.findByUserName(loginRequest.getUserName())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         if (!user.isEnabled()) {
             throw new UserDeletedException("No se puede iniciar sesión, el usuario está marcado como borrado");
         }
 
-
         //EN DUDA SI NO CAMBIARLO POR UNA AUTHRESPONSELOGIN - RESPONDER DIRECTO EL TOKEN O DEJARLO CON TOKEN Y USERDEATLLES
-        return jwtService.getToken(user.getUsername());
+        return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath());
     }
 
 
