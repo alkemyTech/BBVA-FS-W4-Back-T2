@@ -43,7 +43,7 @@ public class UserSeeder {
     private final List<String> predefinedNames = List.of("Juan", "María", "Frank", "Luk", "Ricardo","Moria", "Mirtha", "Duki", "Lionel", "Lizy");
     private final List<String> predefinedLastNames =List.of("Pecados","Becerra", "Sinatra", "Ra","Fort", "Casan", "Legrand","Lombardo", "Messi", "Tagliani" );
     private final List<String> predefinedEmails = List.of("juan@example.com", "maria@example.com", "frank@example.com", "luk@example.com", "ricardo@example.com", "moria@example.com", "mirtha@example.com", "duki@example.com", "messi@example.com", "lizy@example.com");
-    private final List<String> predefinedEmailsAdmin = List.of("juan@exampleAdmin.com", "maria@exampleAdmin.com", "frank@exampleAdmin.com", "luk@exampleAdmin.com", "ricardo@exampleAdmin.com", "moria@exampleAdmin.com", "mirtha@exampleAdmin.com", "duki@exampleAdmin.com", "messi@exampleAdmin.com", "lizy@exampleAdmin.com");
+    private final List<String> predefinedEmailsAdmin = List.of("juanAdmin@example.com", "mariaAdmin@example.com", "frankAdmin@example.com", "lukAdmin@exampleA.com", "ricardoAdmin@example.com", "moriaAdmin@example.com", "mirthaAdmin@example.com", "dukiAdmin@example.com", "messiAdmin@example.com", "lizyAdmin@example.com");
 
     private void createAdminUser() {
 
