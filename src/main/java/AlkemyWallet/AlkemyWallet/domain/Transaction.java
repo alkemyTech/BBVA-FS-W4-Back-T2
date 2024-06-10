@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
 
 
 import java.time.LocalDateTime;
@@ -39,7 +38,7 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "Account_Id", nullable = false)
     @NotNull
-    private Accounts accountId; // account destino
+    private Accounts account; // account destino
 
     @ManyToOne
     @JoinColumn(name = "origin_account_id", nullable = true)
@@ -51,13 +50,13 @@ public class Transaction {
         this.type = type;
         this.description = description;
         this.transactionDate = transactionDate;
-        this.accountId = accountId;
+        this.account = accountId;
         this.originAccount = originAccount;
 
     }
 
     public Accounts getAccount() {
-        return this.accountId;
+        return this.account;
     }
 }
 

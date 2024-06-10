@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -35,6 +36,16 @@ public class AuthController {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request");
+    }
+
+    @ExceptionHandler(RuntimeException.class) //  Añadi un manejador de excepciones RuntimeException
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
     }
 
     @Operation(
@@ -106,8 +117,12 @@ public class AuthController {
             return ResponseEntity.ok().headers(headers).body(registerResponse);
         } catch (IllegalArgumentException e) {
             return handleIllegalArgumentException(e);
+        } catch (RuntimeException e) { //  Ajuste el método register para manejar RuntimeException
+            return handleRuntimeException(e);
         }
     }
+
+
 
     @Operation(
             description = "Endpoint accesible para registro de nuevos administradores",
@@ -144,3 +159,8 @@ public class AuthController {
         }
     }
 }
+
+
+
+
+
