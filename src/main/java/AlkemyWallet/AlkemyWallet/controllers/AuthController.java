@@ -17,7 +17,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
+
 
 @RestController
 @AllArgsConstructor
@@ -29,6 +32,29 @@ public class AuthController {
 
 
 
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request");
+    }
+
+    @ExceptionHandler(RuntimeException.class) //  Añadi un manejador de excepciones RuntimeException
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
+    }
+    @ExceptionHandler(UserDeletedException.class)
+    public ResponseEntity<String> handleUserDeletedException(UserDeletedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User account is deleted");
+    }
     @Operation(
             description = "Endpoint accesible para autenticación de usuarios",
             summary = "Inicia sesión con credenciales de usuario",
@@ -53,14 +79,19 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
         try {
-            // Para usar header
-            String token = authenticationService.login(loginRequest);
+            String token = authenticationService.login(loginRequest); // Línea que lanza UserDeletedException
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
             return ResponseEntity.ok().headers(headers).body("Login successful!");
+        } catch (AuthenticationException e) {
+            return handleAuthenticationException(e);
         } catch (UserDeletedException e) {
-            throw new RuntimeException(e);
+            return handleUserDeletedException(e);
+        } catch (IllegalArgumentException e) {
+            return handleIllegalArgumentException(e);
+        } catch (RuntimeException e) {
+            return handleRuntimeException(e);
         }
     }
 
@@ -87,13 +118,22 @@ public class AuthController {
     )
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        try {
             AuthResponseRegister registerResponse = authenticationService.register(registerRequest);
             String token = jwtService.getToken(registerResponse.getUserName());
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
             return ResponseEntity.ok().headers(headers).body(registerResponse);
+        } catch (IllegalArgumentException e) {
+            return handleIllegalArgumentException(e);
+        } catch (RuntimeException e) { //  Ajuste el método register para manejar RuntimeException
+            return handleRuntimeException(e);
+        }
     }
+
+
+
 
     @Operation(
             description = "Endpoint accesible para registro de nuevos administradores",
@@ -118,13 +158,22 @@ public class AuthController {
     )
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
-
+        try {
             AuthResponseRegister registerResponse = authenticationService.registerAdmin(registerRequest);
             String token = jwtService.getToken(registerResponse.getUserName());
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
             return ResponseEntity.ok().headers(headers).body(registerResponse);
-
+        } catch (IllegalArgumentException e) {
+            return handleIllegalArgumentException(e);
+        }
     }
 }
+
+
+
+
+
+
+
