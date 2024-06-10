@@ -24,7 +24,6 @@ public class UserSeeder {
     private PasswordEncoder passwordEncoder;
 
 
-
     public void seed() {
 
         roleFactory.initializeRoles();

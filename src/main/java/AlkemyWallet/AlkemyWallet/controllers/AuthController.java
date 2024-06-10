@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequestDTO;
+import AlkemyWallet.AlkemyWallet.dtos.LoginResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
@@ -79,11 +80,13 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO loginRequest, HttpServletResponse response) {
         try {
-            String token = authenticationService.login(loginRequest); // Línea que lanza UserDeletedException
+            LoginResponseDTO user = authenticationService.login(loginRequest);
+            String token =jwtService.getToken(user.getUserName());
+                    // Línea que lanza UserDeletedException
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-            return ResponseEntity.ok().headers(headers).body("Login successful!");
+            return ResponseEntity.ok().headers(headers).body(user);
         } catch (AuthenticationException e) {
             return handleAuthenticationException(e);
         } catch (UserDeletedException e) {
