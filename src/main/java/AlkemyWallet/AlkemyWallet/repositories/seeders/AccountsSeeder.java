@@ -66,19 +66,10 @@ public class AccountsSeeder {
         account.setTransactionLimit(currency.getTransactionLimit());
         account.setCBU(accountService.generarCBU());
 
-        try {
             double depositAmount = 0.00;
-            if (account.getCurrency() == CurrencyEnum.ARS && account.getTransactionLimit() <= 300000) {
                 depositAmount = Math.round((Math.random() * 300000) * 100.0) / 100.0;
-            } else if (account.getCurrency() == CurrencyEnum.USD && account.getTransactionLimit() <= 1000) {
-                depositAmount = Math.round((Math.random() * 1000) * 100.0) / 100.0;;
-            }
 
             account.setBalance(depositAmount);
-        } catch (Exception e) {
-            // Manejar cualquier excepción ocurrida durante el depósito
-            System.err.println("Error al realizar el depósito en la cuenta con ID " + account.getId() + ": " + e.getMessage());
-        }
 
 
 
