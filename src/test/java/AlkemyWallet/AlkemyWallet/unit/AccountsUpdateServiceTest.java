@@ -3,44 +3,29 @@ package AlkemyWallet.AlkemyWallet.unit;
 import AlkemyWallet.AlkemyWallet.controllers.AccountController;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
-import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.LimiteTransaccionExcedidoException;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-public class AccountsUpdateTest {
+public class AccountsUpdateServiceTest {
 
-    @Mock
-    private AccountService accountService;
 
     @Mock
     private AccountRepository accountRepository;
 
     @InjectMocks
-    private AccountController accountController;
-
-
-
-
-
-
-
+    private AccountService accountService;
 
     @Test
     public void updateAccountTest_Success() {
@@ -151,6 +136,5 @@ public class AccountsUpdateTest {
         // Verificar que el cuerpo de la respuesta contiene el mensaje de error esperado
         assertEquals("Error al actualizar cuenta: Límite de transacción mayor al permitido", response.getBody());
     }
-
 
 }
