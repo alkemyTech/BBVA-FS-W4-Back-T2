@@ -1,10 +1,10 @@
-package AlkemyWallet.AlkemyWallet;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class RegisterTest {
+public class SendUsdTest {
     @Test
     void contextLoads() {
     }

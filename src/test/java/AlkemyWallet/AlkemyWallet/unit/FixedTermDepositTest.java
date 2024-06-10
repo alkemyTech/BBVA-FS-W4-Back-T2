@@ -1,4 +1,4 @@
-package AlkemyWallet.AlkemyWallet.test;
+package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.FixedTermDepositController;
 import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
