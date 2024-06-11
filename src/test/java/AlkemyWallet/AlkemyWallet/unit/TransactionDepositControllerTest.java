@@ -2,163 +2,122 @@ package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.TransactionController;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.domain.Transaction;
-import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
-import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.NonPositiveAmountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
-import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
-import AlkemyWallet.AlkemyWallet.security.config.JwtConfig;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class TransactionDepositControllerTest {
 
-    @Mock
-    private TransactionService transactionService;
+    @InjectMocks
+    private TransactionController transactionController;
 
     @Mock
     private AccountService accountService;
 
     @Mock
-    private TransactionFactory transactionFactory;
+    private TransactionService transactionService;
 
     @Mock
-    private TransactionRepository transactionRepository;
+    private JwtService jwtService;
 
     @Mock
-    private JwtConfig jwtConfig;
+    private HttpServletRequest request;
 
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    JwtService jwtService;
-
-    @InjectMocks
-    private TransactionController transactionController;
-
-    //Test para cuando los 2 valores son correctos
     @Test
-    void testParaCuandoLosDatosIngresadosSonCorrectos() {
-        // Creo un transactionDTo
-        TransactionDTO mockTransaction = new TransactionDTO();
-        mockTransaction.setDestino("mocked_destination_cbu");
-        mockTransaction.setAmount(100.0);
-        mockTransaction.setCurrency("USD");
+    void depositMoney_Success() {
+        // Creo los datos de prueba
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setDestino("mocked_destination_cbu");
+        transactionDTO.setAmount(100.0);
+        transactionDTO.setCurrency("USD");
 
-        // Account que viene por parametro
+        // Mockeo el token y la cuenta
+        String mockToken = "mocked_jwt_token";
+        when(jwtService.getTokenFromRequest(request)).thenReturn(mockToken);
+
         Accounts mockAccount = new Accounts();
-        mockAccount.setId(1L);
+        when(accountService.getAccountFrom(mockToken)).thenReturn(mockAccount);
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "TOKEN");
-        when(jwtService.getTokenFromRequest(request)).thenReturn("TOKEN");
-        when(accountService.getAccountFrom("TOKEN")).thenReturn(mockAccount);
+        // Mockeo el resultado del servicio de transacciones
+        Long mockTransactionId = 1L;
+        when(transactionService.depositMoney(transactionDTO, mockAccount)).thenReturn(mockTransactionId);
 
+        // Llamo al método del controlador
+        ResponseEntity<?> response = transactionController.depositMoney(transactionDTO, request);
 
-        mockAccount.setCBU("mocked_destination_cbu");
-
-        // Hacemos que el metodo tenga sentido, simulando el servicio
-        Accounts mockCuentaDestino = new Accounts();
-        mockCuentaDestino.setCBU("mocked_destination_cbu");
-
-        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockCuentaDestino);
-
-        // Creamos una nueva transaccion
-        Transaction mockDepositTransaction = new Transaction();
-        mockDepositTransaction.setId(1L);
-        mockDepositTransaction.setAmount(mockTransaction.getAmount());
-        mockDepositTransaction.setType(TransactionEnum.DEPOSIT);
-        mockDepositTransaction.setDescription("");
-        mockDepositTransaction.setTransactionDate(LocalDateTime.now());
-        mockDepositTransaction.setAccount(mockCuentaDestino); // Cuenta destino
-        mockDepositTransaction.setOriginAccount(mockAccount); // Cuenta origen
-
-        when(transactionFactory.createTransaction(
-                eq(mockTransaction.getAmount()),
-                eq(TransactionEnum.DEPOSIT),
-                eq(""),
-                any(LocalDateTime.class),
-                eq(mockCuentaDestino),
-                eq(mockAccount))).thenReturn(mockDepositTransaction);
-
-        // Guardando la transaccion
-        when(transactionRepository.save(mockDepositTransaction)).thenReturn(mockDepositTransaction);
-
-        // Performing the test
-        ResponseEntity<?> transactionId = transactionController.depositMoney(mockTransaction, request);
-
-        // Assertions
-        assertNotNull(transactionId);
-        assertEquals(1L, transactionId); // Ensure that the returned transaction ID matches the mocked transaction ID
+        // Verifico la respuesta
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(mockTransactionId, response.getBody());
     }
 
-    //Lógica para cuando la cuenta origen y destino son distintas
     @Test
-    void testParaCuandoLaCuentaOrigenEsDistintaALaCuentaDestino() {
-        // Mocking TransactionDTO
-        TransactionDTO mockTransaction = new TransactionDTO();
-        mockTransaction.setDestino("mocked_destination_cbu");
-        mockTransaction.setAmount(100.0);
-        mockTransaction.setCurrency("USD");
+    void depositMoney_UnauthorizedTransactionException() {
+        // Creo los datos de prueba
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setDestino("mocked_destination_cbu");
+        transactionDTO.setAmount(100.0);
+        transactionDTO.setCurrency("USD");
 
-        //"Busco" la cuenta destino
-        Accounts mockCuentaDestino = new Accounts();
-        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockCuentaDestino);
+        // Mockeo el token y la cuenta
+        String mockToken = "mocked_jwt_token";
+        when(jwtService.getTokenFromRequest(request)).thenReturn(mockToken);
 
-        // Defino la cuenta origen
-        Accounts mockCuentaOrigen = new Accounts();
+        Accounts mockAccount = new Accounts();
+        when(accountService.getAccountFrom(mockToken)).thenReturn(mockAccount);
 
-        // Las cuentas tienen distinto CBU
-        mockCuentaDestino.setCBU("mocked_destination_cbu");
-        mockCuentaOrigen.setCBU("mocked_origin_cbu");
+        // Mockeo la excepción lanzada por el servicio de transacciones
+        doThrow(new UnauthorizedTransactionException("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino"))
+                .when(transactionService).depositMoney(transactionDTO, mockAccount);
 
+        // Llamo al método del controlador y verifico la excepción
         Exception exception = assertThrows(UnauthorizedTransactionException.class, () -> {
-            transactionService.depositMoney(mockTransaction, mockCuentaOrigen);
+            transactionController.depositMoney(transactionDTO, request);
         });
 
+        // Verifico el mensaje de la excepción
         assertEquals("Para realizar un deposito, la cuenta origen debe coincidir con la cuenta destino", exception.getMessage());
     }
 
     @Test
-    void testParaCuandoElAmountEsMenorOIgualA0() {
-        // Creo el TransactionDto
-        TransactionDTO mockTransaction = new TransactionDTO();
-        mockTransaction.setDestino("mocked_destination_cbu");
-        mockTransaction.setAmount(0.0); // El amount es cero para que tire la otra exception
-        mockTransaction.setCurrency("USD");
+    void depositMoney_NonPositiveAmountException() {
+        // Creo los datos de prueba
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setDestino("mocked_destination_cbu");
+        transactionDTO.setAmount(0.0);
+        transactionDTO.setCurrency("USD");
 
-        // Hago que las cuentas concuerden
-        Accounts mockDestinationAccount = new Accounts();
-        mockDestinationAccount.setCBU("mocked_destination_cbu");
-        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockDestinationAccount);
+        // Mockeo el token y la cuenta
+        String mockToken = "mocked_jwt_token";
+        when(jwtService.getTokenFromRequest(request)).thenReturn(mockToken);
 
-        // Defino la cuenta origen y hago que concuerden con el mismo CBU
-        Accounts mockOriginAccount = new Accounts();
-        mockOriginAccount.setCBU("mocked_destination_cbu");
+        Accounts mockAccount = new Accounts();
+        when(accountService.getAccountFrom(mockToken)).thenReturn(mockAccount);
 
+        // Mockeo la excepción lanzada por el servicio de transacciones
+        doThrow(new NonPositiveAmountException("El monto del depósito debe ser mayor que cero"))
+                .when(transactionService).depositMoney(transactionDTO, mockAccount);
+
+        // Llamo al método del controlador y verifico la excepción
         Exception exception = assertThrows(NonPositiveAmountException.class, () -> {
-            transactionService.depositMoney(mockTransaction, mockOriginAccount);
+            transactionController.depositMoney(transactionDTO, request);
         });
 
+        // Verifico el mensaje de la excepción
         assertEquals("El monto del depósito debe ser mayor que cero", exception.getMessage());
     }
 }
