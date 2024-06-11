@@ -49,7 +49,7 @@ public class LoginTest {
         loginRequest.setUserName("testUser");
         loginRequest.setPassword("password");
 
-        when(authenticationService.login(loginRequest)).thenReturn("validToken");
+        //when(authenticationService.login(loginRequest)).thenReturn("validToken");
 
         ResponseEntity<?> response = authController.login(loginRequest, null);
 
