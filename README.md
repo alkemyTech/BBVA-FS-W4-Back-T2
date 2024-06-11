@@ -3,7 +3,7 @@
 ## _Descripción del Proyecto_ :memo:
 Alkywall es una billetera virtual desarrollada para ofrecer a los clientes de nuestro banco una forma segura y conveniente de gestionar su dinero en un entorno digital. La aplicación permite realizar diversas funciones bancarias, como transacciones, asociación de tarjetas físicas y virtuales, almacenamiento de dinero y pagos online, todo desde una plataforma web accesible.
 
-## ***Funcionalidades Principales*** :sparkles:
+## ***Funcionalidades Principales*** :sparkles: .
 ### Gestión de Cuentas y Usuarios :bust_in_silhouette:
 - Registro y Autenticación: Los usuarios pueden registrarse y autenticarse en la plataforma. La autenticación se maneja mediante JSON Web Tokens (JWT) para asegurar las sesiones.
 - Perfil de Usuario: Los usuarios pueden actualizar y visualizar sus datos personales.
