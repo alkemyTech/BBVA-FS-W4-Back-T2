@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.config;
 
 import AlkemyWallet.AlkemyWallet.repositories.seeders.AccountsSeeder;
+import AlkemyWallet.AlkemyWallet.repositories.seeders.TransactionSeeder;
 import AlkemyWallet.AlkemyWallet.repositories.seeders.UserSeeder;
 import AlkemyWallet.AlkemyWallet.repositories.seeders.TransactionSeeder;
 import org.springframework.beans.factory.annotation.Autowired;

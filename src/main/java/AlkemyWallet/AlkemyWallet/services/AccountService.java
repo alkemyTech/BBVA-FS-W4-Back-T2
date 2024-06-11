@@ -10,7 +10,7 @@ import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
-import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
+import AlkemyWallet.AlkemyWallet.exceptions.*;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Random;
 import java.util.List;
@@ -40,6 +41,7 @@ public class AccountService {
     private  JwtService jwtService;
     @Autowired
     private  PaginationConfig paginationConfig;
+
 
 
     public AccountsDto add(AccountRequestDto accountCreation, HttpServletRequest request) {
@@ -67,6 +69,9 @@ public class AccountService {
             account.setCBU(generarCBU());
             account.setUserId(user);  // --> JWT
             account.setCurrency(currencyEnum);
+            account.setCreationDate(LocalDateTime.now());
+            account.setUpdateDate(LocalDateTime.now());
+            account.setSoftDelete(false);
 
             Accounts savedAccount = accountRepository.save(account);
 
@@ -104,6 +109,9 @@ public class AccountService {
                     account.setCBU(generarCBU());
                     account.setUserId(user);  // --> JWT
                     account.setCurrency(currencyEnum);
+                    account.setCreationDate(LocalDateTime.now());
+                    account.setUpdateDate(LocalDateTime.now());
+                    account.setSoftDelete(false);
 
                     Accounts savedAccount = accountRepository.save(account);
 
@@ -124,16 +132,19 @@ public class AccountService {
         StringBuilder cbu = new StringBuilder();
         Random random = new Random();
 
+
+            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
             for (int i = 0; i < 7; i++) {
                 cbu.append(random.nextInt(10));
             }
-            cbu.append("0");
+            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
 
-
+            // Los siguientes 12 dígitos son generados aleatoriamente.
             for (int i = 0; i < 12; i++) {
                 cbu.append(random.nextInt(10));
             }
 
+            // Calculamos el dígito verificador provisorio.
             int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
             int sum = 0;
             for (int i = 0; i < cbu.length(); i++) {
@@ -149,11 +160,14 @@ public class AccountService {
             String CBU = null;
             boolean cbuExistente = true;
 
-
+            // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
             while (cbuExistente) {
+                // Genera un nuevo CBU
                 CBU = logicaCBU();
 
+                // Verifica si el CBU generado ya existe en la base de datos
                 if (!accountRepository.findByCBU(CBU).isPresent()) {
+                    // Si el CBU no existe, sal del bucle
                     cbuExistente = false;
                 }
             }
@@ -212,26 +226,36 @@ public class AccountService {
     }
 
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
+        try {
+            // Buscar la cuenta, lanzando una excepción si no se encuentra
 
+            Accounts account = findById(accountId);
 
-        if (accountRepository.findById(accountId).isPresent()) {
-            Accounts account = accountRepository.getReferenceById(accountId);
-
-            if (transactionLimit < account.getCurrency().getTransactionLimit() + 1) {
-                account.setTransactionLimit(transactionLimit);
-                AccountsDto accountDTO = accountMapper(accountRepository.save(account));
-                return accountDTO;
-            } else {
-                throw new RuntimeException("Limite de transaccion mayor al que el tipo de cuenta puede tener");
+            // Verificar si el límite es mayor al permitido por tipo de cuenta
+            if (transactionLimit > account.getTransactionLimit() + 1) {
+                throw new LimiteTransaccionExcedidoException("Límite de transacción mayor al permitido");
             }
 
-        } else {
-            throw new RuntimeException("Cuenta no encontrada");
+            // Actualizar el límite de transacción
+            account.setTransactionLimit(transactionLimit);
+            accountRepository.save(account);
+            // Guardar los cambios y convertir la cuenta actualizada en un DTO
+            AccountsDto accountDto = accountMapper(account);
+
+            return accountDto;
+        } catch (CuentaNotFoundException | LimiteTransaccionExcedidoException e) {
+            throw e; // Lanzar las excepciones específicas al nivel superior
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar la cuenta", e); // Lanzar una excepción general si ocurre otro tipo de error
         }
     }
 
     public Accounts findById(Long id) {
-        return accountRepository.findById(id).orElseThrow();
+        if(accountRepository.findById(id).isPresent()){
+            return accountRepository.findById(id).get();
+        }else{
+            throw new CuentaNotFoundException("Cuenta inexistente");
+        }
     }
 
     public Page<Accounts> getAllAccounts(int page) {
