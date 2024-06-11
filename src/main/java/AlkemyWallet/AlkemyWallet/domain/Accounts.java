@@ -82,15 +82,6 @@ public class Accounts {
         this.setTransactionLimit(transactionLimit - amount);
     }
 
-    //Probar si de esta forma cuando inicio una nueva cuenta
-    //la fecha de creacion de esta se crea automaticamente
-    @PrePersist
-    protected void onCreate(){
-        //Estará bien "this.???"
-        this.creationDate = LocalDateTime.now();
-        this.updateDate = LocalDateTime.now();
-        this.softDelete = false;
-    }
     // Método para obtener el usuario asociado
     public User getUser() {
         return this.userId;

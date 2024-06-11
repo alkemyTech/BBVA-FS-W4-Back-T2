@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Random;
 import java.util.List;
@@ -68,6 +69,9 @@ public class AccountService {
             account.setCBU(generarCBU());
             account.setUserId(user);  // --> JWT
             account.setCurrency(currencyEnum);
+            account.setCreationDate(LocalDateTime.now());
+            account.setUpdateDate(LocalDateTime.now());
+            account.setSoftDelete(false);
 
             Accounts savedAccount = accountRepository.save(account);
 
@@ -105,6 +109,9 @@ public class AccountService {
                     account.setCBU(generarCBU());
                     account.setUserId(user);  // --> JWT
                     account.setCurrency(currencyEnum);
+                    account.setCreationDate(LocalDateTime.now());
+                    account.setUpdateDate(LocalDateTime.now());
+                    account.setSoftDelete(false);
 
                     Accounts savedAccount = accountRepository.save(account);
 
@@ -221,18 +228,19 @@ public class AccountService {
     public AccountsDto updateAccount(Long accountId, Double transactionLimit) {
         try {
             // Buscar la cuenta, lanzando una excepción si no se encuentra
+
             Accounts account = findById(accountId);
 
             // Verificar si el límite es mayor al permitido por tipo de cuenta
-            if (transactionLimit > account.getCurrency().getTransactionLimit() + 1) {
+            if (transactionLimit > account.getTransactionLimit() + 1) {
                 throw new LimiteTransaccionExcedidoException("Límite de transacción mayor al permitido");
             }
 
             // Actualizar el límite de transacción
             account.setTransactionLimit(transactionLimit);
-
+            accountRepository.save(account);
             // Guardar los cambios y convertir la cuenta actualizada en un DTO
-            AccountsDto accountDto = accountMapper(accountRepository.save(account));
+            AccountsDto accountDto = accountMapper(account);
 
             return accountDto;
         } catch (CuentaNotFoundException | LimiteTransaccionExcedidoException e) {
@@ -243,8 +251,11 @@ public class AccountService {
     }
 
     public Accounts findById(Long id) {
-        return accountRepository.findById(id)
-                .orElseThrow(() -> new CuentaNotFoundException("Cuenta no encontrada"));
+        if(accountRepository.findById(id).isPresent()){
+            return accountRepository.findById(id).get();
+        }else{
+            throw new CuentaNotFoundException("Cuenta inexistente");
+        }
     }
 
     public Page<Accounts> getAllAccounts(int page) {
