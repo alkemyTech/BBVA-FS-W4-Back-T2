@@ -79,6 +79,7 @@ public class AuthenticationService {
                 .role(role)
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
+                .dni(registerRequest.getDni())
                 .build();
     }
 
