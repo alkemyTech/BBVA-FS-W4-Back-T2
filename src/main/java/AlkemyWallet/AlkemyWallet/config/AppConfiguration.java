@@ -16,7 +16,7 @@ public class AppConfiguration {
     private UserSeeder userSeeder;
 
     @Autowired
-    AccountsSeeder accountsSeeder;
+    private AccountsSeeder accountsSeeder;
 
     @Autowired
     private TransactionSeeder transactionSeeder;

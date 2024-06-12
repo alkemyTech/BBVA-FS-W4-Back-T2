@@ -5,5 +5,4 @@ public enum TransactionEnum {
     PAYMENT,
     DEPOSIT
 
-
 }

@@ -13,6 +13,7 @@ import AlkemyWallet.AlkemyWallet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Component
@@ -63,7 +64,10 @@ public class AccountsSeeder {
         account.setUserId(user);
         account.setAccountType(accountType);
         account.setCurrency(currency);
+        account.setCreationDate(LocalDateTime.now());
+        account.setUpdateDate(LocalDateTime.now());
         account.setTransactionLimit(currency.getTransactionLimit());
+        account.setSoftDelete(false);
         account.setCBU(accountService.generarCBU());
 
             double depositAmount = 0.00;

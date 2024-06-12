@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
@@ -14,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -26,9 +26,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -57,7 +56,7 @@ public class TransactionController {
             }
     )
 
-    @PostMapping({"/sendArs", "/sendUsd", "/payment"})
+    @PostMapping({"/sendArs", "/sendUsd"})
     public ResponseEntity<?> sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
         try {
             String token = jwtService.getTokenFromRequest(request);
@@ -65,6 +64,26 @@ public class TransactionController {
 
             // Lógica para registrar la transacción
             TransactionResponse response = transactionService.registrarTransaccion(transaction, account);
+
+            // Devolver una respuesta exitosa
+            return ResponseEntity.ok().headers(createHeadersWithUpdatedToken(token)).body(response);
+        } catch (InsufficientFundsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: No hay suficientes fondos para completar la transacción");
+        } catch (IncorrectCurrencyException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: La moneda seleccionada no es la correcta para este tipo de cuenta");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error genérico: " + e.getMessage());
+        }
+    }
+
+    @PostMapping({ "/payment"})
+    public ResponseEntity<?> payment(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            Accounts account = accountService.getAccountFrom(token);
+
+            // Lógica para registrar la transacción
+            PaymentResponseDTO response = transactionService.registrarPago(transaction, account);
 
             // Devolver una respuesta exitosa
             return ResponseEntity.ok().headers(createHeadersWithUpdatedToken(token)).body(response);

@@ -17,11 +17,10 @@ import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
 import AlkemyWallet.AlkemyWallet.mappers.TransactionResponseMapper;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
-
+import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 
 import lombok.AllArgsConstructor;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +30,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 
 @Service
@@ -40,12 +38,9 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
     private final TransactionFactory transactionFactory;
-    private final UserRepository userRepository;
     private final UserService userService;
-    private final JwtService jwtService;
     private final TransactionResponseMapper transactionResponseMapper;
     private final PaginationConfig paginationConfig;
-    private final AccountRepository accountRepository;
 
     public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
@@ -198,5 +193,46 @@ public class TransactionService {
 
         transaction.setDescription(description);
         return transactionRepository.save(transaction);
+    }
+
+    public PaymentResponseDTO registrarPago(TransactionDTO transaction, Accounts originAccount) {
+        Double amount = transaction.getAmount();
+
+        CurrencyEnum transactionCurrency;
+        try {
+            transactionCurrency = CurrencyEnum.valueOf(transaction.getCurrency().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Moneda no válida: " + transaction.getCurrency());
+        }
+
+        if (!transactionCurrency.equals(originAccount.getCurrency())) {
+            throw new IncorrectCurrencyException("La moneda seleccionada no es la correcta para este tipo de cuenta");
+        }
+
+        if (!originAccount.dineroDisponible(amount) || !originAccount.limiteDisponible(amount)) {
+            throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
+        }
+
+        Transaction transactionRegistro = this.sendPayment(transaction, originAccount, transaction.getDestino());
+        accountService.updateAfterTransaction(originAccount, amount);
+
+        return transactionResponseMapper.mapToPaymentResponse(transactionRegistro, originAccount);
+    }
+
+    public Transaction sendPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
+        Transaction paymentTransaction = transactionFactory.createTransactionPayment(
+                transaction.getAmount(),
+                transaction.getDescription(),
+                LocalDateTime.now(),
+                originAccount,
+                destino
+        );
+
+        if (paymentTransaction == null) {
+            throw new RuntimeException("Failed to create transaction");
+        }
+
+        transactionRepository.save(paymentTransaction);
+        return paymentTransaction;
     }
 }
