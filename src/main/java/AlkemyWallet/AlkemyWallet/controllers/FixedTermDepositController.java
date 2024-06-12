@@ -79,6 +79,6 @@ public class FixedTermDepositController {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
-        return  ResponseEntity.ok(fixedTermDepositService.fixedTermDeposit(fixedTermDepositDto, account, user));
+        return  ResponseEntity.ok().headers(headers).body(fixedTermDepositService.fixedTermDeposit(fixedTermDepositDto, account, user));
     }
 }

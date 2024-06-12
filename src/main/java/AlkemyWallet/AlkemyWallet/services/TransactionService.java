@@ -28,8 +28,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -234,5 +236,17 @@ public class TransactionService {
 
         transactionRepository.save(paymentTransaction);
         return paymentTransaction;
+    }
+
+    public List<Transaction> getLast10TransactionsByAccountId(Long accountId) {
+        try {
+            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
+            return getTransactionsByAccount(account).stream()
+                    .sorted(Comparator.comparing(Transaction::getTransactionDate).reversed()) // Ordenar por fecha de forma descendente
+                    .limit(10) // Limitar a las últimas 10 transacciones
+                    .collect(Collectors.toList()); // Convertir a lista
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
+        }
     }
 }
