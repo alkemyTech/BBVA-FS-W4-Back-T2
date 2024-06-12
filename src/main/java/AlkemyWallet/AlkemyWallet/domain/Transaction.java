@@ -6,6 +6,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotNull;
 
@@ -35,14 +36,18 @@ public class Transaction {
     @Column(nullable = false)
     @NotNull
     private LocalDateTime transactionDate;
+
+    @Getter
     @ManyToOne
-    @JoinColumn(name = "Account_Id", nullable = false)
-    @NotNull
+    @JoinColumn(name = "Account_Id", nullable = true)
     private Accounts account; // account destino
 
     @ManyToOne
     @JoinColumn(name = "origin_account_id", nullable = true)
     private Accounts originAccount;  // Origin account
+
+    @Column
+    private String destinoExterno;
 
 
     public Transaction(Double amount, TransactionEnum type, String description, LocalDateTime transactionDate, Accounts accountId, Accounts originAccount) {
@@ -55,9 +60,15 @@ public class Transaction {
 
     }
 
-    public Accounts getAccount() {
-        return this.account;
+    public Transaction(Double amount, TransactionEnum type,String description, LocalDateTime transactionDate, Accounts originAccount, String destinoExterno) {
+        this.amount = amount;
+        this.description = description;
+        this.type=type;
+        this.transactionDate = transactionDate;
+        this.destinoExterno= destinoExterno;
+        this.originAccount = originAccount;
     }
+
 }
 
 

@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.mappers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
 import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
@@ -38,5 +39,26 @@ public class TransactionResponseMapper {
         transactionResponse.setCurrency(originAccount.getCurrency().toString());
 
         return transactionResponse;
+    }
+
+    public PaymentResponseDTO mapToPaymentResponse(Transaction transaction, Accounts originAccount) {
+        PaymentResponseDTO  paymentResponse = modelMapper.map(transaction, PaymentResponseDTO.class);
+
+        // Mapear el destino
+        paymentResponse.setDestino(transaction.getDestinoExterno());
+
+        // Mapear la fecha de transacción
+        paymentResponse.setFechaPago(String.valueOf(LocalDate.now()));
+
+        // Mapear el tipo de transacción
+        paymentResponse.setAmount(transaction.getAmount());
+
+        // Mapear la moneda
+        paymentResponse.setCurrency(originAccount.getCurrency().toString());
+
+        // Mapear la moneda
+        paymentResponse.setDescription(transaction.getDescription());
+
+        return paymentResponse;
     }
 }
