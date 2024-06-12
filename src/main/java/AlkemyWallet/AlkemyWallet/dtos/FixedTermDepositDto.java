@@ -25,12 +25,12 @@ public class FixedTermDepositDto {
     @NotBlank
     @NotNull
     @Schema(description = "Monto invertido en el plazo fijo", example = "10000.00", required = true)
-    private double invertedAmount;
+    private Double invertedAmount;
 
     @Schema(description = "Intereses ganados del plazo fijo", example = "500.00")
-    private double gainedInterest;
+    private Double gainedInterest;
 
     @Schema(description = "Monto total a cobrar al vencimiento del plazo fijo", example = "10500.00")
-    private double totalAmountToCollect;
+    private Double totalAmountToCollect;
 
 }

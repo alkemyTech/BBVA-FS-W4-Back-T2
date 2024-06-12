@@ -45,7 +45,7 @@ public class BalanceService {
                     totalUsdBalance += accountService.getBalanceInUSD(account);
                 }
 
-                List<Transaction> accountTransactions = transactionService.getTransactionsByAccountId(accountId);
+                List<Transaction> accountTransactions = transactionService.getLast10TransactionsByAccountId(accountId);
 
                 for (Transaction transaction : accountTransactions) {
                     TransactionBalanceDTO dto = new TransactionBalanceDTO();
@@ -61,23 +61,15 @@ public class BalanceService {
             }
 
             // Obtener los plazos fijos del usuario
-            List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(userId);
-            for (FixedTermDeposit deposit : fixedTermDeposits) {
-                FixedTermDepositBalanceDTO dto = new FixedTermDepositBalanceDTO();
-                dto.setAmount(deposit.getAmount());
-                dto.setCreationDate(deposit.getCreationDate().toString());
-                dto.setClosingDate(deposit.getClosingDate().toString());
-                fixedTermDepositBalanceDTOS.add(dto);
-            }
+            Double totalFixedTermDeposits = fixedTermDepositService.getUnclosedDepositsTotalSum(userId);
 
             // Crear DTO de respuesta
             BalanceDTO balanceDTO = new BalanceDTO();
             balanceDTO.setAccountArs(totalArsBalance);
             balanceDTO.setAccountUsd(totalUsdBalance);
-            balanceDTO.setFixedTerms(fixedTermDepositBalanceDTOS);
+            balanceDTO.setTotalFixedTermDeposits(totalFixedTermDeposits);
             balanceDTO.setAccountTransactions(transactionsDtos);
             return balanceDTO;
         }
-
 
 }

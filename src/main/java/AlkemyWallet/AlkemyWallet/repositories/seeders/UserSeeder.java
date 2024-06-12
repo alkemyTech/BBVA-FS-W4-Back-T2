@@ -3,6 +3,7 @@ import AlkemyWallet.AlkemyWallet.domain.User;
 
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,7 @@ public class UserSeeder {
                 .lastName(getNextPredefinedLastName())
                 .birthDate(generateRandomBirthDate())
                 .role(RoleFactory.getAdminRole())
+                .dni(generateRandomDni())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
                 .softDelete(0)
@@ -69,6 +71,7 @@ public class UserSeeder {
                 .firstName(getNextPredefinedName())
                 .lastName(getNextPredefinedLastName())
                 .birthDate(generateRandomBirthDate())
+                .dni(generateRandomDni())
                 .role(RoleFactory.getUserRole())
                 .creationDate(LocalDateTime.now())
                 .updateDate(LocalDateTime.now())
@@ -121,5 +124,11 @@ public class UserSeeder {
 
         // Crear una fecha aleatoria utilizando el valor aleatorio
         return LocalDate.ofEpochDay(randomDay);
+    }
+
+    private @NotNull Integer generateRandomDni() {
+        // Generar un DNI aleatorio de 8 dígitos
+        int dni = ThreadLocalRandom.current().nextInt(10000000, 100000000);
+        return dni;
     }
 }

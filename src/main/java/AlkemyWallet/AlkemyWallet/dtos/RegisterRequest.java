@@ -39,4 +39,9 @@ public class RegisterRequest {
     @NotBlank
     @Schema(description = "Fecha de nacimiento del usuario", example = "1990-01-01", required = true)
     private String birthDate;
+
+    @NotBlank
+    @NotNull
+    @Schema(description = "DNI del usuario", example = "12345678", required = true)
+    private Integer dni;
 }

@@ -76,8 +76,6 @@ public class FixedTermDepositService {
     }
 
     public Object fixedTermDeposit(FixedTermDepositDto fixedTermDepositDto, Accounts account, User user) {
-        // Validar que la cuenta en pesos del usuario logueado tiene balance suficiente
-        // Esto puede requerir acceso a una base de datos u otro servicio para verificar el balance
 
         LocalDate creationDate = LocalDate.parse(fixedTermDepositDto.getCreationDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         LocalDate closingDate = LocalDate.parse(fixedTermDepositDto.getClosingDate(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -91,7 +89,7 @@ public class FixedTermDepositService {
             fixedTermDepositRepository.save(fixedTerm);
             accountService.updateAfterFixedTermDeposit(account, fixedTermDepositDto.getInvertedAmount());
 
-            //TODO SACAR LA LOGICA REPETIDA
+
             // Lógica del plazo fijo
             Double interesGanado = this.calculateInterest(fixedTermDepositDto);
             Double totalAmountToCollect = interesGanado + fixedTermDepositDto.getInvertedAmount();
@@ -140,5 +138,33 @@ public class FixedTermDepositService {
         return fixedTermDepositRepository.findByUser(user);
     }
 
+    public Double getUnclosedDepositsTotalSum(Long userId) {
+        List<FixedTermDeposit> fixedTermDeposits = getFixedTermDepositsByUser(userId);
+
+        Double unclosedDepositsTotalSum = fixedTermDeposits.stream()
+                .filter(deposit -> deposit.getClosingDate() == null || deposit.getClosingDate().isAfter(LocalDateTime.now()))
+                .mapToDouble(deposit -> deposit.getAmount() + calculateEarnedInterest(deposit))
+                .sum();
+
+        return unclosedDepositsTotalSum;
+    }
+
+    public Double calculateEarnedInterest(FixedTermDeposit deposit) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime creationDate = deposit.getCreationDate();
+        LocalDateTime closingDate = deposit.getClosingDate() != null ? deposit.getClosingDate() : now;
+
+        // Si el depósito está cerrado, no ganará más intereses
+        if (deposit.getClosingDate() != null && deposit.getClosingDate().isBefore(now)) {
+            return 0.0;
+        }
+
+        int daysBetween = (int) ChronoUnit.DAYS.between(creationDate, now);
+
+        Double interestRate = deposit.getInterest();
+        Double amount = deposit.getAmount();
+
+        return ((amount * interestRate) / 100) * daysBetween;
+    }
 }
 

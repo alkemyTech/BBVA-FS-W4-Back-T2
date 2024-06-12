@@ -12,7 +12,7 @@ public class BalanceDTO {
     @Schema(description = "Saldo en cuenta en USD", example = "3000.00")
     private Double accountUsd;
     @Schema(description = "Lista de plazos fijos")
-    private List<FixedTermDepositBalanceDTO> fixedTerms;
+    private Double totalFixedTermDeposits;
     @Schema(description = "Lista de transacciones de la cuenta")
     private List<TransactionBalanceDTO> accountTransactions;
 }

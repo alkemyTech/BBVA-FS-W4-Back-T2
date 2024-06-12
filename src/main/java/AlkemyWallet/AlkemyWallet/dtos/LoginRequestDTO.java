@@ -23,4 +23,8 @@ public class LoginRequestDTO {
         @NotNull
         @Schema(description = "Contraseña del usuario", example = "password123", required = true)
         String password;
+        @NotBlank
+        @NotNull
+        @Schema(description = "DNI del usuario", example = "12345678", required = true)
+        Integer dni;
  }
