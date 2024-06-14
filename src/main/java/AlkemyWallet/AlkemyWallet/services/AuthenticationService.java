@@ -9,7 +9,6 @@ import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,7 @@ public class AuthenticationService {
     private final AccountService accountService;
 
 
-    public AuthResponseRegister register(RegisterRequest registerRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest) {
         if (userExists(registerRequest.getUserName())) {
             throw new IllegalArgumentException("User already exists");
         }
@@ -48,7 +47,7 @@ public class AuthenticationService {
         return buildAuthResponseRegister(user);
     }
 
-    public AuthResponseRegister registerAdmin(RegisterRequest registerRequest) {
+    public RegisterResponse registerAdmin(RegisterRequest registerRequest) {
         LocalDate birthDate = parseBirthDate(registerRequest.getBirthDate());
         roleFactory.initializeRoles();
         User user = createUser(registerRequest, RoleFactory.getAdminRole(), birthDate);
@@ -99,11 +98,14 @@ public class AuthenticationService {
         accountService.addById(accountUsd, userId);
     }
 
-    private AuthResponseRegister buildAuthResponseRegister(User user) {
-        return AuthResponseRegister.builder()
+    private RegisterResponse buildAuthResponseRegister(User user) {
+        return RegisterResponse.builder()
                 .userName(user.getUsername())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .birthDay(String.valueOf(user.getBirthDate()))
+                .imagePath(user.getImagePath())
+                .id(user.getId())
                 .build();
     }
 
@@ -120,9 +122,9 @@ public class AuthenticationService {
             throw new UserDeletedException("No se puede iniciar sesión, el usuario está marcado como borrado");
         }
 
-        //EN DUDA SI NO CAMBIARLO POR UNA AUTHRESPONSELOGIN - RESPONDER DIRECTO EL TOKEN O DEJARLO CON TOKEN Y USERDEATLLES
         return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath());
     }
+
 
 
 

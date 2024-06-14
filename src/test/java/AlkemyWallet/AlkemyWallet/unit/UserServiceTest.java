@@ -6,7 +6,7 @@ import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
+import AlkemyWallet.AlkemyWallet.dtos.RegisterResponse;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.enums.RoleEnum;
 import AlkemyWallet.AlkemyWallet.repositories.RoleRepository;
@@ -70,7 +70,7 @@ public class UserServiceTest {
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        AuthResponseRegister response = authenticationService.register(registerRequest);
+        RegisterResponse response = authenticationService.register(registerRequest);
 
         assertNotNull(response);
         assertEquals("John", response.getFirstName());
@@ -102,7 +102,7 @@ public class UserServiceTest {
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        AuthResponseRegister response = authenticationService.register(registerRequest);
+        RegisterResponse response = authenticationService.register(registerRequest);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());

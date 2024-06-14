@@ -1,7 +1,7 @@
 package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.AuthController;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
+import AlkemyWallet.AlkemyWallet.dtos.RegisterResponse;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
@@ -17,8 +17,6 @@ import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.lang.reflect.Method;
 
@@ -51,16 +49,16 @@ public class RegisterTest {
         registerRequest.setUserName("testUser");
         registerRequest.setPassword("password");
 
-        AuthResponseRegister authResponseRegister = new AuthResponseRegister();
-        authResponseRegister.setUserName("testUser");
+        RegisterResponse registerResponse = new RegisterResponse();
+        registerResponse.setUserName("testUser");
 
-        when(authenticationService.register(registerRequest)).thenReturn(authResponseRegister);
-        when(jwtService.getToken(authResponseRegister.getUserName())).thenReturn("validToken");
+        when(authenticationService.register(registerRequest)).thenReturn(registerResponse);
+        when(jwtService.getToken(registerResponse.getUserName())).thenReturn("validToken");
 
         ResponseEntity<?> response = authController.register(registerRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(authResponseRegister, response.getBody());
+        assertEquals(registerResponse, response.getBody());
         assertEquals("Bearer validToken", response.getHeaders().getFirst("Authorization"));
     }
 
