@@ -126,9 +126,9 @@ public class UserSeeder {
         return LocalDate.ofEpochDay(randomDay);
     }
 
-    private @NotNull Integer generateRandomDni() {
+    private @NotNull String generateRandomDni() {
         // Generar un DNI aleatorio de 8 dígitos
         int dni = ThreadLocalRandom.current().nextInt(10000000, 100000000);
-        return dni;
+        return String.valueOf(dni);
     }
 }

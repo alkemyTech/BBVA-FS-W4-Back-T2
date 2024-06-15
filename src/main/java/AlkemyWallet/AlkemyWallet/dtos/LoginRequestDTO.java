@@ -26,5 +26,5 @@ public class LoginRequestDTO {
         @NotBlank
         @NotNull
         @Schema(description = "DNI del usuario", example = "12345678", required = true)
-        Integer dni;
+        String dni;
  }

@@ -183,6 +183,7 @@ public class AuthController {
     @GetMapping("/validate-token")
     public ResponseEntity<Void> validateToken(HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
+        System.out.println("Token recibido: " + token);
 
         if (token != null && jwtService.isTokenValid(token)) {
             String username = jwtService.getUsernameFromToken(token);
@@ -191,12 +192,17 @@ public class AuthController {
 
             if (jwtService.isTokenValidForUser(token, userDetails)) {
                 // Token y usuario válidos
-                return ResponseEntity.ok().build();
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+
+                return ResponseEntity.ok().headers(headers).build();
             }
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
 }
 
 

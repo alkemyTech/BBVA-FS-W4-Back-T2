@@ -43,5 +43,5 @@ public class RegisterRequest {
     @NotBlank
     @NotNull
     @Schema(description = "DNI del usuario", example = "12345678", required = true)
-    private Integer dni;
+    private String dni;
 }

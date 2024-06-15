@@ -66,7 +66,7 @@ public class UserServiceTest {
 
     @Test
     void testCreateUserWithMandatoryFields() {
-        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000",12345678);
+        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000","12345678");
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
@@ -85,7 +85,7 @@ public class UserServiceTest {
 
     @Test
     void testEmailUniqueness() {
-        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000",12345678);
+        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000","12345678");
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.of(new User()));
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -98,7 +98,7 @@ public class UserServiceTest {
 
     @Test
     void testTimestampsGeneration() {
-        RegisterRequest registerRequest = new RegisterRequest("John", "Doe", "john.doe@example.com", "password", "01-01-2000",12345678);
+        RegisterRequest registerRequest = new RegisterRequest("John", "Doe", "john.doe@example.com", "password", "01-01-2000","12345678");
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
