@@ -15,6 +15,7 @@ import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import lombok.AllArgsConstructor;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Random;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
@@ -41,6 +43,8 @@ public class AccountService {
     private  JwtService jwtService;
     @Autowired
     private  PaginationConfig paginationConfig;
+    @Autowired
+    private ModelMapper modelMapper;
 
 
 
@@ -87,6 +91,18 @@ public class AccountService {
             return accountRepository.findByUserId(user);
         }catch (Exception e){
             throw new RuntimeException("No se encontró al usuario",e);
+        }
+    }
+
+    public List<AccountsDto> findAccountsDtoByUserId(Long userId) {
+        try {
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            List<Accounts> accounts = accountRepository.findByUserId(user);
+            return accounts.stream()
+                    .map(account -> modelMapper.map(account, AccountsDto.class))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
     }
 
