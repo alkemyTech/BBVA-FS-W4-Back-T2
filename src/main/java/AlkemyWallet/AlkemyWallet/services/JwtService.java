@@ -129,12 +129,25 @@ public class JwtService {
 
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username=getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername())&& !isTokenExpired(token));
+        try {
+            Claims claims = validateToken(token);
+            String username = getUsernameFromToken(token);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private boolean isTokenExpired(String token)
-    {
+    public boolean isTokenValid(String token) {
+        try {
+            Claims claims = validateToken(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isTokenExpired(String token) {
         return getExpiration(token).before(new Date());
     }
 
@@ -159,6 +172,11 @@ public class JwtService {
         return user.orElse(null);
     }
 
+
+    public boolean isTokenValidForUser(String token, UserDetails userDetails) {
+        final String username = getUsernameFromToken(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
 
 }
 

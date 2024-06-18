@@ -59,7 +59,7 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     @NotNull
-    private Integer dni;
+    private String dni;
 
     public void setSoftDelete(boolean softDelete) {
         this.softDelete = softDelete ? 1 : 0; // Almacena 1 si es true, 0 si es false

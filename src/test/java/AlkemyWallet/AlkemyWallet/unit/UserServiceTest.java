@@ -6,7 +6,7 @@ import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
+import AlkemyWallet.AlkemyWallet.dtos.RegisterResponse;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.enums.RoleEnum;
 import AlkemyWallet.AlkemyWallet.repositories.RoleRepository;
@@ -66,11 +66,11 @@ public class UserServiceTest {
 
     @Test
     void testCreateUserWithMandatoryFields() {
-        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000",12345678);
+        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000","12345678");
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        AuthResponseRegister response = authenticationService.register(registerRequest);
+        RegisterResponse response = authenticationService.register(registerRequest);
 
         assertNotNull(response);
         assertEquals("John", response.getFirstName());
@@ -85,7 +85,7 @@ public class UserServiceTest {
 
     @Test
     void testEmailUniqueness() {
-        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000",12345678);
+        RegisterRequest registerRequest = new RegisterRequest("john.doe@example.com","password" , "John", "Doe", "01-01-2000","12345678");
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.of(new User()));
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -98,11 +98,11 @@ public class UserServiceTest {
 
     @Test
     void testTimestampsGeneration() {
-        RegisterRequest registerRequest = new RegisterRequest("John", "Doe", "john.doe@example.com", "password", "01-01-2000",12345678);
+        RegisterRequest registerRequest = new RegisterRequest("John", "Doe", "john.doe@example.com", "password", "01-01-2000","12345678");
         when(userRepository.findByUserName(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
-        AuthResponseRegister response = authenticationService.register(registerRequest);
+        RegisterResponse response = authenticationService.register(registerRequest);
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());

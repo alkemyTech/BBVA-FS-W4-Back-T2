@@ -1,16 +1,19 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
-import AlkemyWallet.AlkemyWallet.dtos.AuthResponseRegister;
+import AlkemyWallet.AlkemyWallet.dtos.RegisterResponse;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequestDTO;
 import AlkemyWallet.AlkemyWallet.dtos.LoginResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
+import AlkemyWallet.AlkemyWallet.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,9 +21,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -30,6 +36,7 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
+    private final UserService userService;
 
 
 
@@ -105,7 +112,7 @@ public class AuthController {
                     @ApiResponse(
                             description = "Registro exitoso",
                             responseCode = "200",
-                            content = @Content(schema = @Schema(implementation = AuthResponseRegister.class), mediaType = "application/json")
+                            content = @Content(schema = @Schema(implementation = RegisterResponse.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Solicitud inválida",
@@ -122,7 +129,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            AuthResponseRegister registerResponse = authenticationService.register(registerRequest);
+            RegisterResponse registerResponse = authenticationService.register(registerRequest);
             String token = jwtService.getToken(registerResponse.getUserName());
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
@@ -145,7 +152,7 @@ public class AuthController {
                     @ApiResponse(
                             description = "Registro exitoso",
                             responseCode = "200",
-                            content = @Content(schema = @Schema(implementation = AuthResponseRegister.class), mediaType = "application/json")
+                            content = @Content(schema = @Schema(implementation = RegisterResponse.class), mediaType = "application/json")
                     ),
                     @ApiResponse(
                             description = "Solicitud inválida",
@@ -162,7 +169,7 @@ public class AuthController {
     @PostMapping("/register/admin")
     public ResponseEntity<?> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
-            AuthResponseRegister registerResponse = authenticationService.registerAdmin(registerRequest);
+            RegisterResponse registerResponse = authenticationService.registerAdmin(registerRequest);
             String token = jwtService.getToken(registerResponse.getUserName());
             HttpHeaders headers = new HttpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
@@ -172,6 +179,30 @@ public class AuthController {
             return handleIllegalArgumentException(e);
         }
     }
+
+    @GetMapping("/validate-token")
+    public ResponseEntity<Void> validateToken(HttpServletRequest request) {
+        String token = jwtService.getTokenFromRequest(request);
+        System.out.println("Token recibido: " + token);
+
+        if (token != null && jwtService.isTokenValid(token)) {
+            String username = jwtService.getUsernameFromToken(token);
+
+            UserDetails userDetails = userService.loadUserByUsername(username);
+
+            if (jwtService.isTokenValidForUser(token, userDetails)) {
+                // Token y usuario válidos
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+
+                return ResponseEntity.ok().headers(headers).build();
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
 }
 
 
