@@ -32,7 +32,7 @@ public class UserService implements UserDetailsService {
     private final JwtService jwtService;
     private final PaginationConfig paginationConfig;
     private final UserDetailMapper userDetailMapper;
-
+    private final PasswordEncoder passwordEncoder;
 
     public Page<User> getAllUsers(int page) {
         int usersPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 usuarios por página
