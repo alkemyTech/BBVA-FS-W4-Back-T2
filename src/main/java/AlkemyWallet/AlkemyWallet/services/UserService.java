@@ -87,7 +87,7 @@ public class UserService implements UserDetailsService {
             existingUser.setLastName(userUpdateRequest.getLastName());
         }
         if (userUpdateRequest.getPassword() != null) {
-            existingUser.setPassword(userUpdateRequest.getPassword());
+            existingUser.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
         }
 
         existingUser.setUpdateDate(LocalDateTime.now());
