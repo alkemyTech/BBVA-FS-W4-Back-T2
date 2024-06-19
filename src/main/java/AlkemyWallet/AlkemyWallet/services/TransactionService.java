@@ -4,8 +4,6 @@ import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
@@ -65,8 +63,8 @@ public class TransactionService {
 
         Transaction transactionRegistro = this.sendMoney(transaction, originAccount, destinationAccount);
         this.receiveMoney(transaction, originAccount, destinationAccount);
-        accountService.updateAfterTransaction(originAccount, amount);
-        accountService.updateAfterTransaction(destinationAccount, -amount);
+        accountService.updateAfterTransaction(originAccount, -amount);
+        accountService.updateAccountBalance(destinationAccount, amount);
 
         return transactionResponseMapper.mapToTransactionResponse(transactionRegistro, originAccount, destinationAccount);
     }
@@ -75,7 +73,7 @@ public class TransactionService {
         Transaction paymentTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.PAYMENT,
-                "",
+                transaction.getDescription(),
                 LocalDateTime.now(),
                 destinationAccount,
                 originAccount
@@ -95,7 +93,7 @@ public class TransactionService {
         Transaction incomeTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.INCOME,
-                "",
+                transaction.getDescription(),
                 LocalDateTime.now(),
                 destinationAccount,
                 originAccount
@@ -106,14 +104,15 @@ public class TransactionService {
 
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
-            Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
+            Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
+           //Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
             validateDepositTransaction(transaction, account, destinationAccount);
 
             // Crear una transacción de depósito para la cuenta de origen
             Transaction depositTransaction = transactionFactory.createTransaction(
                     transaction.getAmount(),
                     TransactionEnum.DEPOSIT,
-                    "",
+                    transaction.getDescription(),
                     LocalDateTime.now(),
                     account,
                     account // La cuenta de origen es la misma que la cuenta de destino en un depósito
@@ -121,7 +120,7 @@ public class TransactionService {
             transactionRepository.save(depositTransaction);
 
             // Actualizar el saldo de la cuenta de origen
-            accountService.updateAfterTransaction(account, -transaction.getAmount());
+            accountService.updateAccountBalance(account, transaction.getAmount());
 
             return depositTransaction.getId();
         } catch (NonPositiveAmountException e) {
@@ -216,7 +215,7 @@ public class TransactionService {
         }
 
         Transaction transactionRegistro = this.sendPayment(transaction, originAccount, transaction.getDestino());
-        accountService.updateAfterTransaction(originAccount, amount);
+        accountService.updateAfterTransaction(originAccount, -amount);
 
         return transactionResponseMapper.mapToPaymentResponse(transactionRegistro, originAccount);
     }

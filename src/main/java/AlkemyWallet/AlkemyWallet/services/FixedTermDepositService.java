@@ -12,7 +12,6 @@ import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
 import AlkemyWallet.AlkemyWallet.exceptions.InvalidDateOrderException;
 import AlkemyWallet.AlkemyWallet.exceptions.MinimumDurationException;
 import AlkemyWallet.AlkemyWallet.repositories.FixedTermDepositRepository;
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +86,7 @@ public class FixedTermDepositService {
             fixedTerm.setClosingDate(closingDate.atStartOfDay());
             fixedTerm.setInterest(config.getFixedTermInterest());
             fixedTermDepositRepository.save(fixedTerm);
-            accountService.updateAfterFixedTermDeposit(account, fixedTermDepositDto.getInvertedAmount());
+            accountService.updateAccountBalance(account, fixedTermDepositDto.getInvertedAmount());
 
 
             // Lógica del plazo fijo
