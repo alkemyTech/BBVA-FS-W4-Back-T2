@@ -205,7 +205,7 @@ public class AccountController {
                 headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
 
                 // Devolver el nuevo token en la respuesta
-                return ResponseEntity.ok().headers(headers).body("Token actualizado con éxito");
+                return ResponseEntity.ok().headers(headers).build();
             } else {
                 throw new UnauthorizedAccountAccessException("No está autorizado para acceder a esta cuenta");
             }

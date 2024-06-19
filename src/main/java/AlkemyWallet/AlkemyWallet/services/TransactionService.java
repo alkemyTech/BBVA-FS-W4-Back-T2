@@ -106,7 +106,8 @@ public class TransactionService {
 
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
-            Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
+            Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
+           //Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
             validateDepositTransaction(transaction, account, destinationAccount);
 
             // Crear una transacción de depósito para la cuenta de origen
