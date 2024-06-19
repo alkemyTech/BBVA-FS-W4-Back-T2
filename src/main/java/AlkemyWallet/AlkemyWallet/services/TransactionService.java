@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.TransactionFilter;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
@@ -21,12 +22,13 @@ import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 
 import lombok.AllArgsConstructor;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -248,5 +250,73 @@ public class TransactionService {
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
+    }
+
+    public List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
+        List<TransactionResponse> responseList = new ArrayList<>();
+
+        for (Transaction transaction : transactions) {
+            TransactionResponse response = new TransactionResponse();
+            response.setDestino(transaction.getAccount().getCBU());
+            response.setOrigen(transaction.getOriginAccount() != null ? transaction.getOriginAccount().getCBU() : null);
+            response.setFechaDeTransaccion(transaction.getTransactionDate().toLocalDate());
+            response.setTipoDeTransaccion(transaction.getType());
+            response.setCurrency(String.valueOf(transaction.getOriginAccount().getCurrency()));
+
+            responseList.add(response);
+        }
+
+        return responseList;
+    }
+
+    public Page<TransactionResponse> getTransactionsWithFilters(TransactionFilter filter) {
+        try {
+            // Obtener las cuentas del usuario por su userId
+            List<Accounts> userAccounts = accountService.findAccountsByUserId(filter.getUserId());
+
+            // Obtener las transacciones filtradas por las cuentas del usuario
+            Pageable pageable = PageRequest.of(filter.getPage(), 10, Sort.by("transactionDate").descending());
+
+            Specification<Transaction> spec = Specification.where(accountIn(userAccounts))
+                    .and(transactionDateBetween(filter.getFromDate(), filter.getToDate()))
+                    .and(transactionTypeEquals(filter.getTransactionType()));
+
+            Page<Transaction> transactionPage = transactionRepository.findAll(spec, pageable);
+
+            List<TransactionResponse> responseList = mapTransactionsToResponses(transactionPage.getContent());
+
+            return new PageImpl<>(responseList, pageable, transactionPage.getTotalElements());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener transacciones con filtros", e);
+        }
+    }
+
+    // Método auxiliar para construir Specification basado en las cuentas del usuario
+    private Specification<Transaction> accountIn(List<Accounts> userAccounts) {
+        return (root, query, criteriaBuilder) -> root.get("account").in(userAccounts);
+    }
+
+
+    private Specification<Transaction> userIdEquals(Long userId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("user").get("id"), userId);
+    }
+
+    private Specification<Transaction> transactionDateBetween(LocalDate fromDate, LocalDate toDate) {
+        if (fromDate != null && toDate != null) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("fecha"), fromDate.atStartOfDay(), toDate.atTime(LocalTime.MAX));
+        } else if (fromDate != null) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("fecha"), fromDate.atStartOfDay());
+        } else if (toDate != null) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("fecha"), toDate.atTime(LocalTime.MAX));
+        }
+        return null;
+    }
+
+    private Specification<Transaction> transactionTypeEquals(String transactionType) {
+        if (transactionType != null && !transactionType.isEmpty()) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("tipo"), transactionType);
+        }
+        return null;
     }
 }

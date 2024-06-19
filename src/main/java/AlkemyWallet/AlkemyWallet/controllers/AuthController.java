@@ -183,7 +183,7 @@ public class AuthController {
     @GetMapping("/validate-token")
     public ResponseEntity<Void> validateToken(HttpServletRequest request) {
         String token = jwtService.getTokenFromRequest(request);
-        System.out.println("Token recibido: " + token);
+
 
         if (token != null && jwtService.isTokenValid(token)) {
             String username = jwtService.getUsernameFromToken(token);
