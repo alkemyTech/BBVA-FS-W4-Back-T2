@@ -75,11 +75,11 @@ public class Accounts {
     }
 
     public void updateBalance(Double amount) {
-        this.setBalance(balance - amount);
+        this.setBalance(balance + amount);
     }
 
     public void updateLimit(Double amount) {
-        this.setTransactionLimit(transactionLimit - amount);
+        this.setTransactionLimit(transactionLimit + amount);
     }
 
     // Método para obtener el usuario asociado

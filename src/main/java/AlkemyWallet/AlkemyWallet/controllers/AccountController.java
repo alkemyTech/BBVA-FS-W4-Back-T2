@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.dtos.BalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
@@ -204,7 +205,7 @@ public class AccountController {
                 headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + updatedToken);
 
                 // Devolver el nuevo token en la respuesta
-                return ResponseEntity.ok().headers(headers).body("Token actualizado con éxito");
+                return ResponseEntity.ok().headers(headers).build();
             } else {
                 throw new UnauthorizedAccountAccessException("No está autorizado para acceder a esta cuenta");
             }
@@ -260,6 +261,16 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token ha expirado");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud");
+        }
+    }
+
+    @GetMapping("/myAccounts/{userId}")
+    public ResponseEntity<?> getAccountsUser (@PathVariable Long userId) {
+        try {
+            List<AccountsDto> accounts = accountService.findAccountsDtoByUserId(userId);
+            return ResponseEntity.ok(accounts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las cuentas del usuario: " + e.getMessage());
         }
     }
 }

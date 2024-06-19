@@ -2,21 +2,16 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
-import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.*;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
-import lombok.AllArgsConstructor;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +22,9 @@ import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.Random;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
@@ -41,6 +36,8 @@ public class AccountService {
     private  JwtService jwtService;
     @Autowired
     private  PaginationConfig paginationConfig;
+    @Autowired
+    private ModelMapper modelMapper;
 
 
 
@@ -87,6 +84,18 @@ public class AccountService {
             return accountRepository.findByUserId(user);
         }catch (Exception e){
             throw new RuntimeException("No se encontró al usuario",e);
+        }
+    }
+
+    public List<AccountsDto> findAccountsDtoByUserId(Long userId) {
+        try {
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            List<Accounts> accounts = accountRepository.findByUserId(user);
+            return accounts.stream()
+                    .map(account -> modelMapper.map(account, AccountsDto.class))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
     }
 
@@ -181,7 +190,8 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public void updateAfterFixedTermDeposit(Accounts account, Double amount) {
+
+    public void updateAccountBalance(Accounts account, Double amount) {
         account.updateBalance(amount);
         accountRepository.save(account);
     }
