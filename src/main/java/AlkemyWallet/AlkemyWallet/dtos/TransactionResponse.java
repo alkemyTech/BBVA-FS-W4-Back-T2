@@ -38,4 +38,7 @@ public class TransactionResponse {
     @NotNull
     @NotBlank
     String currency;
+
+    @Schema(description = "Descripcion de la Transacción", required = true)
+    String descripcion;
 }
