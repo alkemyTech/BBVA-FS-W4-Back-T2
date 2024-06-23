@@ -46,6 +46,7 @@ public class TransactionService {
     private final TransactionResponseMapper transactionResponseMapper;
     private final PaginationConfig paginationConfig;
 
+    //EndPoint Envio de Dinero
     public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
         Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
@@ -105,7 +106,7 @@ public class TransactionService {
         transactionRepository.save(incomeTransaction);
     }
 
-
+    //Endpoint deposito de dinero/carga de saldo
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
             Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
@@ -146,18 +147,10 @@ public class TransactionService {
         }
     }
 
+    //Busqueda de Transacciones segun distintos criterios
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
             return transactionRepository.findByAccount(account);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
-        }
-    }
-
-    public List<Transaction> getTransactionsByAccountId(Long accountId) {
-        try {
-            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
-            return getTransactionsByAccount(account);
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
@@ -200,6 +193,7 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
+    //Endpoint Payment
     public PaymentResponseDTO registrarPago(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
 
@@ -218,13 +212,30 @@ public class TransactionService {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
 
-        Transaction transactionRegistro = this.sendPayment(transaction, originAccount, transaction.getDestino());
-        accountService.updateAfterTransaction(originAccount, -amount);
+        // Verificar si el destino es una cuenta interna en la base de datos
+        Accounts destinationAccount = null;
+        try {
+            destinationAccount = accountService.findByCBU(transaction.getDestino());
+        } catch (RuntimeException ignored) {
+        }
 
-        return transactionResponseMapper.mapToPaymentResponse(transactionRegistro, originAccount);
+        if (destinationAccount != null) {
+
+            Transaction paymentTransaction = sendMoney(transaction, originAccount, destinationAccount);
+            accountService.updateAfterTransaction(originAccount, -amount);
+            accountService.updateAfterTransaction(destinationAccount, amount);
+            this.receiveMoney(transaction, destinationAccount, originAccount);
+            return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, destinationAccount.getCBU());
+
+        } else {
+
+            Transaction paymentTransaction = sendExternPayment(transaction, originAccount, transaction.getDestino());
+            accountService.updateAfterTransaction(originAccount, -amount);
+            return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, transaction.getDestino());
+        }
     }
 
-    public Transaction sendPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
+    public Transaction sendExternPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
         Transaction paymentTransaction = transactionFactory.createTransactionPayment(
                 transaction.getAmount(),
                 transaction.getDescription(),
@@ -241,6 +252,7 @@ public class TransactionService {
         return paymentTransaction;
     }
 
+    //Endpoint Filtro de Transaccciones
     public List<Transaction> getLast10TransactionsByAccountId(Long accountId) {
         try {
             Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
