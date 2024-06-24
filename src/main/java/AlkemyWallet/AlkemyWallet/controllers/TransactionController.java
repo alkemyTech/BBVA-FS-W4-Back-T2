@@ -2,15 +2,18 @@ package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.TransactionFilter;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
+import AlkemyWallet.AlkemyWallet.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,8 +30,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/transactions")
@@ -38,6 +43,7 @@ public class TransactionController {
     private final TransactionService transactionService;
     private final AccountService accountService;
     private final JwtService jwtService;
+    private final UserService userService;
 
     @Operation(
             description = "Realiza un envío de dinero ya sea en pesos o USD",
@@ -173,6 +179,67 @@ public class TransactionController {
 
         }
 
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<?> getPagedTransactionsForUser(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            @RequestParam(required = false) String transactionType,
+            @RequestParam(required = false) String currency,
+            HttpServletRequest request) {
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            String username = jwtService.getUsernameFromToken(token);
+
+            Optional<User> userOptional = userService.getUserByUsername(username);
+
+            Long userId = null;
+            if (userOptional.isPresent()) {
+                userId = userOptional.get().getId();
+            }
+
+            // Construir objeto de filtros basado en los parámetros recibidos
+            TransactionFilter filter = new TransactionFilter();
+            filter.setUserId(userId);
+            filter.setPage(page);
+
+            if (fromDate != null) {
+                filter.setFromDate(LocalDate.parse(fromDate));
+            }
+            if (toDate != null) {
+                filter.setToDate(LocalDate.parse(toDate));
+            }
+            if (transactionType != null) {
+                filter.setTransactionType(transactionType);
+            }
+            if (currency != null) {
+                filter.setCurrency(currency);
+            }
+
+            // Obtener página de transacciones utilizando el servicio
+            Page<TransactionResponse> transactionsPage = transactionService.getTransactionsWithFilters(filter);
+            int totalPages = transactionsPage.getTotalPages();
+
+            // Construir la respuesta
+            Map<String, Object> response = new HashMap<>();
+            response.put("transactions", transactionsPage.getContent());
+            response.put("currentPage", page);
+            response.put("totalPages", totalPages);
+
+            if (page < totalPages - 1) {
+                response.put("nextPage", "?page=" + (page + 1));
+            }
+            if (page > 0) {
+                response.put("previousPage", "?page=" + (page - 1));
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al encontrar las transacciones del usuario: " + e.getMessage());
+        }
     }
 
     @Operation(

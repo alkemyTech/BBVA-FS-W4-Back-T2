@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.TransactionFilter;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
@@ -17,14 +18,17 @@ import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import lombok.AllArgsConstructor;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -42,6 +46,7 @@ public class TransactionService {
     private final TransactionResponseMapper transactionResponseMapper;
     private final PaginationConfig paginationConfig;
 
+    //EndPoint Envio de Dinero
     public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
         Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
@@ -101,7 +106,7 @@ public class TransactionService {
         transactionRepository.save(incomeTransaction);
     }
 
-
+    //Endpoint deposito de dinero/carga de saldo
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
             Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
@@ -142,18 +147,10 @@ public class TransactionService {
         }
     }
 
+    //Busqueda de Transacciones segun distintos criterios
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
             return transactionRepository.findByAccount(account);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
-        }
-    }
-
-    public List<Transaction> getTransactionsByAccountId(Long accountId) {
-        try {
-            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
-            return getTransactionsByAccount(account);
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
@@ -196,6 +193,7 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
+    //Endpoint Payment
     public PaymentResponseDTO registrarPago(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
 
@@ -214,13 +212,30 @@ public class TransactionService {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
 
-        Transaction transactionRegistro = this.sendPayment(transaction, originAccount, transaction.getDestino());
-        accountService.updateAfterTransaction(originAccount, -amount);
+        // Verificar si el destino es una cuenta interna en la base de datos
+        Accounts destinationAccount = null;
+        try {
+            destinationAccount = accountService.findByCBU(transaction.getDestino());
+        } catch (RuntimeException ignored) {
+        }
 
-        return transactionResponseMapper.mapToPaymentResponse(transactionRegistro, originAccount);
+        if (destinationAccount != null) {
+
+            Transaction paymentTransaction = sendMoney(transaction, originAccount, destinationAccount);
+            accountService.updateAfterTransaction(originAccount, -amount);
+            accountService.updateAfterTransaction(destinationAccount, amount);
+            this.receiveMoney(transaction, destinationAccount, originAccount);
+            return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, destinationAccount.getCBU());
+
+        } else {
+
+            Transaction paymentTransaction = sendExternPayment(transaction, originAccount, transaction.getDestino());
+            accountService.updateAfterTransaction(originAccount, -amount);
+            return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, transaction.getDestino());
+        }
     }
 
-    public Transaction sendPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
+    public Transaction sendExternPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
         Transaction paymentTransaction = transactionFactory.createTransactionPayment(
                 transaction.getAmount(),
                 transaction.getDescription(),
@@ -237,6 +252,7 @@ public class TransactionService {
         return paymentTransaction;
     }
 
+    //Endpoint Filtro de Transaccciones
     public List<Transaction> getLast10TransactionsByAccountId(Long accountId) {
         try {
             Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
@@ -248,4 +264,85 @@ public class TransactionService {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
     }
+
+    public List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
+        List<TransactionResponse> responseList = new ArrayList<>();
+
+        for (Transaction transaction : transactions) {
+            TransactionResponse response = new TransactionResponse();
+            response.setDestino(transaction.getAccount() != null ? transaction.getAccount().getCBU() : null);
+            response.setOrigen(transaction.getOriginAccount() != null ? transaction.getOriginAccount().getCBU() : null);
+            response.setFechaDeTransaccion(transaction.getTransactionDate().toLocalDate());
+            response.setTipoDeTransaccion(transaction.getType());
+            response.setCurrency(transaction.getOriginAccount().getCurrency().toString());
+            response.setDescripcion(transaction.getDescription());
+
+            responseList.add(response);
+        }
+
+        return responseList;
+    }
+
+    public Page<TransactionResponse> getTransactionsWithFilters(TransactionFilter filter) {
+        try {
+            List<Accounts> userAccounts = accountService.findAccountsByUserId(filter.getUserId());
+            Pageable pageable = PageRequest.of(filter.getPage(), 10, Sort.by("transactionDate").descending());
+
+            Specification<Transaction> spec = Specification.where(accountIn(userAccounts));
+
+            if (filter.getFromDate() != null || filter.getToDate() != null) {
+                spec = spec.and(transactionDateBetween(filter.getFromDate(), filter.getToDate()));
+            }
+
+            if (filter.getTransactionType() != null && !filter.getTransactionType().isEmpty()) {
+                spec = spec.and(transactionTypeEquals(filter.getTransactionType()));
+            }
+
+            if (filter.getCurrency() != null && !filter.getCurrency().isEmpty()) {
+                spec = spec.and(accountCurrencyEquals(filter.getCurrency()));
+            }
+
+            Page<Transaction> transactionPage = transactionRepository.findAll(spec, pageable);
+            List<TransactionResponse> responseList = mapTransactionsToResponses(transactionPage.getContent());
+
+            return new PageImpl<>(responseList, pageable, transactionPage.getTotalElements());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener transacciones con filtros", e);
+        }
+    }
+
+    // Método auxiliar para construir Specification basado en las cuentas del usuario
+    private Specification<Transaction> accountIn(List<Accounts> userAccounts) {
+        return (root, query, criteriaBuilder) -> root.get("originAccount").in(userAccounts);
+    }
+
+    private Specification<Transaction> transactionDateBetween(LocalDate fromDate, LocalDate toDate) {
+        if (fromDate != null && toDate != null) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get("transactionDate"), fromDate.atStartOfDay(), toDate.atTime(LocalTime.MAX));
+        } else if (fromDate != null) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("transactionDate"), fromDate.atStartOfDay());
+        } else if (toDate != null) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("transactionDate"), toDate.atTime(LocalTime.MAX));
+        }
+        return null;
+    }
+
+    private Specification<Transaction> transactionTypeEquals(String transactionType) {
+        if (transactionType != null && !transactionType.isEmpty()) {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("type"), transactionType);
+        }
+        return null;
+    }
+
+    private Specification<Transaction> accountCurrencyEquals(String currency) {
+        if (currency != null && !currency.isEmpty()) {
+            return (root, query, criteriaBuilder) -> {
+                Join<Transaction, Accounts> originAccountJoin = root.join("originAccount", JoinType.LEFT);
+                return criteriaBuilder.equal(originAccountJoin.get("currency"), currency);
+            };
+        }
+        return null;
+    }
+
 }
