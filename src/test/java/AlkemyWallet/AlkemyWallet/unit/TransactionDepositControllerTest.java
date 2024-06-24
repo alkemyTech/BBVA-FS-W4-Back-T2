@@ -46,6 +46,7 @@ public class TransactionDepositControllerTest {
         transactionDTO.setAmount(100.0);
         transactionDTO.setCurrency("USD");
 
+
         // Mockeo el token y la cuenta
         String mockToken = "mocked_jwt_token";
         when(jwtService.getTokenFromRequest(request)).thenReturn(mockToken);

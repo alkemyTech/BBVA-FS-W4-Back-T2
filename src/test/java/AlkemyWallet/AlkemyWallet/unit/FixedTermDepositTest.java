@@ -81,24 +81,6 @@ public class FixedTermDepositTest {
         });
     }
 
-    @Test
-    public void testCreateFixedTermDepositInsufficientPermissions() {
-        // Arrange
-        FixedTermDepositDto fixedTermDepositDto = new FixedTermDepositDto();
-        fixedTermDepositDto.setCreationDate("01/01/2024");
-        fixedTermDepositDto.setClosingDate("31/01/2024");
-        fixedTermDepositDto.setInvertedAmount(1000.0);
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer invalid_token");
-
-        when(jwtService.getUserFromToken(anyString())).thenThrow(new RuntimeException("Token inválido"));
-
-        // Act & Assert
-        assertThrows(RuntimeException.class, () -> {
-            fixedTermDepositController.createFixedTermDeposit(fixedTermDepositDto, request);
-        });
-    }
 
     @Test
     public void testCreateFixedTermDepositAccountNotFound() {

@@ -128,9 +128,7 @@ public class TransactionService {
             accountService.updateAccountBalance(account, transaction.getAmount());
 
             return depositTransaction.getId();
-        } catch (NonPositiveAmountException e) {
-            throw e;
-        } catch (UnauthorizedTransactionException e) {
+        } catch (NonPositiveAmountException | UnauthorizedTransactionException e) {
             throw e;
         } catch (Exception e) {
             System.err.println("Se produjo un error inesperado al procesar el depósito: " + e.getMessage());
@@ -226,7 +224,7 @@ public class TransactionService {
 
             Transaction paymentTransaction = sendMoney(transaction, originAccount, destinationAccount);
             accountService.updateAfterTransaction(originAccount, -amount);
-            accountService.updateAfterTransaction(destinationAccount, amount);
+            accountService.updateAccountBalance(destinationAccount, amount);
             this.receiveMoney(transaction, destinationAccount, originAccount);
             return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, destinationAccount.getCBU());
 

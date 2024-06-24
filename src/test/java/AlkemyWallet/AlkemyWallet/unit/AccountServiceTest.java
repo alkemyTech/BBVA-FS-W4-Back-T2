@@ -46,6 +46,9 @@ public class AccountServiceTest {
         Long userId = 1L;
         User mockUser = new User();
         mockUser.setId(userId);
+        mockUser.setFirstName("name");
+        mockUser.setLastName("surname");
+        mockUser.setDni("11111111");
 
         Accounts mockAccount = new Accounts
                 (1L,CurrencyEnum.ARS,AccountTypeEnum.CAJA_AHORRO,100000D,
