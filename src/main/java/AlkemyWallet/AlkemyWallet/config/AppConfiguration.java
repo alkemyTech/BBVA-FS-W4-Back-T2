@@ -20,15 +20,15 @@ public class AppConfiguration {
 
     @Autowired
     private TransactionSeeder transactionSeeder;
-/*
+
     @Bean
     public CommandLineRunner runSeeder(){
         return args -> {
-            //userSeeder.seed();
-            //accountsSeeder.seedAccounts();
-            //transactionSeeder.seedTransactions();
+            userSeeder.seed();
+            accountsSeeder.seedAccounts();
+            transactionSeeder.seedTransactions();
         };
     }
 
- */
+
 }

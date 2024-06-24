@@ -4,6 +4,7 @@ package AlkemyWallet.AlkemyWallet.domain;
 import AlkemyWallet.AlkemyWallet.enums.TransactionEnum;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Transaction {
     private Long id;
     @Column(nullable = false)
     @NotNull
+    @Positive
     private double amount;
     @Column(nullable = false)
     @NotNull

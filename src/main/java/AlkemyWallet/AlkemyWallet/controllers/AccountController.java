@@ -2,6 +2,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.dtos.BalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
@@ -271,6 +272,34 @@ public class AccountController {
             return ResponseEntity.ok(accounts);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error al encontrar las cuentas del usuario: " + e.getMessage());
+        }
+    }
+
+    @Operation(
+            description = "Obtiene la información de la cuenta por CBU",
+            summary = "Obtener información de cuenta por CBU",
+            responses = {
+                    @ApiResponse(
+                            description = "Información de la cuenta obtenida con éxito",
+                            responseCode = "200",
+                            content = @Content(mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Cuenta no encontrada",
+                            responseCode = "404",
+                            content = @Content(mediaType = "text/plain")
+                    )
+            }
+    )
+    @GetMapping("/info/{CBU}")
+    public ResponseEntity<?> getAccountInfoByCBU(@PathVariable String CBU) {
+        try {
+            AccountInfoDto accountInfoDto = accountService.getAccountInfoByCBU(CBU);
+            return ResponseEntity.ok(accountInfoDto);
+        } catch (CuentaNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cuenta no encontrada: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud: " + e.getMessage());
         }
     }
 }

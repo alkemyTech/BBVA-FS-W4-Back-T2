@@ -211,6 +211,9 @@ public class TransactionService {
         if (!originAccount.dineroDisponible(amount) || !originAccount.limiteDisponible(amount)) {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
+        if (amount == null || amount < 0) {
+            throw new IllegalArgumentException("El monto no puede ser nulo o negativo");
+        }
 
         // Verificar si el destino es una cuenta interna en la base de datos
         Accounts destinationAccount = null;

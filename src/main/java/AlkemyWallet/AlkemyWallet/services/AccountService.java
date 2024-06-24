@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
@@ -69,6 +70,7 @@ public class AccountService {
             account.setCreationDate(LocalDateTime.now());
             account.setUpdateDate(LocalDateTime.now());
             account.setSoftDelete(false);
+            account.setAlias(this.generarAlias(account));
 
             Accounts savedAccount = accountRepository.save(account);
 
@@ -121,6 +123,7 @@ public class AccountService {
                     account.setCreationDate(LocalDateTime.now());
                     account.setUpdateDate(LocalDateTime.now());
                     account.setSoftDelete(false);
+                    account.setAlias(this.generarAlias(account));
 
                     Accounts savedAccount = accountRepository.save(account);
 
@@ -165,7 +168,7 @@ public class AccountService {
             return cbu.toString();
         }
 
-    public String generarCBU () {
+    public String generarCBU (){
             String CBU = null;
             boolean cbuExistente = true;
 
@@ -182,7 +185,28 @@ public class AccountService {
             }
 
             return CBU;
+    }
+
+    public String generarAlias(Accounts account) {
+        User user = account.getUser();
+
+        String firstName = user.getFirstName().toLowerCase();
+        String lastName = user.getLastName().toLowerCase();
+        String currency = account.getCurrency().toString().toLowerCase();
+        String accountType = account.getAccountType() == AccountTypeEnum.CAJA_AHORRO ? "ca" : "cc";
+
+        String baseAlias = firstName + "." + lastName + "." + currency + "." + accountType;
+        String alias = baseAlias;
+        int counter = 1;
+
+        while (accountRepository.existsByAlias(alias)) {
+            alias = baseAlias + "." + counter;
+            counter++;
         }
+
+        return alias;
+    }
+
 
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
@@ -281,6 +305,23 @@ public class AccountService {
         } else {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
         }
+    }
+
+    public AccountInfoDto getAccountInfoByCBU(String CBU) throws CuentaNotFoundException {
+        Accounts account = accountRepository.findByCBU(CBU)
+                .orElseThrow(() -> new CuentaNotFoundException("No se encontró la cuenta con el CBU: " + CBU));
+
+        User user = account.getUser();
+
+        AccountInfoDto accountInfoDto = new AccountInfoDto();
+        accountInfoDto.setFirstName(user.getFirstName());
+        accountInfoDto.setLastName(user.getLastName());
+        accountInfoDto.setCBU(account.getCBU());
+        accountInfoDto.setAlias(account.getAlias());
+        accountInfoDto.setAccountType(account.getAccountType().toString());
+        accountInfoDto.setDni(user.getDni());
+
+        return accountInfoDto;
     }
 }
 
