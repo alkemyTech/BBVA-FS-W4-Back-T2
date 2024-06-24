@@ -19,8 +19,8 @@ public class AppConfiguration {
     private AccountsSeeder accountsSeeder;
 
     @Autowired
-    private TransactionSeeder transactionSeeder;
-
+    private TransactionSeeder transactionSeeder;}
+/*
     @Bean
     public CommandLineRunner runSeeder(){
         return args -> {
@@ -30,3 +30,4 @@ public class AppConfiguration {
         };
     }
 }
+*/
