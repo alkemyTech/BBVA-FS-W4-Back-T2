@@ -32,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.time.LocalDateTime;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
 public class SendArsTest {
 
@@ -80,7 +79,19 @@ public class SendArsTest {
         transactionDTO.setAmount(100.0);
         transactionDTO.setCurrency("ARS");
         transactionDTO.setDestino("123456789");
+        transactionDTO.setDescription("alquiler");
 
+        Accounts originAccount = new Accounts();
+        originAccount.setId(1L);
+        originAccount.setBalance(500.0);
+        originAccount.setTransactionLimit(500.0);
+        originAccount.setCurrency(CurrencyEnum.ARS);
+
+        Accounts destinationAccount = new Accounts();
+        destinationAccount.setId(2L);
+        destinationAccount.setBalance(500.0);
+        destinationAccount.setTransactionLimit(500.0);
+        destinationAccount.setCurrency(CurrencyEnum.ARS);
 
         when(accountService.findByCBU(transactionDTO.getDestino())).thenReturn(destinationAccount);
 
@@ -90,6 +101,7 @@ public class SendArsTest {
         when(transactionFactory.createTransaction(
                 anyDouble(), any(TransactionEnum.class), anyString(), any(LocalDateTime.class), any(Accounts.class), any(Accounts.class)
         )).thenReturn(expectedTransaction);
+
         when(transactionRepository.save(any(Transaction.class))).thenReturn(expectedTransaction);
 
         TransactionResponse expectedResponse = new TransactionResponse();
@@ -102,10 +114,11 @@ public class SendArsTest {
         // Verificaciones
         verify(accountService).findByCBU(transactionDTO.getDestino());
         verify(transactionRepository, times(2)).save(any(Transaction.class));
-        verify(accountService).updateAfterTransaction(originAccount, 100.0);
-        verify(accountService).updateAfterTransaction(destinationAccount, -100.0);
+        verify(accountService).updateAfterTransaction(originAccount, -100.0);
+        verify(accountService).updateAccountBalance(destinationAccount, 100.0);
         assertEquals(expectedResponse, actualResponse);
     }
+
 
     @Test
     public void testMonedaInvalida() {

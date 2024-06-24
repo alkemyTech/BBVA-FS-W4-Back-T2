@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 
 @SpringBootTest
-public class SendArsIntegrationTest {
+public class SendArsServiceTest {
 
 
     @Mock

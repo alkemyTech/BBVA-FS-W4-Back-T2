@@ -153,6 +153,7 @@ public class TransactionController {
                     )
             }
     )
+
     @GetMapping("user/{userId}")
     public ResponseEntity<?> getPagedTransactions(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page) {
         try {

@@ -27,8 +27,6 @@ public class AccountsUpdateControllerTest {
     @Mock
     private AccountService accountService;
 
-    @Mock
-    private AccountRepository accountRepository;
 
     @InjectMocks
     private AccountController accountController;

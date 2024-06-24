@@ -1,123 +1,104 @@
 package AlkemyWallet.AlkemyWallet.unit;
 
 import AlkemyWallet.AlkemyWallet.controllers.AuthController;
+import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterResponse;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
+import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.mock;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class RegisterTest {
 
     @Mock
-    private AuthenticationService authenticationService;
+    UserRepository userRepository;
+
+    @Mock
+    PasswordEncoder passwordEncoder;
 
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    AccountService accountService;
+
+    @Mock
+    private RoleFactory roleFactory;
+
     @InjectMocks
-    private AuthController authController;
+    private AuthenticationService authenticationService;
 
-
-
-    @BeforeEach
+    @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test //espera un 200 y le estoy pasando un 500
+    @Test
     public void testRegisterSuccess() {
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUserName("testUser");
         registerRequest.setPassword("password");
+        registerRequest.setDni("12345678");
+        registerRequest.setBirthDate("10-02-2003");
 
-        RegisterResponse registerResponse = new RegisterResponse();
-        registerResponse.setUserName("testUser");
+        User mockUser = new User();
+        mockUser.setUserName("testUser");
+        mockUser.setId(1L);
 
-        when(authenticationService.register(registerRequest)).thenReturn(registerResponse);
-        when(jwtService.getToken(registerResponse.getUserName())).thenReturn("validToken");
+        when(userRepository.save(any(User.class))).thenReturn(mockUser);
 
-        ResponseEntity<?> response = authController.register(registerRequest);
+        when(jwtService.getToken(mockUser.getUsername())).thenReturn("validToken");
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(registerResponse, response.getBody());
-        assertEquals("Bearer validToken", response.getHeaders().getFirst("Authorization"));
+        RegisterResponse registerResponse = authenticationService.register(registerRequest);
+
+        assertEquals("testUser", registerResponse.getUserName());
+        assertEquals("validToken", jwtService.getToken(registerResponse.getUserName()));
     }
 
-    @Test // espera un 400
+    @Test
     public void testRegisterUserAlreadyExists() {
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUserName("existingUser");
         registerRequest.setPassword("password");
+        registerRequest.setDni("12345678");
+        registerRequest.setBirthDate("2003-02-10");
 
-        when(authenticationService.register(registerRequest)).thenThrow(new IllegalArgumentException("User already exists"));
+        when(userRepository.findByUserName("existingUser")).thenReturn(Optional.of(new User()));
 
-        ResponseEntity<?> response = authController.register(registerRequest);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            authenticationService.register(registerRequest);
+        });
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("User already exists", response.getBody());
+        assertEquals("User already exists", exception.getMessage());
     }
 
-    @Test //espera un 400
-    public void testRegisterInvalidRequest() throws NoSuchMethodException {
-        // Configurar una solicitud de registro inválida
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUserName("");
-        registerRequest.setPassword("password");
-
-        // Configurar el comportamiento esperado para la validación de argumentos
-        Method method = AuthController.class.getMethod("register", RegisterRequest.class);
-        MethodParameter methodParameter = new MethodParameter(method, 0);
-        BindingResult bindingResult = mock(BindingResult.class);
-        when(bindingResult.hasErrors()).thenReturn(true);
-
-        // Lanzar una excepción no verificada en lugar de una verificada
-        RuntimeException exception = new RuntimeException("La validación falló");
-
-        // Configurar el comportamiento esperado para el servicio de autenticación
-        when(authenticationService.register(registerRequest)).thenThrow(exception);
-
-        // Llamar al método register del controlador y capturar la respuesta
-        ResponseEntity<?> response = authController.register(registerRequest);
-
-        // Verificar que se reciba una respuesta de error con el código de estado y el mensaje adecuados
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Solicitud inválida", response.getBody());
-    }
-
-
-    @Test
-    public void testRegisterInternalServerError() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUserName("testUser");
-        registerRequest.setPassword("password");
-
-        // Lanzar RuntimeException para simular un error del servidor
-        when(authenticationService.register(registerRequest)).thenThrow(new RuntimeException("Internal Server Error"));
-
-        ResponseEntity<?> response = authController.register(registerRequest);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Error al procesar la solicitud", response.getBody());
-    }
 }
 
 

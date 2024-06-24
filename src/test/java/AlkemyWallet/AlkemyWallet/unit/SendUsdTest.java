@@ -77,6 +77,7 @@ public class SendUsdTest {
         transactionDTO.setAmount(100.0);
         transactionDTO.setCurrency("USD");
         transactionDTO.setDestino("123456789");
+        transactionDTO.setDescription("alquiler");
 
         when(accountService.findByCBU(transactionDTO.getDestino())).thenReturn(destinationAccount);
 
@@ -98,8 +99,8 @@ public class SendUsdTest {
         // Verificaciones
         verify(accountService).findByCBU(transactionDTO.getDestino());
         verify(transactionRepository, times(2)).save(any(Transaction.class));
-        verify(accountService).updateAfterTransaction(originAccount, 100.0);
-        verify(accountService).updateAfterTransaction(destinationAccount, -100.0);
+        verify(accountService).updateAfterTransaction(originAccount, -100.0);
+        verify(accountService).updateAccountBalance(destinationAccount, 100.0);
         assertEquals(expectedResponse, actualResponse);
     }
 
