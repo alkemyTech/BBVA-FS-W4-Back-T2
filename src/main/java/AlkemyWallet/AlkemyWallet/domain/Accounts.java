@@ -61,6 +61,10 @@ public class Accounts {
     @Size(min=22, max=22)
     private String CBU;
 
+    @NotNull
+    @Column(name="alias", nullable = false)
+    private String alias;
+
 
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)

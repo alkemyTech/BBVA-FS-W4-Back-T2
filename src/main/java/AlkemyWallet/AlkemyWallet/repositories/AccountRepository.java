@@ -22,4 +22,6 @@ public interface AccountRepository extends JpaRepository<Accounts, Long> {
 
     Accounts save(Accounts accounts);
 
+    Boolean existsByAlias(String alias);
+
 }

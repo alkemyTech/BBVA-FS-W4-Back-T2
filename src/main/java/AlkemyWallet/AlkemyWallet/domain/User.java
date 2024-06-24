@@ -75,6 +75,10 @@ public class User implements UserDetails {
     @Column(nullable = true)
     private String imagePath;
 
+    @ManyToOne(cascade=CascadeType.MERGE)
+    @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
+    private Role role;
+
     @ElementCollection
     private List<String> cbuTerceros;
 
@@ -118,9 +122,7 @@ public class User implements UserDetails {
     }
 
 
-     @ManyToOne(cascade=CascadeType.MERGE)
-    @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
-    private Role role;
+
 
 }
 

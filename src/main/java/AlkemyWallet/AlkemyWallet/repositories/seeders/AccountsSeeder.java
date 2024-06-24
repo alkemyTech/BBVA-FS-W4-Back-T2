@@ -69,13 +69,12 @@ public class AccountsSeeder {
         account.setTransactionLimit(currency.getTransactionLimit());
         account.setSoftDelete(false);
         account.setCBU(accountService.generarCBU());
+        account.setAlias(accountService.generarAlias(account));
 
             double depositAmount = 0.00;
                 depositAmount = Math.round((Math.random() * 300000) * 100.0) / 100.0;
 
             account.setBalance(depositAmount);
-
-
 
 
         accountRepository.save(account);

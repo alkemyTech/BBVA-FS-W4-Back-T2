@@ -69,6 +69,7 @@ public class AccountService {
             account.setCreationDate(LocalDateTime.now());
             account.setUpdateDate(LocalDateTime.now());
             account.setSoftDelete(false);
+            account.setAlias(this.generarAlias(account));
 
             Accounts savedAccount = accountRepository.save(account);
 
@@ -121,6 +122,7 @@ public class AccountService {
                     account.setCreationDate(LocalDateTime.now());
                     account.setUpdateDate(LocalDateTime.now());
                     account.setSoftDelete(false);
+                    account.setAlias(this.generarAlias(account));
 
                     Accounts savedAccount = accountRepository.save(account);
 
@@ -165,7 +167,7 @@ public class AccountService {
             return cbu.toString();
         }
 
-    public String generarCBU () {
+    public String generarCBU (){
             String CBU = null;
             boolean cbuExistente = true;
 
@@ -182,7 +184,28 @@ public class AccountService {
             }
 
             return CBU;
+    }
+
+    public String generarAlias(Accounts account) {
+        User user = account.getUser();
+
+        String firstName = user.getFirstName().toLowerCase();
+        String lastName = user.getLastName().toLowerCase();
+        String currency = account.getCurrency().toString().toLowerCase();
+        String accountType = account.getAccountType() == AccountTypeEnum.CAJA_AHORRO ? "ca" : "cc";
+
+        String baseAlias = firstName + "." + lastName + "." + currency + "." + accountType;
+        String alias = baseAlias;
+        int counter = 1;
+
+        while (accountRepository.existsByAlias(alias)) {
+            alias = baseAlias + "." + counter;
+            counter++;
         }
+
+        return alias;
+    }
+
 
     public void updateAfterTransaction(Accounts account, Double amount) {
         account.updateBalance(amount);
