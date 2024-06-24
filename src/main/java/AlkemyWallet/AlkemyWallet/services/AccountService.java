@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
@@ -304,6 +305,23 @@ public class AccountService {
         } else {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
         }
+    }
+
+    public AccountInfoDto getAccountInfoByCBU(String CBU) throws CuentaNotFoundException {
+        Accounts account = accountRepository.findByCBU(CBU)
+                .orElseThrow(() -> new CuentaNotFoundException("No se encontró la cuenta con el CBU: " + CBU));
+
+        User user = account.getUser();
+
+        AccountInfoDto accountInfoDto = new AccountInfoDto();
+        accountInfoDto.setFirstName(user.getFirstName());
+        accountInfoDto.setLastName(user.getLastName());
+        accountInfoDto.setCBU(account.getCBU());
+        accountInfoDto.setAlias(account.getAlias());
+        accountInfoDto.setAccountType(account.getAccountType().toString());
+        accountInfoDto.setDni(user.getDni());
+
+        return accountInfoDto;
     }
 }
 
