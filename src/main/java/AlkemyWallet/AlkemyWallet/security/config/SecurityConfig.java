@@ -38,8 +38,10 @@ public class SecurityConfig {
                                 .requestMatchers("/accounts/create").permitAll()
                                 .requestMatchers("/accounts/select/**").permitAll()
                                 .requestMatchers("/accounts/editar/**").permitAll()
+                                .requestMatchers("/accounts/myAccounts/**").permitAll()
+                                .requestMatchers("/accounts/info/**").permitAll()
                                 .requestMatchers("/accounts/{userId}").hasRole("ADMIN")
-                                .requestMatchers("/accounts").hasRole("ADMIN")
+                                .requestMatchers("/accounts/").hasRole("ADMIN")
 
                                 .requestMatchers("/fixedTerm/**").permitAll()
                                 .requestMatchers("/loan/**").permitAll()

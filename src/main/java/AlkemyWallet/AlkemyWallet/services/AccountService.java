@@ -128,6 +128,8 @@ public class AccountService {
         }
     }
     public static String logicaCBU() {
+
+    public static String logicaCBU() {
         StringBuilder cbu = new StringBuilder();
         Random random = new Random();
 
