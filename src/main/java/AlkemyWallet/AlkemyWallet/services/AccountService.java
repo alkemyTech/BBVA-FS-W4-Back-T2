@@ -140,33 +140,45 @@ public class AccountService {
         }
     }
 
-    public static String logicaCBU () {
+    public static String logicaCBU() {
         StringBuilder cbu = new StringBuilder();
         Random random = new Random();
 
-
-            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-            for (int i = 0; i < 7; i++) {
-                cbu.append(random.nextInt(10));
-            }
-            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
-
-            // Los siguientes 12 dígitos son generados aleatoriamente.
-            for (int i = 0; i < 12; i++) {
-                cbu.append(random.nextInt(10));
-            }
-
-            // Calculamos el dígito verificador provisorio.
-            int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
-            int sum = 0;
-            for (int i = 0; i < cbu.length(); i++) {
-                sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
-            }
-            int dv = (10 - (sum % 10)) % 10;
-            cbu.setCharAt(7, Character.forDigit(dv, 10));
-
-            return cbu.toString();
+        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
+        for (int i = 0; i < 7; i++) {
+            cbu.append(random.nextInt(10));
         }
+        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
+
+        // Los siguientes 12 dígitos son generados aleatoriamente.
+        for (int i = 0; i < 12; i++) {
+            cbu.append(random.nextInt(10));
+        }
+
+        // Calculamos el dígito verificador provisorio.
+        int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
+        int sum = 0;
+        for (int i = 0; i < cbu.length(); i++) {
+            sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
+        }
+        int dv = (10 - (sum % 10)) % 10;
+        cbu.setCharAt(7, Character.forDigit(dv, 10));
+
+        // Agregamos el dígito verificador final (22º dígito)
+        int dvFinal = calcularDigitoVerificadorFinal(cbu.toString());
+        cbu.append(Character.forDigit(dvFinal, 10));
+
+        return cbu.toString();
+    }
+    private static int calcularDigitoVerificadorFinal(String cbu) {
+        int[] weights = {7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1};
+        int sum = 0;
+        for (int i = 0; i < cbu.length(); i++) {
+            sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
+        }
+        int dv = (10 - (sum % 10)) % 10;
+        return dv;
+    }
 
     public String generarCBU (){
             String CBU = null;

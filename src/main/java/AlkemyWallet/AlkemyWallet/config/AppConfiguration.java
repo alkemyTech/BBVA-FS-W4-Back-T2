@@ -21,14 +21,14 @@ public class AppConfiguration {
     @Autowired
     private TransactionSeeder transactionSeeder;
 
-    @Bean
+   /* @Bean
     public CommandLineRunner runSeeder(){
         return args -> {
             userSeeder.seed();
             accountsSeeder.seedAccounts();
             transactionSeeder.seedTransactions();
         };
-    }
+    }*/
 
 
 }
