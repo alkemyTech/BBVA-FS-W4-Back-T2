@@ -29,6 +29,12 @@ public class TransactionResponse {
     @NotBlank
     String origen;
 
+    @Schema(description = "Monto de la transacción realizada", required = true)
+    @NotNull
+    @NotBlank
+    double amount;
+
+
     @Schema(description = "Fecha de la transacción realizada", required = true)
     LocalDate fechaDeTransaccion;
 

@@ -168,6 +168,13 @@ public class AccountService {
         int dvFinal = calcularDigitoVerificadorFinal(cbu.toString());
         cbu.append(Character.forDigit(dvFinal, 10));
 
+        // Aseguramos que el CBU tenga exactamente 22 dígitos
+        while (cbu.length() < 22) {
+            cbu.append(random.nextInt(10)); // Agrega dígitos aleatorios al final si es necesario
+        }
+        // Si por alguna razón tiene más de 22, se trunca a 22 dígitos
+        cbu.setLength(22);
+
         return cbu.toString();
     }
     private static int calcularDigitoVerificadorFinal(String cbu) {
@@ -181,22 +188,22 @@ public class AccountService {
     }
 
     public String generarCBU (){
-        String CBU = null;
-        boolean cbuExistente = true;
+            String CBU = null;
+            boolean cbuExistente = true;
 
-        // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
-        while (cbuExistente) {
-            // Genera un nuevo CBU
-            CBU = logicaCBU();
+            // Genera un nuevo CBU hasta que encuentres uno que no exista en la base de datos
+            while (cbuExistente) {
+                // Genera un nuevo CBU
+                CBU = logicaCBU();
 
-            // Verifica si el CBU generado ya existe en la base de datos
-            if (!accountRepository.findByCBU(CBU).isPresent()) {
-                // Si el CBU no existe, sal del bucle
-                cbuExistente = false;
+                // Verifica si el CBU generado ya existe en la base de datos
+                if (!accountRepository.findByCBU(CBU).isPresent()) {
+                    // Si el CBU no existe, sal del bucle
+                    cbuExistente = false;
+                }
             }
-        }
 
-        return CBU;
+            return CBU;
     }
 
     public String generarAlias(Accounts account) {
