@@ -1,0 +1,17 @@
+//---Testeos manuales---
+Testeo endpoint Delete User by id --->
+   -- No esta funcionando , ver que esta pasando ahi
+   -- Lo probe con el postman pasando el id directamente en la ruta http://localhost:8080/home/users/{'id'}
+
+
+// MEJORAS QUE FALTAN AGREGAR SI O SI
+-- CORS
+-- Variables que pide el front y no tenemos en el back
+
+
+//---Funcionalidades para agregar en un futuro---
+--Generar un prestamo , no solo simularlo.
+
+
+
+
