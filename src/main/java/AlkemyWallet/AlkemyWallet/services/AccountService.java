@@ -168,6 +168,13 @@ public class AccountService {
         int dvFinal = calcularDigitoVerificadorFinal(cbu.toString());
         cbu.append(Character.forDigit(dvFinal, 10));
 
+        // Aseguramos que el CBU tenga exactamente 22 dígitos
+        while (cbu.length() < 22) {
+            cbu.append(random.nextInt(10)); // Agrega dígitos aleatorios al final si es necesario
+        }
+        // Si por alguna razón tiene más de 22, se trunca a 22 dígitos
+        cbu.setLength(22);
+
         return cbu.toString();
     }
     private static int calcularDigitoVerificadorFinal(String cbu) {
