@@ -14,27 +14,21 @@ import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.TransactionService;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public class SendArsTest {
-
 
     @Mock
     private AccountService accountService;
@@ -54,11 +48,8 @@ public class SendArsTest {
     private Accounts originAccount;
     private Accounts destinationAccount;
 
-
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         originAccount = new Accounts();
         originAccount.setCurrency(CurrencyEnum.ARS);
         originAccount.setBalance(500.0);
@@ -69,7 +60,6 @@ public class SendArsTest {
         destinationAccount.setBalance(500.0);
         destinationAccount.setTransactionLimit(500.0);
         destinationAccount.setCBU("123456789");
-
     }
 
     @Test
@@ -119,7 +109,6 @@ public class SendArsTest {
         assertEquals(expectedResponse, actualResponse);
     }
 
-
     @Test
     public void testMonedaInvalida() {
         // Datos de prueba
@@ -127,7 +116,6 @@ public class SendArsTest {
         transactionDTO.setAmount(100.0);
         transactionDTO.setCurrency("USD");
         transactionDTO.setDestino("123456789");
-
 
         // Verificar que se lanza IncorrectCurrencyException
         IncorrectCurrencyException thrownCurrencyException = assertThrows(
@@ -146,9 +134,7 @@ public class SendArsTest {
         transactionDTO.setCurrency("ARS");
         transactionDTO.setDestino("123456789");
 
-
         when(accountService.findByCBU(transactionDTO.getDestino())).thenReturn(destinationAccount);
-
 
         // Verificar que se lanza InsufficientFundsException
         InsufficientFundsException thrownFundsException = assertThrows(
@@ -158,6 +144,4 @@ public class SendArsTest {
 
         assertEquals("No hay suficiente dinero o límite disponible para completar la transacción", thrownFundsException.getMessage());
     }
-
-
 }

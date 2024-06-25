@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/")
 @RequiredArgsConstructor
+@Validated
 public class UserController {
 
     private final UserService userService;

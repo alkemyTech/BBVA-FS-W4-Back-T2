@@ -1,6 +1,5 @@
 package AlkemyWallet.AlkemyWallet.unit;
 
-import AlkemyWallet.AlkemyWallet.controllers.AuthController;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterResponse;
@@ -9,30 +8,20 @@ import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
-
-import java.lang.reflect.Method;
 import java.util.Optional;
 
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+
+import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.ArgumentMatchers.any;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 public class RegisterTest {
@@ -54,11 +43,6 @@ public class RegisterTest {
 
     @InjectMocks
     private AuthenticationService authenticationService;
-
-    @Before
-    public void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     public void testRegisterSuccess() {
@@ -88,7 +72,7 @@ public class RegisterTest {
         registerRequest.setUserName("existingUser");
         registerRequest.setPassword("password");
         registerRequest.setDni("12345678");
-        registerRequest.setBirthDate("2003-02-10");
+        registerRequest.setBirthDate("10-02-2003");
 
         when(userRepository.findByUserName("existingUser")).thenReturn(Optional.of(new User()));
 
@@ -100,8 +84,3 @@ public class RegisterTest {
     }
 
 }
-
-
-
-
-

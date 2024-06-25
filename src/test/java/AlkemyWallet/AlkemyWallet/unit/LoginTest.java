@@ -1,14 +1,12 @@
 package AlkemyWallet.AlkemyWallet.unit;
 
-import AlkemyWallet.AlkemyWallet.controllers.AuthController;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequestDTO;
 import AlkemyWallet.AlkemyWallet.dtos.LoginResponseDTO;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,17 +17,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+
 @ExtendWith(MockitoExtension.class)
 public class LoginTest {
-
 
     @Mock
     UserRepository userRepository;
@@ -39,12 +35,6 @@ public class LoginTest {
 
     @InjectMocks
     private AuthenticationService authenticationService;
-
-
-    @Before
-    public void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
 
 
     @Test
@@ -82,10 +72,8 @@ public class LoginTest {
         assertEquals(mockUser.getImagePath(), response.getImagePath());
     }
 
-
     @Test
-    public void testLoginInvalidCredentials() throws UserDeletedException {
-
+    public void testLoginInvalidCredentials() {
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUserName("wrongUser");
         loginRequest.setPassword("wrongPassword");
@@ -135,12 +123,11 @@ public class LoginTest {
     }
 
     @Test
-    public void testLoginInvalidRequest() throws NoSuchMethodException, UserDeletedException {
+    public void testLoginInvalidRequest() throws UserDeletedException {
         // Mock input data for invalid request
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUserName("");
         loginRequest.setPassword("password");
-
 
         // Perform the login operation and assert that the exception is thrown
         RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
@@ -150,6 +137,4 @@ public class LoginTest {
         // Verify the exception message
         assertEquals("Usuario no encontrado", thrownException.getMessage());
     }
-
 }
-
