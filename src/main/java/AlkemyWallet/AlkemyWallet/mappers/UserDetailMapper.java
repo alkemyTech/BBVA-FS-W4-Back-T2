@@ -14,7 +14,8 @@ public class UserDetailMapper {
                 user.getUsername(),
                 user.getRole().getName(),
                 user.getBirthDate(),
-                user.getImagePath()
-        );
+                user.getImagePath(),
+                user.getDni()
+                );
     }
 }

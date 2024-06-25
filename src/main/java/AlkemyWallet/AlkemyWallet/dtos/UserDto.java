@@ -30,4 +30,9 @@ public class UserDto {
     @NotBlank
     @Email
     private String userName;
+
+    @Schema(description = "DNI del Usuario", required = true)
+    @NotNull
+    @NotBlank
+    private String dni;
 }

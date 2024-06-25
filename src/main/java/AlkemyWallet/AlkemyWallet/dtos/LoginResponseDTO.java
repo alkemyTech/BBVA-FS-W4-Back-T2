@@ -19,5 +19,7 @@ public class LoginResponseDTO {
 
     private String imagePath;
 
+    private String dni;
+
 
 }

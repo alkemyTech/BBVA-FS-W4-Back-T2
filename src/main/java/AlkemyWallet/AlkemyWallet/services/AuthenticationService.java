@@ -122,7 +122,7 @@ public class AuthenticationService {
             throw new UserDeletedException("No se puede iniciar sesión, el usuario está marcado como borrado");
         }
 
-        return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath());
+        return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath(),user.getDni());
     }
 
 
