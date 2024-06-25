@@ -277,6 +277,7 @@ public class TransactionService {
             response.setTipoDeTransaccion(transaction.getType());
             response.setCurrency(transaction.getOriginAccount().getCurrency().toString());
             response.setDescripcion(transaction.getDescription());
+            response.setAmount(transaction.getAmount());
 
             responseList.add(response);
         }

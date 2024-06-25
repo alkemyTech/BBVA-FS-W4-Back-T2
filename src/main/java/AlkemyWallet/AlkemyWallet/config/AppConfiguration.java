@@ -20,7 +20,7 @@ public class AppConfiguration {
 
     @Autowired
     private TransactionSeeder transactionSeeder;
-
+/*
     @Bean
     public CommandLineRunner runSeeder(){
         return args -> {
@@ -28,7 +28,7 @@ public class AppConfiguration {
             accountsSeeder.seedAccounts();
             transactionSeeder.seedTransactions();
         };
-    }
+    }*/
 
 
 }
