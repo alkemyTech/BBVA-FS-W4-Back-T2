@@ -24,14 +24,12 @@ public class Accounts {
     private Long id;
 
     @NotNull
-    @NotBlank
     @Enumerated(EnumType.STRING)
     @Column(name = "currency", nullable = false)
     private CurrencyEnum currency;
 
 
     @NotNull
-    @NotBlank
     @Enumerated(EnumType.STRING)
     @Column(name = "accountType", nullable = false)
     private AccountTypeEnum accountType;

@@ -74,8 +74,6 @@ public class UserService implements UserDetailsService {
     };
 
     public Object updateUser(Long id, UserUpdateRequest userUpdateRequest, HttpServletRequest request)  {
-        // Verificar si el usuario logueado es el mismo que se quiere editar
-
 
         // Obtener el usuario a editar
         User existingUser = findById(id).orElseThrow(() -> new UserNotFoundException("No se encontro un usuario con ese Id") );
@@ -92,7 +90,7 @@ public class UserService implements UserDetailsService {
         }
 
         existingUser.setUpdateDate(LocalDateTime.now());
-        // Guardar los cambios
+
         userRepository.save(existingUser);
 
         return existingUser;
