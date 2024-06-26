@@ -16,11 +16,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/fixedTerm")
+@Validated
 public class FixedTermDepositController {
     private final FixedTermDepositService fixedTermDepositService;
     private final JwtService jwtService;

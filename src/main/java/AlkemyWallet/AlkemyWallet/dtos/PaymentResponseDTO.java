@@ -27,7 +27,6 @@ public class PaymentResponseDTO {
 
     @Schema(description = "Cantidad de dinero enviado", required = true)
     @NotNull
-    @NotEmpty
     @Positive
     Double amount;
 
