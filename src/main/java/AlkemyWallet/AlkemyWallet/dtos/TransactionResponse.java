@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionResponse {
+
     @Schema(description = "CBU destino a la que transferimos", required = true)
     @NotNull
     @NotBlank

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -31,6 +32,11 @@ public class AuthenticationService {
 
 
     public RegisterResponse register(RegisterRequest registerRequest) {
+
+        if (!isValidEmailAddress(registerRequest.getUserName())) {
+            throw new IllegalArgumentException("Invalid email address format");
+        }
+
         if (userExists(registerRequest.getUserName())) {
             throw new IllegalArgumentException("User already exists");
         }
@@ -40,11 +46,16 @@ public class AuthenticationService {
         User user = createUser(registerRequest, RoleFactory.getUserRole(), birthDate);
         user.setSoftDelete(false);
 
-
         saveUser(user);
         createAccounts(user.getId());
 
         return buildAuthResponseRegister(user);
+    }
+
+    // Método auxiliar para validar el formato de correo electrónico
+    private boolean isValidEmailAddress(String email) {
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return Pattern.compile(regex).matcher(email).matches();
     }
 
     public RegisterResponse registerAdmin(RegisterRequest registerRequest) {

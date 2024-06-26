@@ -5,7 +5,6 @@ import AlkemyWallet.AlkemyWallet.dtos.LoginRequestDTO;
 import AlkemyWallet.AlkemyWallet.dtos.LoginResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.RegisterRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
 import AlkemyWallet.AlkemyWallet.services.JwtService;
 import AlkemyWallet.AlkemyWallet.services.UserService;
@@ -15,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -22,16 +22,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/auth")
+@Validated
 public class AuthController {
 
     private final AuthenticationService authenticationService;
@@ -126,6 +125,7 @@ public class AuthController {
                     )
             }
     )
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
@@ -137,7 +137,7 @@ public class AuthController {
             return ResponseEntity.ok().headers(headers).body(registerResponse);
         } catch (IllegalArgumentException e) {
             return handleIllegalArgumentException(e);
-        } catch (RuntimeException e) { //  Ajuste el método register para manejar RuntimeException
+        } catch (RuntimeException e) {
             return handleRuntimeException(e);
         }
     }

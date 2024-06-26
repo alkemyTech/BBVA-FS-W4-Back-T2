@@ -1,125 +1,140 @@
 package AlkemyWallet.AlkemyWallet.unit;
 
-import AlkemyWallet.AlkemyWallet.controllers.AuthController;
+import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.LoginRequestDTO;
+import AlkemyWallet.AlkemyWallet.dtos.LoginResponseDTO;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
+import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.services.AuthenticationService;
-import AlkemyWallet.AlkemyWallet.services.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import java.lang.reflect.Method;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
 public class LoginTest {
 
     @Mock
-    private AuthenticationService authenticationService;
+    UserRepository userRepository;
 
     @Mock
-    private JwtService jwtService;
+    private AuthenticationManager authenticationManager;
 
     @InjectMocks
-    private AuthController authController;
+    private AuthenticationService authenticationService;
 
-    @BeforeEach
-    public void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     public void testLoginSuccess() throws UserDeletedException {
+        // Mock input data
         LoginRequestDTO loginRequest = new LoginRequestDTO();
-        loginRequest.setUserName("testUser");
+        loginRequest.setUserName("testUser@example.com");
         loginRequest.setPassword("password");
+        loginRequest.setDni("12345678");
 
-        //when(authenticationService.login(loginRequest)).thenReturn("validToken");
+        // Mocking authentication result
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
+                loginRequest.getUserName(), loginRequest.getPassword());
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUserName("testUser@example.com");
+        mockUser.setFirstName("John");
+        mockUser.setLastName("Doe");
+        mockUser.setImagePath("path/to/image");
+        mockUser.setSoftDelete(false);
 
-        ResponseEntity<?> response = authController.login(loginRequest, null);
+        doReturn(new UsernamePasswordAuthenticationToken(mockUser.getUsername(), mockUser.getPassword()))
+                .when(authenticationManager).authenticate(authRequest);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Login successful!", response.getBody());
-        assertEquals("Bearer validToken", response.getHeaders().getFirst("Authorization"));
+        when(userRepository.findByUserName(any(String.class))).thenReturn(Optional.of(mockUser));
+
+        // Perform the login operation
+        LoginResponseDTO response = authenticationService.login(loginRequest);
+
+        // Verify the response
+        assertEquals(mockUser.getId(), response.getId());
+        assertEquals(mockUser.getUsername(), response.getUserName());
+        assertEquals(mockUser.getFirstName(), response.getFirstName());
+        assertEquals(mockUser.getLastName(), response.getLastName());
+        assertEquals(mockUser.getImagePath(), response.getImagePath());
     }
 
-
     @Test
-    public void testLoginInvalidCredentials() throws UserDeletedException {
+    public void testLoginInvalidCredentials() {
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUserName("wrongUser");
         loginRequest.setPassword("wrongPassword");
 
-        when(authenticationService.login(loginRequest)).thenThrow(new AuthenticationException("Invalid username or password") {
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
+                loginRequest.getUserName(), loginRequest.getPassword());
+
+        doThrow(new AuthenticationException("Invalid username or password") {})
+                .when(authenticationManager).authenticate(authRequest);
+
+        Exception exception = assertThrows(AuthenticationException.class, () -> {
+            authenticationService.login(loginRequest);
         });
 
-        ResponseEntity<?> response = authController.login(loginRequest, null);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("Invalid username or password", response.getBody());
+        assertEquals("Invalid username or password", exception.getMessage());
     }
 
     @Test
     public void testLoginUserDeleted() throws UserDeletedException {
+        // Mock input data
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUserName("deletedUser");
         loginRequest.setPassword("password");
 
-        when(authenticationService.login(loginRequest)).thenThrow(new UserDeletedException("User account is deleted"));
+        // Mocking the repository to return a deleted user
+        User mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setUserName("deletedUser");
+        mockUser.setSoftDelete(true); // User is marked as deleted
 
-        ResponseEntity<?> response = authController.login(loginRequest, null);
+        when(userRepository.findByUserName(loginRequest.getUserName())).thenReturn(Optional.of(mockUser));
 
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals("User account is deleted", response.getBody());
+        // Mocking the authentication manager to authenticate the user
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
+                loginRequest.getUserName(), loginRequest.getPassword());
+
+        doReturn(new UsernamePasswordAuthenticationToken(mockUser.getUsername(), mockUser.getPassword()))
+                .when(authenticationManager).authenticate(authRequest);
+
+        // Perform the login operation and assert that the exception is thrown
+        UserDeletedException exception = assertThrows(UserDeletedException.class, () -> {
+            authenticationService.login(loginRequest);
+        });
+
+        // Verify the exception message
+        assertEquals("No se puede iniciar sesión, el usuario está marcado como borrado", exception.getMessage());
     }
 
     @Test
-    public void testLoginInvalidRequest() throws NoSuchMethodException, UserDeletedException {
+    public void testLoginInvalidRequest() throws UserDeletedException {
+        // Mock input data for invalid request
         LoginRequestDTO loginRequest = new LoginRequestDTO();
         loginRequest.setUserName("");
         loginRequest.setPassword("password");
 
-        Method method = AuthController.class.getMethod("login", LoginRequestDTO.class, HttpServletResponse.class);
-        MethodParameter methodParameter = new MethodParameter(method, 0);
-        BindingResult bindingResult = mock(BindingResult.class);
-        when(bindingResult.hasErrors()).thenReturn(true);
+        // Perform the login operation and assert that the exception is thrown
+        RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
+            authenticationService.login(loginRequest);
+        });
 
-        RuntimeException exception = new RuntimeException("La validación falló");
-        when(authenticationService.login(loginRequest)).thenThrow(exception);
-
-        ResponseEntity<?> response = authController.login(loginRequest, null);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Invalid request", response.getBody());
+        // Verify the exception message
+        assertEquals("Usuario no encontrado", thrownException.getMessage());
     }
-
-    @Test
-    public void testLoginInternalServerError() throws UserDeletedException {
-        LoginRequestDTO loginRequest = new LoginRequestDTO();
-        loginRequest.setUserName("testUser");
-        loginRequest.setPassword("password");
-
-        when(authenticationService.login(loginRequest)).thenThrow(new RuntimeException("Internal Server Error"));
-
-        ResponseEntity<?> response = authController.login(loginRequest, null);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Error al procesar la solicitud", response.getBody());
-    }
-
 }

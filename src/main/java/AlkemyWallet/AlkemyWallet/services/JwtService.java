@@ -151,7 +151,7 @@ public class JwtService {
         return getExpiration(token).before(new Date());
     }
 
-    private Claims getAllClaims(String token) {
+    public Claims getAllClaims(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(getKey())
