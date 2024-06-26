@@ -18,8 +18,7 @@ import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 
 import org.springframework.data.domain.*;
@@ -109,8 +108,8 @@ public class TransactionService {
     //Endpoint deposito de dinero/carga de saldo
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
-            Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
-           //Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
+            //Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
+           Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
             validateDepositTransaction(transaction, account, destinationAccount);
 
             // Crear una transacción de depósito para la cuenta de origen
@@ -315,8 +314,20 @@ public class TransactionService {
     }
 
     // Método auxiliar para construir Specification basado en las cuentas del usuario
-    private Specification<Transaction> accountIn(List<Accounts> userAccounts) {
-        return (root, query, criteriaBuilder) -> root.get("originAccount").in(userAccounts);
+    public static Specification<Transaction> accountIn(List<Accounts> userAccounts) {
+        return (Root<Transaction> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            Predicate depositOrPaymentPredicate = criteriaBuilder.and(
+                    root.get("originAccount").in(userAccounts),
+                    root.get("type").in("DEPOSIT", "PAYMENT") // Adjusted to "type"
+            );
+
+            Predicate incomePredicate = criteriaBuilder.and(
+                    root.get("account").in(userAccounts),
+                    criteriaBuilder.equal(root.get("type"), "INCOME") // Adjusted to "type"
+            );
+
+            return criteriaBuilder.or(depositOrPaymentPredicate, incomePredicate);
+        };
     }
 
     private Specification<Transaction> transactionDateBetween(LocalDate fromDate, LocalDate toDate) {

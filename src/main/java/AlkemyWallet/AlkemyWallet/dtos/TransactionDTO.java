@@ -19,8 +19,6 @@ import org.springframework.format.annotation.NumberFormat;
 public class TransactionDTO {
 
     @Schema(description = "CBU destino a la que transferimos", required = true)
-    @NotNull
-    @NotBlank
     @NumberFormat
     @Size(min=22, max=22)
     String destino;
