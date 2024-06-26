@@ -2,21 +2,17 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
-import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
-import AlkemyWallet.AlkemyWallet.domain.Transaction;
 import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.dtos.*;
+import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
 import AlkemyWallet.AlkemyWallet.enums.AccountTypeEnum;
 import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.*;
 import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
-import lombok.AllArgsConstructor;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +23,9 @@ import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.*;
 import java.util.Random;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService {
@@ -41,6 +37,8 @@ public class AccountService {
     private  JwtService jwtService;
     @Autowired
     private  PaginationConfig paginationConfig;
+    @Autowired
+    private ModelMapper modelMapper;
 
 
 
@@ -72,6 +70,7 @@ public class AccountService {
             account.setCreationDate(LocalDateTime.now());
             account.setUpdateDate(LocalDateTime.now());
             account.setSoftDelete(false);
+            account.setAlias(this.generarAlias(account));
 
             Accounts savedAccount = accountRepository.save(account);
 
@@ -87,6 +86,18 @@ public class AccountService {
             return accountRepository.findByUserId(user);
         }catch (Exception e){
             throw new RuntimeException("No se encontró al usuario",e);
+        }
+    }
+
+    public List<AccountsDto> findAccountsDtoByUserId(Long userId) {
+        try {
+            User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+            List<Accounts> accounts = accountRepository.findByUserId(user);
+            return accounts.stream()
+                    .map(account -> modelMapper.map(account, AccountsDto.class))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("No se encontró al usuario", e);
         }
     }
 
@@ -112,6 +123,7 @@ public class AccountService {
                     account.setCreationDate(LocalDateTime.now());
                     account.setUpdateDate(LocalDateTime.now());
                     account.setSoftDelete(false);
+                    account.setAlias(this.generarAlias(account));
 
                     Accounts savedAccount = accountRepository.save(account);
 
@@ -127,7 +139,6 @@ public class AccountService {
             throw new IllegalStateException("Usuario no encontrado");
         }
     }
-    public static String logicaCBU() {
 
     public static String logicaCBU() {
         StringBuilder cbu = new StringBuilder();
@@ -195,14 +206,25 @@ public class AccountService {
         return CBU;
     }
 
+    public String generarAlias(Accounts account) {
+        User user = account.getUser();
 
+        String firstName = user.getFirstName().toLowerCase();
+        String lastName = user.getLastName().toLowerCase();
+        String currency = account.getCurrency().toString().toLowerCase();
+        String accountType = account.getAccountType() == AccountTypeEnum.CAJA_AHORRO ? "ca" : "cc";
 
+        String baseAlias = firstName + "." + lastName + "." + currency + "." + accountType;
+        String alias = baseAlias;
+        int counter = 1;
 
+        while (accountRepository.existsByAlias(alias)) {
+            alias = baseAlias + "." + counter;
+            counter++;
+        }
 
-
-
-
-
+        return alias;
+    }
 
 
     public void updateAfterTransaction(Accounts account, Double amount) {
@@ -211,7 +233,8 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public void updateAfterFixedTermDeposit(Accounts account, Double amount) {
+
+    public void updateAccountBalance(Accounts account, Double amount) {
         account.updateBalance(amount);
         accountRepository.save(account);
     }
@@ -301,6 +324,23 @@ public class AccountService {
         } else {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
         }
+    }
+
+    public AccountInfoDto getAccountInfoByCBU(String CBU) throws CuentaNotFoundException {
+        Accounts account = accountRepository.findByCBU(CBU)
+                .orElseThrow(() -> new CuentaNotFoundException("No se encontró la cuenta con el CBU: " + CBU));
+
+        User user = account.getUser();
+
+        AccountInfoDto accountInfoDto = new AccountInfoDto();
+        accountInfoDto.setFirstName(user.getFirstName());
+        accountInfoDto.setLastName(user.getLastName());
+        accountInfoDto.setCBU(account.getCBU());
+        accountInfoDto.setAlias(account.getAlias());
+        accountInfoDto.setAccountType(account.getAccountType().toString());
+        accountInfoDto.setDni(user.getDni());
+
+        return accountInfoDto;
     }
 }
 

@@ -41,7 +41,7 @@ public class TransactionResponseMapper {
         return transactionResponse;
     }
 
-    public PaymentResponseDTO mapToPaymentResponse(Transaction transaction, Accounts originAccount) {
+    public PaymentResponseDTO mapToPaymentResponse(Transaction transaction, Accounts originAccount, String destination) {
         PaymentResponseDTO  paymentResponse = modelMapper.map(transaction, PaymentResponseDTO.class);
 
         // Mapear el destino
@@ -58,6 +58,8 @@ public class TransactionResponseMapper {
 
         // Mapear la moneda
         paymentResponse.setDescription(transaction.getDescription());
+
+        paymentResponse.setDestino(destination);
 
         return paymentResponse;
     }

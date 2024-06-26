@@ -3,9 +3,8 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.Transaction;
+import AlkemyWallet.AlkemyWallet.domain.TransactionFilter;
 import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
-import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import AlkemyWallet.AlkemyWallet.domain.factory.TransactionFactory;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
@@ -19,14 +18,17 @@ import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import lombok.AllArgsConstructor;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -44,6 +46,7 @@ public class TransactionService {
     private final TransactionResponseMapper transactionResponseMapper;
     private final PaginationConfig paginationConfig;
 
+    //EndPoint Envio de Dinero
     public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
         Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
@@ -65,8 +68,8 @@ public class TransactionService {
 
         Transaction transactionRegistro = this.sendMoney(transaction, originAccount, destinationAccount);
         this.receiveMoney(transaction, originAccount, destinationAccount);
-        accountService.updateAfterTransaction(originAccount, amount);
-        accountService.updateAfterTransaction(destinationAccount, -amount);
+        accountService.updateAfterTransaction(originAccount, -amount);
+        accountService.updateAccountBalance(destinationAccount, amount);
 
         return transactionResponseMapper.mapToTransactionResponse(transactionRegistro, originAccount, destinationAccount);
     }
@@ -75,7 +78,7 @@ public class TransactionService {
         Transaction paymentTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.PAYMENT,
-                "",
+                transaction.getDescription(),
                 LocalDateTime.now(),
                 destinationAccount,
                 originAccount
@@ -95,7 +98,7 @@ public class TransactionService {
         Transaction incomeTransaction = transactionFactory.createTransaction(
                 transaction.getAmount(),
                 TransactionEnum.INCOME,
-                "",
+                transaction.getDescription(),
                 LocalDateTime.now(),
                 destinationAccount,
                 originAccount
@@ -103,17 +106,18 @@ public class TransactionService {
         transactionRepository.save(incomeTransaction);
     }
 
-
+    //Endpoint deposito de dinero/carga de saldo
     public Long depositMoney(TransactionDTO transaction, Accounts account) {
         try {
-            Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
+            Accounts destinationAccount=accountService.findById(Long.valueOf(transaction.getDestino()));
+            //Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
             validateDepositTransaction(transaction, account, destinationAccount);
 
             // Crear una transacción de depósito para la cuenta de origen
             Transaction depositTransaction = transactionFactory.createTransaction(
                     transaction.getAmount(),
                     TransactionEnum.DEPOSIT,
-                    "",
+                    transaction.getDescription(),
                     LocalDateTime.now(),
                     account,
                     account // La cuenta de origen es la misma que la cuenta de destino en un depósito
@@ -121,12 +125,10 @@ public class TransactionService {
             transactionRepository.save(depositTransaction);
 
             // Actualizar el saldo de la cuenta de origen
-            accountService.updateAfterTransaction(account, -transaction.getAmount());
+            accountService.updateAccountBalance(account, transaction.getAmount());
 
             return depositTransaction.getId();
-        } catch (NonPositiveAmountException e) {
-            throw e;
-        } catch (UnauthorizedTransactionException e) {
+        } catch (NonPositiveAmountException | UnauthorizedTransactionException e) {
             throw e;
         } catch (Exception e) {
             System.err.println("Se produjo un error inesperado al procesar el depósito: " + e.getMessage());
@@ -143,18 +145,10 @@ public class TransactionService {
         }
     }
 
+    //Busqueda de Transacciones segun distintos criterios
     public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
             return transactionRepository.findByAccount(account);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
-        }
-    }
-
-    public List<Transaction> getTransactionsByAccountId(Long accountId) {
-        try {
-            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
-            return getTransactionsByAccount(account);
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
@@ -197,6 +191,7 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
+    //Endpoint Payment
     public PaymentResponseDTO registrarPago(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
 
@@ -214,14 +209,34 @@ public class TransactionService {
         if (!originAccount.dineroDisponible(amount) || !originAccount.limiteDisponible(amount)) {
             throw new InsufficientFundsException("No hay suficiente dinero o límite disponible para completar la transacción");
         }
+        if (amount == null || amount < 0) {
+            throw new IllegalArgumentException("El monto no puede ser nulo o negativo");
+        }
 
-        Transaction transactionRegistro = this.sendPayment(transaction, originAccount, transaction.getDestino());
-        accountService.updateAfterTransaction(originAccount, amount);
+        // Verificar si el destino es una cuenta interna en la base de datos
+        Accounts destinationAccount = null;
+        try {
+            destinationAccount = accountService.findByCBU(transaction.getDestino());
+        } catch (RuntimeException ignored) {
+        }
 
-        return transactionResponseMapper.mapToPaymentResponse(transactionRegistro, originAccount);
+        if (destinationAccount != null) {
+
+            Transaction paymentTransaction = sendMoney(transaction, originAccount, destinationAccount);
+            accountService.updateAfterTransaction(originAccount, -amount);
+            accountService.updateAccountBalance(destinationAccount, amount);
+            this.receiveMoney(transaction, destinationAccount, originAccount);
+            return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, destinationAccount.getCBU());
+
+        } else {
+
+            Transaction paymentTransaction = sendExternPayment(transaction, originAccount, transaction.getDestino());
+            accountService.updateAfterTransaction(originAccount, -amount);
+            return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, transaction.getDestino());
+        }
     }
 
-    public Transaction sendPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
+    public Transaction sendExternPayment(TransactionDTO transaction, Accounts originAccount, String destino) {
         Transaction paymentTransaction = transactionFactory.createTransactionPayment(
                 transaction.getAmount(),
                 transaction.getDescription(),
@@ -238,6 +253,7 @@ public class TransactionService {
         return paymentTransaction;
     }
 
+    //Endpoint Filtro de Transaccciones
     public List<Transaction> getLast10TransactionsByAccountId(Long accountId) {
         try {
             Accounts account = accountService.findById(accountId); // Obtener la cuenta completa

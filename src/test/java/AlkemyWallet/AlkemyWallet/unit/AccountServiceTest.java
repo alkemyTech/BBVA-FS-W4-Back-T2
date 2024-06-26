@@ -46,10 +46,13 @@ public class AccountServiceTest {
         Long userId = 1L;
         User mockUser = new User();
         mockUser.setId(userId);
+        mockUser.setFirstName("name");
+        mockUser.setLastName("surname");
+        mockUser.setDni("11111111");
 
         Accounts mockAccount = new Accounts
                 (1L,CurrencyEnum.ARS,AccountTypeEnum.CAJA_AHORRO,100000D,
-                        0D, LocalDateTime.now(),LocalDateTime.now(),false,"1111111111111111111111",mockUser);
+                        0D, LocalDateTime.now(),LocalDateTime.now(),false,"1111111111111111111111","alias",mockUser);
 
         when(userService.getIdFromRequest(request)).thenReturn(userId);
         when(userService.findById(userId)).thenReturn(Optional.of(mockUser));
@@ -83,9 +86,9 @@ public class AccountServiceTest {
 
         Accounts mockAccount1 = new Accounts
                 (1L,CurrencyEnum.ARS,AccountTypeEnum.CAJA_AHORRO,100000D,
-                        0D, LocalDateTime.now(),LocalDateTime.now(),false,"1111111111111111111111",mockUser);
+                        0D, LocalDateTime.now(),LocalDateTime.now(),false,"1111111111111111111111","alias1",mockUser);
         Accounts mockAccount2 = new Accounts(2L,CurrencyEnum.ARS,AccountTypeEnum.CAJA_AHORRO,100000D,
-                0D, LocalDateTime.now(),LocalDateTime.now(),false,"1111111111111111111111",mockUser);
+                0D, LocalDateTime.now(),LocalDateTime.now(),false,"1111111111111111111111","alias", mockUser);
         List<Accounts> mockAccountsList = List.of(mockAccount1,mockAccount2);
 
 

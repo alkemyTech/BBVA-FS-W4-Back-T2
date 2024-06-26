@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -35,4 +37,9 @@ public class UserDto {
     @NotNull
     @NotBlank
     private String dni;
+
+    @Schema(description = "Fecha de nacimiento del usuario", required = true, format = "date")
+    @NotNull
+    @NotBlank
+    private LocalDate birthDate;
 }

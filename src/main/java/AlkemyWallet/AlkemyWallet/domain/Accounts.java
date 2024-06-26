@@ -61,6 +61,10 @@ public class Accounts {
     @Size(min=22, max=22)
     private String CBU;
 
+    @NotNull
+    @Column(name="alias", nullable = false)
+    private String alias;
+
 
     @ManyToOne
     @JoinColumn(name="user_id", nullable = false)
@@ -75,11 +79,11 @@ public class Accounts {
     }
 
     public void updateBalance(Double amount) {
-        this.setBalance(balance - amount);
+        this.setBalance(balance + amount);
     }
 
     public void updateLimit(Double amount) {
-        this.setTransactionLimit(transactionLimit - amount);
+        this.setTransactionLimit(transactionLimit + amount);
     }
 
     // Método para obtener el usuario asociado

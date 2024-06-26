@@ -22,7 +22,7 @@ public class AppConfiguration {
     private TransactionSeeder transactionSeeder;}
 /*
     @Bean
-    private TransactionSeeder transactionSeeder;
+    private TransactionSeeder;
 
    /* @Bean
     public CommandLineRunner runSeeder(){
@@ -35,5 +35,3 @@ public class AppConfiguration {
     }*/
 
 
-}
-*/
