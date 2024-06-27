@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserDetailMapper {
-
     public UserDetailDTO toUserDetailDto(User user){
         return new UserDetailDTO(
                 user.getFirstName(),
@@ -14,7 +13,9 @@ public class UserDetailMapper {
                 user.getUsername(),
                 user.getRole().getName(),
                 user.getBirthDate(),
-                user.getImagePath()
-        );
+                user.getImagePath(),
+                user.getDni()
+                );
     }
 }
+
