@@ -2,6 +2,8 @@ package AlkemyWallet.AlkemyWallet.services;
 
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.domain.UserContact;
+import AlkemyWallet.AlkemyWallet.dtos.ContactDTO;
 import AlkemyWallet.AlkemyWallet.dtos.UserDetailDTO;
 import AlkemyWallet.AlkemyWallet.dtos.UserUpdateRequest;
 import AlkemyWallet.AlkemyWallet.exceptions.ForbiddenException;
@@ -9,6 +11,7 @@ import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 import AlkemyWallet.AlkemyWallet.mappers.UserDetailMapper;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
+import AlkemyWallet.AlkemyWallet.repositories.userContactRepository;
 import jakarta.servlet.http.HttpServletRequest;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,7 @@ public class UserService implements UserDetailsService {
     private final PaginationConfig paginationConfig;
     private final UserDetailMapper userDetailMapper;
     private final PasswordEncoder passwordEncoder;
+    private final userContactRepository userContactRepository;
 
     public Page<User> getAllUsers(int page) {
         int usersPerPage = paginationConfig.getUsersPerPage(); // Mostrar de a 10 usuarios por página
@@ -96,16 +100,37 @@ public class UserService implements UserDetailsService {
         return existingUser;
     }
 
-    public void addContact(String idCbu, Long idUser) {
+    public void addContact(ContactDTO newContactDTO, Long idUser) {
             User user = userRepository.findById(idUser).orElseThrow();
-            user.getCbuTerceros().add(idCbu);
-            userRepository.save(user); //como el usuario ya esta en la base hace un update
+            UserContact newContact = new UserContact(newContactDTO.getName(), newContactDTO.getCbu(),user);
+            userContactRepository.save(newContact);
+            user.getContacts().add(newContact);
+            userRepository.save(user);
     }
 
-    public void deleteContact(String idCbu, Long idUser) {
-        User user = userRepository.findById(idUser).orElseThrow();
-        user.getCbuTerceros().remove(idCbu);
+    public void deleteContact(ContactDTO newContactDTO, Long idUser) {
+        // Obtener el usuario
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // Buscar el contacto por CBU
+        UserContact contact = userContactRepository.findByCbu(newContactDTO.getCbu())
+                .orElseThrow(() -> new RuntimeException("Contacto no encontrado"));
+
+        // Remover el contacto del usuario
+        user.getContacts().remove(contact);
+
+        // Guardar los cambios en el usuario
         userRepository.save(user);
+
+        // Eliminar el contacto de la base de datos
+        userContactRepository.delete(contact);
+    }
+
+    public List<UserContact> getContacts(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        List<UserContact> contacts = userContactRepository.findByUser(user);
+        return contacts;
     }
 
     public Optional<User> findAuthenticatedUser(String username){

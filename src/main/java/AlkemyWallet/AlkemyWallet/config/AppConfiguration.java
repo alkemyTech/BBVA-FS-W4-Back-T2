@@ -25,8 +25,8 @@ public class AppConfiguration {
     public CommandLineRunner runSeeder() {
         return args -> {
            // userSeeder.seed();
-            //accountsSeeder.seedAccounts();
-            //transactionSeeder.seedTransactions();
+           // accountsSeeder.seedAccounts();
+           // transactionSeeder.seedTransactions();
         };
 
     }
