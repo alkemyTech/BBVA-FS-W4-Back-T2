@@ -39,4 +39,9 @@ public class UserDetailDTO {
 
     @Schema(description = "Ruta de la imagen del usuario")
     private String imagePath;
+
+    @Schema(description = "DNI del Usuario", required = true)
+    @NotNull
+    @NotBlank
+    private String dni;
 }

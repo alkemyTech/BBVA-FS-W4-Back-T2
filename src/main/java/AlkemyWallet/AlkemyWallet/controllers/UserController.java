@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController
@@ -250,4 +251,20 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e);
         }
     }
+    @GetMapping("/{id}/birthdate")
+    public ResponseEntity<?> getUserBirthDate(@PathVariable Long id) {
+        try {
+            Optional<User> userOptional = userService.findById(id);
+
+            if (userOptional.isPresent()) {
+                LocalDate birthDate = userOptional.get().getBirthDate();
+                return ResponseEntity.ok(birthDate);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener la fecha de nacimiento del usuario: " + e.getMessage());
+        }
+    }
 }
+

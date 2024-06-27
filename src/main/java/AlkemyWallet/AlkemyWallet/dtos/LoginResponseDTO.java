@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -18,6 +20,10 @@ public class LoginResponseDTO {
     private String lastName;
 
     private String imagePath;
+
+    private String dni;
+
+    private LocalDate birthDate;
 
 
 }
