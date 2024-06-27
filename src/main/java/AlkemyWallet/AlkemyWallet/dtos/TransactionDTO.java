@@ -20,7 +20,7 @@ public class TransactionDTO {
 
     @Schema(description = "CBU destino a la que transferimos", required = true)
     @NumberFormat
-    @Size(min=22, max=22)
+    @Size(min=1, max=22)
     String destino;
 
     @Schema(description = "Cantidad de dinero enviado", required = true)
