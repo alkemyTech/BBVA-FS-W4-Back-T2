@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountBalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
@@ -23,6 +24,7 @@ import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -341,6 +343,26 @@ public class AccountService {
         accountInfoDto.setDni(user.getDni());
 
         return accountInfoDto;
+    }
+
+    public List<AccountBalanceDTO> getAccountBalancesByUserId(Long userId) {
+
+        List<Accounts> accounts = this.findAccountsByUserId(userId);
+
+        List<AccountBalanceDTO> accountBalances = new ArrayList<>();
+
+        for (Accounts account : accounts) {
+            AccountBalanceDTO dto = new AccountBalanceDTO();
+            dto.setAccountId(account.getId());
+            dto.setCurrency(account.getCurrency().toString());
+            dto.setAccountType(account.getAccountType().toString());
+            dto.setBalance(account.getBalance());
+            dto.setCBU(account.getCBU());
+            dto.setAlias(account.getAlias());
+            accountBalances.add(dto);
+        }
+
+        return accountBalances;
     }
 }
 

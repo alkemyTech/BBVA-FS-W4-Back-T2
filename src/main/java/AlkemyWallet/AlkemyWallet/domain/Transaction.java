@@ -40,11 +40,11 @@ public class Transaction {
     private LocalDateTime transactionDate;
 
     @Getter
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Account_Id", nullable = true)
     private Accounts account; // account destino
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_account_id", nullable = true)
     private Accounts originAccount;  // Origin account
 

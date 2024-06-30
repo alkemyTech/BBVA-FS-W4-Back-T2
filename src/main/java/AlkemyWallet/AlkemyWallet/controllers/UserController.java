@@ -1,6 +1,8 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.domain.UserContact;
+import AlkemyWallet.AlkemyWallet.dtos.ContactDTO;
 import AlkemyWallet.AlkemyWallet.exceptions.ForbiddenException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
@@ -170,11 +172,11 @@ public class UserController {
                     )
             }
     )
-    @PostMapping("cbu/{idCbu}/users/{idUser}")
-    public ResponseEntity<?> addContact(@PathVariable String idCbu, @PathVariable Long idUser, HttpServletRequest request){
+    @PostMapping("newContact")
+    public ResponseEntity<?> addContact(@RequestBody ContactDTO newContact, HttpServletRequest request){
         try {
             Long userId = userService.getIdFromRequest(request);
-            userService.addContact(idCbu,userId);
+            userService.addContact(newContact  ,userId);
             return ResponseEntity.ok(HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al añadir el contacto: " + e.getMessage());
@@ -197,16 +199,55 @@ public class UserController {
                     )
             }
     )
-    @DeleteMapping("cbu/{idCbu}/users/{idUser}")
-    public ResponseEntity<?> deleteContact (@PathVariable String idCbu, @PathVariable Long idUser, HttpServletRequest request){
+    @DeleteMapping("/deleteContact")
+    public ResponseEntity<?> deleteContact (@RequestBody ContactDTO newContact, HttpServletRequest request){
         try {
             Long userId = userService.getIdFromRequest(request);
-            if (Objects.equals(userId, idUser)) {
-                userService.deleteContact(idCbu, idUser);
+                userService.deleteContact(newContact, userId);
                 return ResponseEntity.ok(HttpStatus.OK);
-            } else return (ResponseEntity<?>) ResponseEntity.status(HttpStatus.UNAUTHORIZED);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar el contacto: " + e.getMessage());
+        }
+    }
+
+    @Operation(
+            description = "Endpoint accesible a usuarios autenticados",
+            summary = "Obtiene la lista de contactos de un usuario",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200",
+                            content = {
+                                    @Content(schema = @Schema(implementation = UserContact.class), mediaType = "application/json")
+                            }
+                    ),
+                    @ApiResponse(
+                            description = "Unauthorized",
+                            responseCode = "401",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Forbidden",
+                            responseCode = "403",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    ),
+                    @ApiResponse(
+                            description = "Error al obtener los contactos",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
+
+    @GetMapping("contactsList")
+    public ResponseEntity<?> getUserContacts(HttpServletRequest request) {
+        try {
+            Long userId = userService.getIdFromRequest(request);
+            List<UserContact> contacts = userService.getContacts(userId);
+            return ResponseEntity.ok(contacts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los contactos: " + e.getMessage());
         }
     }
 

@@ -79,8 +79,8 @@ public class User implements UserDetails {
     @JoinColumn(name="role_id", nullable = false, referencedColumnName = "id")
     private Role role;
 
-    @ElementCollection
-    private List<String> cbuTerceros;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserContact> contacts;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
