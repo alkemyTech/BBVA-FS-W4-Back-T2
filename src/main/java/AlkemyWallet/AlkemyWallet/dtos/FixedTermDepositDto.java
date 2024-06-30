@@ -22,7 +22,6 @@ public class FixedTermDepositDto {
     @Schema(description = "Fecha de cierre del plazo fijo", example = "2024-06-01", required = true)
     private String closingDate;
 
-    @NotBlank
     @NotNull
     @Schema(description = "Monto invertido en el plazo fijo", example = "10000.00", required = true)
     private Double invertedAmount;

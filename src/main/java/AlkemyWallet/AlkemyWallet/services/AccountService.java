@@ -321,7 +321,7 @@ public class AccountService {
 
 
     public Boolean hasBalance(Accounts account, Double amount) {
-        if (account.getBalance().compareTo(amount) > 0) {
+        if (account.getBalance().compareTo(amount) >= 0) {
             return true;
         } else {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
