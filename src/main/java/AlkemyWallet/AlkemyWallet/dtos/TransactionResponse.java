@@ -24,6 +24,12 @@ public class TransactionResponse {
     @Size(min=22, max=22)
     String destino;
 
+    @Schema(description = "Nombre del destino al que transferimos", required = true)
+    @NotNull
+    @NotBlank
+    String nombreDestino;
+
+
     @Schema(description = "CBU origen del que transferimos", required = true)
     @NotNull
     @NotBlank
