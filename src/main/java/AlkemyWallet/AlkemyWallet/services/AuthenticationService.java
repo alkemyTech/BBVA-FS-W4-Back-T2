@@ -4,11 +4,13 @@ import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.*;
+import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 
@@ -131,6 +134,10 @@ public class AuthenticationService {
 
         if (!user.isEnabled()) {
             throw new UserDeletedException("No se puede iniciar sesión, el usuario está marcado como borrado");
+        }
+
+        if(!Objects.equals(loginRequest.getDni(), user.getDni())){
+            throw new UnauthorizedUserException("DNI Incorrecto");
         }
 
         return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath(),user.getDni(),user.getBirthDate());
