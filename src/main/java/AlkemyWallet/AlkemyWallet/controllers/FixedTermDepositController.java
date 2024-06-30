@@ -1,6 +1,7 @@
 package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
+import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
@@ -18,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -82,5 +85,33 @@ public class FixedTermDepositController {
         headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 
         return  ResponseEntity.ok().headers(headers).body(fixedTermDepositService.fixedTermDeposit(fixedTermDepositDto, account, user));
+    }
+
+    @Operation(
+            description = "Obtiene todos los movimientos de plazos fijos del usuario autenticado",
+            summary = "Obtener movimientos de plazos fijos",
+            responses = {
+                    @ApiResponse(
+                            description = "Movimientos obtenidos con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = FixedTermDepositDto.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al obtener los movimientos",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
+    @GetMapping("/all")
+    public ResponseEntity<?> getFixedTermMovements(HttpServletRequest request) {
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            User user = jwtService.getUserFromToken(token);
+            List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(user.getId());
+            return ResponseEntity.ok(fixedTermDeposits);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los movimientos de plazos fijos: " + e.getMessage());
+        }
     }
 }

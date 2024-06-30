@@ -2,10 +2,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
-import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
-import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
-import AlkemyWallet.AlkemyWallet.dtos.BalanceDTO;
-import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
+import AlkemyWallet.AlkemyWallet.dtos.*;
 import AlkemyWallet.AlkemyWallet.exceptions.CuentaNotFoundException;
 import AlkemyWallet.AlkemyWallet.exceptions.LimiteTransaccionExcedidoException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedAccountAccessException;
@@ -302,6 +299,34 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cuenta no encontrada: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar la solicitud: " + e.getMessage());
+        }
+    }
+
+    @Operation(
+            description = "Obtiene el balance de cada cuenta del usuario autenticado",
+            summary = "Obtener balances de cuentas",
+            responses = {
+                    @ApiResponse(
+                            description = "Balances obtenidos con éxito",
+                            responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = AccountBalanceDTO.class), mediaType = "application/json")
+                    ),
+                    @ApiResponse(
+                            description = "Error al obtener los balances",
+                            responseCode = "500",
+                            content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/plain")
+                    )
+            }
+    )
+    @GetMapping("/balances")
+    public ResponseEntity<?> getAccountBalances(HttpServletRequest request) {
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            User user = jwtService.getUserFromToken(token);
+            List<AccountBalanceDTO> accountBalances = accountService.getAccountBalancesByUserId(user.getId());
+            return ResponseEntity.ok(accountBalances);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los balances de cuentas: " + e.getMessage());
         }
     }
 }
