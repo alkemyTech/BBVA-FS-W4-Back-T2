@@ -364,6 +364,15 @@ public class AccountService {
 
         return accountBalances;
     }
+
+    public String obtenerUserAccountName(Accounts account) {
+        if (account == null || account.getUser() == null) {
+            return "";
+        }
+
+        User user = account.getUser();
+        return user.getFirstName() + " " + user.getLastName();
+    }
 }
 
 
