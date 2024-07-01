@@ -87,7 +87,7 @@ public class FixedTermDepositService {
             fixedTerm.setClosingDate(closingDate.atStartOfDay());
             fixedTerm.setInterest(config.getFixedTermInterest());
             fixedTermDepositRepository.save(fixedTerm);
-            accountService.updateAccountBalance(account, fixedTermDepositDto.getInvertedAmount());
+            accountService.updateAccountBalance(account, -fixedTermDepositDto.getInvertedAmount());
 
 
             // Lógica del plazo fijo
