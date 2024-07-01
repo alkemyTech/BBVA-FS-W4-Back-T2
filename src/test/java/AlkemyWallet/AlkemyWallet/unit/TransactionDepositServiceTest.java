@@ -41,7 +41,7 @@ class TransactionDepositServiceTest {
     void testParaCuandoLosDatosIngresadosSonCorrectos() {
 
         TransactionDTO mockTransaction = new TransactionDTO();
-        mockTransaction.setDestino("1");
+        mockTransaction.setDestino("1234567890123456789012");
         mockTransaction.setAmount(100.0);
         mockTransaction.setCurrency("USD");
         mockTransaction.setDescription("mocked_description");
@@ -54,7 +54,7 @@ class TransactionDepositServiceTest {
         mockDestinationAccount.setId(1L);
         mockDestinationAccount.setCBU("mocked_cbu");
 
-        when(accountService.findById(1L)).thenReturn(mockDestinationAccount);
+        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockDestinationAccount);
 
         Transaction expectedTransaction = new Transaction(
                 100.0, TransactionEnum.DEPOSIT, "mocked_description", LocalDateTime.now(), mockDestinationAccount, mockAccount
@@ -81,7 +81,7 @@ class TransactionDepositServiceTest {
     void testParaCuandoLaCuentaOrigenEsDistintaALaCuentaDestino() {
         // Mocking TransactionDTO
         TransactionDTO mockTransaction = new TransactionDTO();
-        mockTransaction.setDestino("1");
+        mockTransaction.setDestino("1234567890123456789012");
         mockTransaction.setAmount(100.0);
         mockTransaction.setCurrency("USD");
         mockTransaction.setDescription("mocked_description");
@@ -95,7 +95,7 @@ class TransactionDepositServiceTest {
         mockCuentaOrigen.setCBU("mocked_destination_cbu");
         mockCuentaOrigen.setId(2L);
 
-        when(accountService.findById(1L)).thenReturn(mockCuentaDestino);
+        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn( mockCuentaDestino);
 
         // Lanzar la excepción esperada
         Exception exception = assertThrows(UnauthorizedTransactionException.class, () -> {
@@ -111,7 +111,7 @@ class TransactionDepositServiceTest {
     void testParaCuandoElAmountEsMenorOIgualA0() {
 
         TransactionDTO mockTransaction = new TransactionDTO();
-        mockTransaction.setDestino("1");
+        mockTransaction.setDestino("1234567890123456789012");
         mockTransaction.setAmount(0.0);
         mockTransaction.setCurrency("USD");
         mockTransaction.setDescription("mocked_description");
@@ -124,7 +124,7 @@ class TransactionDepositServiceTest {
         mockDestinationAccount.setId(1L);
         mockDestinationAccount.setCBU("mocked_cbu");
 
-        when(accountService.findById(1L)).thenReturn(mockDestinationAccount);
+        when(accountService.findByCBU(mockTransaction.getDestino())).thenReturn(mockDestinationAccount);
 
 
         Exception exception = assertThrows(NonPositiveAmountException.class, () -> {

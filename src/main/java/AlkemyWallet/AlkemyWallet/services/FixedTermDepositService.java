@@ -6,6 +6,7 @@ import AlkemyWallet.AlkemyWallet.config.FixedTermDepositConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.FixTermDepositListDto;
 import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
 
 
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-
+import java.util.stream.Collectors;
 
 
 @Service
@@ -136,6 +137,16 @@ public class FixedTermDepositService {
         User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         return fixedTermDepositRepository.findByUser(user);
     }
+
+    public List<FixTermDepositListDto> getFixedTermDepositsByUserDTO(Long userId) {
+        User user = userService.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositRepository.findByUser(user);
+
+        return fixedTermDeposits.stream()
+                .map(deposit -> new FixTermDepositListDto(deposit.getId(),deposit.getAmount(), deposit.getInterest(), deposit.getCreationDate(), deposit.getClosingDate()))
+                .collect(Collectors.toList());
+    }
+
 
     public Double getUnclosedDepositsTotalSum(Long userId) {
         List<FixedTermDeposit> fixedTermDeposits = getFixedTermDepositsByUser(userId);

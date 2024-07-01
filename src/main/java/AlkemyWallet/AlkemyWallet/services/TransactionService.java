@@ -14,12 +14,12 @@ import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.exceptions.NonPositiveAmountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedTransactionException;
 import AlkemyWallet.AlkemyWallet.mappers.TransactionResponseMapper;
+import AlkemyWallet.AlkemyWallet.repositories.AccountRepository;
 import AlkemyWallet.AlkemyWallet.repositories.TransactionRepository;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.*;
 import lombok.AllArgsConstructor;
 
 import org.springframework.data.domain.*;
@@ -29,10 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -45,8 +42,17 @@ public class TransactionService {
     private final UserService userService;
     private final TransactionResponseMapper transactionResponseMapper;
     private final PaginationConfig paginationConfig;
+    private final AccountRepository accountRepository;
 
     //EndPoint Envio de Dinero
+
+    public void checkDestinationCurrency(String accountCBU, CurrencyEnum currency){
+        Accounts account = accountService.findByCBU(accountCBU);
+        if (!(account.getCurrency()==currency)){
+            throw new IncorrectCurrencyException("La moneda seleccionada no es la correcta para este tipo de cuenta");
+        }
+    }
+
     public TransactionResponse  registrarTransaccion(TransactionDTO transaction, Accounts originAccount) {
         Double amount = transaction.getAmount();
         Accounts destinationAccount = accountService.findByCBU(transaction.getDestino());
@@ -145,15 +151,6 @@ public class TransactionService {
         }
     }
 
-    //Busqueda de Transacciones segun distintos criterios
-    public List<Transaction> getTransactionsByAccount(Accounts account) {
-        try {
-            return transactionRepository.findByAccount(account);
-        } catch (Exception e) {
-            throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
-        }
-    }
-
     public Page<Transaction> getTransactionsByUserIdPaginated(Long userId, int page) {
         int transactionsPerPage = paginationConfig.getTransactionsPerPage();
         Pageable pageable = PageRequest.of(page,transactionsPerPage);
@@ -225,7 +222,7 @@ public class TransactionService {
             Transaction paymentTransaction = sendMoney(transaction, originAccount, destinationAccount);
             accountService.updateAfterTransaction(originAccount, -amount);
             accountService.updateAccountBalance(destinationAccount, amount);
-            this.receiveMoney(transaction, destinationAccount, originAccount);
+            this.receiveMoney(transaction, originAccount, destinationAccount);
             return transactionResponseMapper.mapToPaymentResponse(paymentTransaction, originAccount, destinationAccount.getCBU());
 
         } else {
@@ -253,18 +250,19 @@ public class TransactionService {
         return paymentTransaction;
     }
 
-    //Endpoint Filtro de Transaccciones
-    public List<Transaction> getLast10TransactionsByAccountId(Long accountId) {
+
+    public List<Transaction> getTransactionsByAccount(Accounts account) {
         try {
-            Accounts account = accountService.findById(accountId); // Obtener la cuenta completa
-            return getTransactionsByAccount(account).stream()
-                    .sorted(Comparator.comparing(Transaction::getTransactionDate).reversed()) // Ordenar por fecha de forma descendente
-                    .limit(10) // Limitar a las últimas 10 transacciones
-                    .collect(Collectors.toList()); // Convertir a lista
+            List<Transaction> transactions = transactionRepository.findDepositsByAccountId(account.getId());
+            transactions.addAll(transactionRepository.findIncomesByAccountId(account.getId()));
+            transactions.addAll(transactionRepository.findPaymentsByAccountId(account.getId()));
+            return transactions;
         } catch (Exception e) {
             throw new RuntimeException("No se encontraron transacciones para la cuenta", e);
         }
     }
+
+
 
     public List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> responseList = new ArrayList<>();
@@ -277,6 +275,8 @@ public class TransactionService {
             response.setTipoDeTransaccion(transaction.getType());
             response.setCurrency(transaction.getOriginAccount().getCurrency().toString());
             response.setDescripcion(transaction.getDescription());
+            response.setAmount(transaction.getAmount());
+            response.setNombreDestino(accountService.obtenerUserAccountName(transaction.getAccount()));
 
             responseList.add(response);
         }
@@ -314,8 +314,20 @@ public class TransactionService {
     }
 
     // Método auxiliar para construir Specification basado en las cuentas del usuario
-    private Specification<Transaction> accountIn(List<Accounts> userAccounts) {
-        return (root, query, criteriaBuilder) -> root.get("originAccount").in(userAccounts);
+    public static Specification<Transaction> accountIn(List<Accounts> userAccounts) {
+        return (Root<Transaction> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) -> {
+            Predicate depositOrPaymentPredicate = criteriaBuilder.and(
+                    root.get("originAccount").in(userAccounts),
+                    root.get("type").in("DEPOSIT", "PAYMENT") // Adjusted to "type"
+            );
+
+            Predicate incomePredicate = criteriaBuilder.and(
+                    root.get("account").in(userAccounts),
+                    criteriaBuilder.equal(root.get("type"), "INCOME") // Adjusted to "type"
+            );
+
+            return criteriaBuilder.or(depositOrPaymentPredicate, incomePredicate);
+        };
     }
 
     private Specification<Transaction> transactionDateBetween(LocalDate fromDate, LocalDate toDate) {

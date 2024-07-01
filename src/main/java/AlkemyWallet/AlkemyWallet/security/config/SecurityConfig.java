@@ -39,8 +39,9 @@ public class SecurityConfig {
                                 .requestMatchers("/accounts/select/**").permitAll()
                                 .requestMatchers("/accounts/editar/**").permitAll()
                                 .requestMatchers("/accounts/myAccounts/**").permitAll()
+                                .requestMatchers("/accounts/info/**").permitAll()
                                 .requestMatchers("/accounts/{userId}").hasRole("ADMIN")
-                                .requestMatchers("/accounts").hasRole("ADMIN")
+                                .requestMatchers("/accounts/").hasRole("ADMIN")
 
                                 .requestMatchers("/fixedTerm/**").permitAll()
                                 .requestMatchers("/loan/**").permitAll()
@@ -48,6 +49,7 @@ public class SecurityConfig {
                                 //rutas de Usuarios
                                 .requestMatchers("/id/{id}").hasRole("ADMIN")
                                 .requestMatchers("/users").hasRole("ADMIN")
+                                .requestMatchers("/users/{id}/birthdate").permitAll()
                                 .requestMatchers("/**").permitAll()
                                 .requestMatchers("/cbu/{idCbu}/users/{idUser}").permitAll()
 

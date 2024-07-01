@@ -4,11 +4,13 @@ import AlkemyWallet.AlkemyWallet.domain.Role;
 import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.domain.factory.RoleFactory;
 import AlkemyWallet.AlkemyWallet.dtos.*;
+import AlkemyWallet.AlkemyWallet.exceptions.UnauthorizedUserException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserDeletedException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -31,6 +35,11 @@ public class AuthenticationService {
 
 
     public RegisterResponse register(RegisterRequest registerRequest) {
+
+        if (!isValidEmailAddress(registerRequest.getUserName())) {
+            throw new IllegalArgumentException("Invalid email address format");
+        }
+
         if (userExists(registerRequest.getUserName())) {
             throw new IllegalArgumentException("User already exists");
         }
@@ -40,11 +49,16 @@ public class AuthenticationService {
         User user = createUser(registerRequest, RoleFactory.getUserRole(), birthDate);
         user.setSoftDelete(false);
 
-
         saveUser(user);
         createAccounts(user.getId());
 
         return buildAuthResponseRegister(user);
+    }
+
+    // Método auxiliar para validar el formato de correo electrónico
+    private boolean isValidEmailAddress(String email) {
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return Pattern.compile(regex).matcher(email).matches();
     }
 
     public RegisterResponse registerAdmin(RegisterRequest registerRequest) {
@@ -122,7 +136,11 @@ public class AuthenticationService {
             throw new UserDeletedException("No se puede iniciar sesión, el usuario está marcado como borrado");
         }
 
-        return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath());
+        if(!Objects.equals(loginRequest.getDni(), user.getDni())){
+            throw new UnauthorizedUserException("DNI Incorrecto");
+        }
+
+        return new LoginResponseDTO(user.getId(), user.getUsername(),user.getFirstName(),user.getLastName(),user.getImagePath(),user.getDni(),user.getBirthDate());
     }
 
 

@@ -19,9 +19,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class RegisterRequest {
 
+    @Schema(description = "Nombre de usuario (correo electrónico)", example = "juan.perez@example.com", required = true)
     @NotBlank
     @Email(message = "Por favor proporcione una dirección de correo válida")
-    @Schema(description = "Nombre de usuario (correo electrónico)", example = "juan.perez@example.com", required = true)
     private String userName;
 
     @NotBlank

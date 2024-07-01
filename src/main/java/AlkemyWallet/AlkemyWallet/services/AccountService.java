@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.services;
 import AlkemyWallet.AlkemyWallet.config.PaginationConfig;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.AccountBalanceDTO;
 import AlkemyWallet.AlkemyWallet.dtos.AccountInfoDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountRequestDto;
 import AlkemyWallet.AlkemyWallet.dtos.AccountsDto;
@@ -23,6 +24,7 @@ import AlkemyWallet.AlkemyWallet.exceptions.DuplicateAccountException;
 import AlkemyWallet.AlkemyWallet.exceptions.UserNotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -140,33 +142,52 @@ public class AccountService {
         }
     }
 
-    public static String logicaCBU () {
+    public static String logicaCBU() {
         StringBuilder cbu = new StringBuilder();
         Random random = new Random();
 
-
-            // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
-            for (int i = 0; i < 7; i++) {
-                cbu.append(random.nextInt(10));
-            }
-            cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
-
-            // Los siguientes 12 dígitos son generados aleatoriamente.
-            for (int i = 0; i < 12; i++) {
-                cbu.append(random.nextInt(10));
-            }
-
-            // Calculamos el dígito verificador provisorio.
-            int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
-            int sum = 0;
-            for (int i = 0; i < cbu.length(); i++) {
-                sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
-            }
-            int dv = (10 - (sum % 10)) % 10;
-            cbu.setCharAt(7, Character.forDigit(dv, 10));
-
-            return cbu.toString();
+        // Primeros 7 dígitos corresponden al código del banco y de la sucursal.
+        for (int i = 0; i < 7; i++) {
+            cbu.append(random.nextInt(10));
         }
+        cbu.append("0"); // Agregamos un dígito fijo para el dígito verificador provisorio.
+
+        // Los siguientes 12 dígitos son generados aleatoriamente.
+        for (int i = 0; i < 12; i++) {
+            cbu.append(random.nextInt(10));
+        }
+
+        // Calculamos el dígito verificador provisorio.
+        int[] weights = {3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 7, 9, 3, 1, 3, 1, 7, 9, 3, 1, 7, 9};
+        int sum = 0;
+        for (int i = 0; i < cbu.length(); i++) {
+            sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
+        }
+        int dv = (10 - (sum % 10)) % 10;
+        cbu.setCharAt(7, Character.forDigit(dv, 10));
+
+        // Agregamos el dígito verificador final (22º dígito)
+        int dvFinal = calcularDigitoVerificadorFinal(cbu.toString());
+        cbu.append(Character.forDigit(dvFinal, 10));
+
+        // Aseguramos que el CBU tenga exactamente 22 dígitos
+        while (cbu.length() < 22) {
+            cbu.append(random.nextInt(10)); // Agrega dígitos aleatorios al final si es necesario
+        }
+        // Si por alguna razón tiene más de 22, se trunca a 22 dígitos
+        cbu.setLength(22);
+
+        return cbu.toString();
+    }
+    private static int calcularDigitoVerificadorFinal(String cbu) {
+        int[] weights = {7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1};
+        int sum = 0;
+        for (int i = 0; i < cbu.length(); i++) {
+            sum += (Character.getNumericValue(cbu.charAt(i)) * weights[i]);
+        }
+        int dv = (10 - (sum % 10)) % 10;
+        return dv;
+    }
 
     public String generarCBU (){
             String CBU = null;
@@ -300,7 +321,7 @@ public class AccountService {
 
 
     public Boolean hasBalance(Accounts account, Double amount) {
-        if (account.getBalance().compareTo(amount) > 0) {
+        if (account.getBalance().compareTo(amount) >= 0) {
             return true;
         } else {
             throw new InsufficientFundsException("No cuenta con los fondos suficientes para realizar esta operacion ");
@@ -322,6 +343,35 @@ public class AccountService {
         accountInfoDto.setDni(user.getDni());
 
         return accountInfoDto;
+    }
+
+    public List<AccountBalanceDTO> getAccountBalancesByUserId(Long userId) {
+
+        List<Accounts> accounts = this.findAccountsByUserId(userId);
+
+        List<AccountBalanceDTO> accountBalances = new ArrayList<>();
+
+        for (Accounts account : accounts) {
+            AccountBalanceDTO dto = new AccountBalanceDTO();
+            dto.setAccountId(account.getId());
+            dto.setCurrency(account.getCurrency().toString());
+            dto.setAccountType(account.getAccountType().toString());
+            dto.setBalance(account.getBalance());
+            dto.setCBU(account.getCBU());
+            dto.setAlias(account.getAlias());
+            accountBalances.add(dto);
+        }
+
+        return accountBalances;
+    }
+
+    public String obtenerUserAccountName(Accounts account) {
+        if (account == null || account.getUser() == null) {
+            return "";
+        }
+
+        User user = account.getUser();
+        return user.getFirstName() + " " + user.getLastName();
     }
 }
 

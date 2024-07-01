@@ -7,6 +7,7 @@ import AlkemyWallet.AlkemyWallet.domain.User;
 import AlkemyWallet.AlkemyWallet.dtos.PaymentResponseDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionDTO;
 import AlkemyWallet.AlkemyWallet.dtos.TransactionResponse;
+import AlkemyWallet.AlkemyWallet.enums.CurrencyEnum;
 import AlkemyWallet.AlkemyWallet.exceptions.IncorrectCurrencyException;
 import AlkemyWallet.AlkemyWallet.exceptions.InsufficientFundsException;
 import AlkemyWallet.AlkemyWallet.repositories.UserRepository;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -38,6 +40,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/transactions")
 @AllArgsConstructor
+@Validated
 public class TransactionController {
 
     private final TransactionService transactionService;
@@ -62,13 +65,35 @@ public class TransactionController {
             }
     )
 
-    @PostMapping({"/sendArs", "/sendUsd"})
-    public ResponseEntity<?> sendMoney(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
+    @PostMapping({"/sendArs"})
+    public ResponseEntity<?> sendArs(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
         try {
             String token = jwtService.getTokenFromRequest(request);
             Accounts account = accountService.getAccountFrom(token);
 
             // Lógica para registrar la transacción
+            transactionService.checkDestinationCurrency(transaction.getDestino(), CurrencyEnum.ARS);
+            TransactionResponse response = transactionService.registrarTransaccion(transaction, account);
+
+            // Devolver una respuesta exitosa
+            return ResponseEntity.ok().headers(createHeadersWithUpdatedToken(token)).body(response);
+        } catch (InsufficientFundsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: No hay suficientes fondos para completar la transacción");
+        } catch (IncorrectCurrencyException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: La moneda seleccionada no es la correcta para este tipo de cuenta");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error genérico: " + e.getMessage());
+        }
+    }
+
+    @PostMapping({ "/sendUsd"})
+    public ResponseEntity<?> sendUsd(@Valid @RequestBody TransactionDTO transaction, HttpServletRequest request) {
+        try {
+            String token = jwtService.getTokenFromRequest(request);
+            Accounts account = accountService.getAccountFrom(token);
+
+            // Lógica para registrar la transacción
+            transactionService.checkDestinationCurrency(transaction.getDestino(), CurrencyEnum.USD);
             TransactionResponse response = transactionService.registrarTransaccion(transaction, account);
 
             // Devolver una respuesta exitosa

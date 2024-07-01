@@ -17,16 +17,29 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionResponse {
+
     @Schema(description = "CBU destino a la que transferimos", required = true)
     @NotNull
     @NotBlank
     @Size(min=22, max=22)
     String destino;
 
+    @Schema(description = "Nombre del destino al que transferimos", required = true)
+    @NotNull
+    @NotBlank
+    String nombreDestino;
+
+
     @Schema(description = "CBU origen del que transferimos", required = true)
     @NotNull
     @NotBlank
     String origen;
+
+    @Schema(description = "Monto de la transacción realizada", required = true)
+    @NotNull
+    @NotBlank
+    double amount;
+
 
     @Schema(description = "Fecha de la transacción realizada", required = true)
     LocalDate fechaDeTransaccion;
