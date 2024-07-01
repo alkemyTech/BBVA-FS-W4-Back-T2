@@ -3,6 +3,7 @@ package AlkemyWallet.AlkemyWallet.controllers;
 import AlkemyWallet.AlkemyWallet.domain.Accounts;
 import AlkemyWallet.AlkemyWallet.domain.FixedTermDeposit;
 import AlkemyWallet.AlkemyWallet.domain.User;
+import AlkemyWallet.AlkemyWallet.dtos.FixTermDepositListDto;
 import AlkemyWallet.AlkemyWallet.dtos.FixedTermDepositDto;
 import AlkemyWallet.AlkemyWallet.services.AccountService;
 import AlkemyWallet.AlkemyWallet.services.FixedTermDepositService;
@@ -103,12 +104,13 @@ public class FixedTermDepositController {
                     )
             }
     )
+
     @GetMapping("/all")
     public ResponseEntity<?> getFixedTermMovements(HttpServletRequest request) {
         try {
             String token = jwtService.getTokenFromRequest(request);
             User user = jwtService.getUserFromToken(token);
-            List<FixedTermDeposit> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUser(user.getId());
+            List<FixTermDepositListDto> fixedTermDeposits = fixedTermDepositService.getFixedTermDepositsByUserDTO(user.getId());
             return ResponseEntity.ok(fixedTermDeposits);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener los movimientos de plazos fijos: " + e.getMessage());
